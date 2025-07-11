@@ -21,7 +21,7 @@ export default function DeletedStudentsScreen({ navigation }) {
   const fetchDeletedStudents = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${BASE_URL}/api/admin/students/deleted`);
+      const res = await axios.get(`${BASE_URL}/api/admin/students-deleted`);
       setStudents(res.data || []);
     } catch (err) {
       console.error('❌ Failed to fetch deleted students:', err);
@@ -35,7 +35,7 @@ export default function DeletedStudentsScreen({ navigation }) {
     try {
       await axios.patch(`${BASE_URL}/api/admin/students/restore/${userId}`);
       Alert.alert('Restored', 'Student restored successfully.');
-      fetchDeletedStudents(); // refresh
+      fetchDeletedStudents();
     } catch (err) {
       Alert.alert('Error', 'Could not restore student.');
     }
@@ -54,7 +54,7 @@ export default function DeletedStudentsScreen({ navigation }) {
             try {
               await axios.delete(`${BASE_URL}/api/admin/students/${userId}`);
               Alert.alert('Deleted', 'Student permanently deleted.');
-              fetchDeletedStudents(); // refresh
+              fetchDeletedStudents();
             } catch (err) {
               console.error('❌ Failed to permanently delete student:', err);
               Alert.alert('Error', 'Could not delete student permanently.');

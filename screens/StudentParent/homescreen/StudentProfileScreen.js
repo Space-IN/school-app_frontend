@@ -1,20 +1,21 @@
 // screens/StudentProfileScreen.js
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import BASE_URL from '../../../config/baseURL';
 
 const iconMap = {
-  studentName: 'person',
+  name: 'person',
+  userId: 'finger-print',
   className: 'school',
   section: 'layers',
-  medium: 'language',
-  rollNumber: 'reader',
   dob: 'calendar',
-  currentAddress: 'home',
-  permanentAddress: 'location',
+  gender: 'transgender',
   bloodGroup: 'water',
-  weight: 'fitness',
-  height: 'barbell',
+  admissionDate: 'calendar-outline',
+  address: 'home',
 };
 
 const formatLabel = (key) =>
@@ -22,29 +23,87 @@ const formatLabel = (key) =>
     .replace(/([A-Z])/g, ' $1')
     .replace(/^./, (str) => str.toUpperCase());
 
-const StudentProfileScreen = ({ route }) => {
-  const { profile } = route.params;
+const allowedKeys = [
+  'name',
+  'userId',
+  'className',
+  'section',
+  'dob',
+  'gender',
+  'bloodGroup',
+  'admissionDate',
+  'address',
+];
+
+const StudentProfileScreen = () => {
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchProfile = async () => {
+    try {
+      const stored = await AsyncStorage.getItem('userData');
+      const parsed = stored ? JSON.parse(stored) : null;
+
+      if (!parsed || parsed.role !== 'Student') {
+        Alert.alert('Error', 'Invalid student login');
+        return;
+      }
+
+      const userId = parsed.userId;
+      const response = await axios.get(`${BASE_URL}/api/admin/students/${userId}`);
+      setProfile(response.data);
+    } catch (err) {
+      console.error('❌ Error loading profile:', err);
+      Alert.alert('Error', 'Failed to load student profile');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#1e3a8a" />
+        <Text style={{ marginTop: 10, color: '#333' }}>Loading profile...</Text>
+      </View>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <View style={styles.loaderContainer}>
+        <Text style={{ color: 'red' }}>Profile not found.</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.header}>Student Profile</Text>
 
-      {Object.entries(profile).map(([key, value]) => (
-        <View key={key} style={styles.itemContainer}>
-          <View style={styles.item}>
-            <Ionicons
-              name={iconMap[key] || 'information-circle-outline'}
-              size={24}
-              color="#2c3e50"
-              style={styles.icon}
-            />
-            <View style={styles.textContainer}>
-              <Text style={styles.label}>{formatLabel(key)}</Text>
-              <Text style={styles.value}>{value}</Text>
+      {allowedKeys.map((key) => {
+        const value = profile[key];
+        return (
+          <View key={key} style={styles.itemContainer}>
+            <View style={styles.item}>
+              <Ionicons
+                name={iconMap[key] || 'information-circle-outline'}
+                size={24}
+                color="#2c3e50"
+                style={styles.icon}
+              />
+              <View style={styles.textContainer}>
+                <Text style={styles.label}>{formatLabel(key)}</Text>
+                <Text style={styles.value}>{value || 'N/A'}</Text>
+              </View>
             </View>
           </View>
-        </View>
-      ))}
+        );
+      })}
     </ScrollView>
   );
 };
@@ -54,6 +113,14 @@ export default StudentProfileScreen;
 const styles = StyleSheet.create({
   container: {
     padding: 20,
+    paddingBottom: 40,
+    backgroundColor: '#f0f4ff',
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 60,
     backgroundColor: '#f0f4ff',
   },
   header: {

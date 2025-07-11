@@ -59,6 +59,7 @@ export default function AdminDashboard({ navigation }) {
   const handleViewStudents = () => navigation.navigate('AllStudentsScreen');
   const handleViewFaculty = () => navigation.navigate('AllFacultyScreen');
   const handleAddSubject = () => navigation.navigate('AddSubjectScreen');
+  const handlePosterManagement = () => navigation.navigate('AdminPosterManager');
 
   if (loading) {
     return (
@@ -110,6 +111,14 @@ export default function AdminDashboard({ navigation }) {
           <TouchableOpacity style={styles.tileButton} onPress={handleAddSubject}>
             <Ionicons name="book-outline" size={30} color="#fff" />
             <Text style={styles.tileText}>Add Subject</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.sectionTitle}>📢 Manage Posters</Text>
+        <View style={styles.row}>
+          <TouchableOpacity style={styles.tileButton} onPress={handlePosterManagement}>
+            <Ionicons name="images-outline" size={30} color="#fff" />
+            <Text style={styles.tileText}>Manage Posters</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

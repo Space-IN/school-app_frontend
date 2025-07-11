@@ -6,50 +6,14 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
+  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
 
-// ✅ Updated path after moving the file
+// ✅ Screens
 import StudentParentHome from '../screens/StudentParent/homescreen/StudentParentHome';
-import { users } from '../data/mockUsers';
-import AssignmentDashboard from '../screens/StudentParent/assignmentscreen/AssignmentDashboard';
 
 const Tab = createBottomTabNavigator();
-
-function ChatScreen() {
-  const navigation = useNavigation();
-
-  const facultyList = Object.values(users).filter(user => user.role === 'Faculty');
-
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={chatStyles.card}
-      onPress={() => navigation.navigate('ChatMessage', { faculty: item })}
-    >
-      <Ionicons name="person-circle-outline" size={36} color="#4f46e5" />
-      <View style={{ marginLeft: 10 }}>
-        <Text style={chatStyles.name}>{item.name}</Text>
-        <Text style={chatStyles.subject}>Subjects: {item.subjects?.join(', ')}</Text>
-        {item.classes && (
-          <Text style={chatStyles.classes}>Classes: {item.classes.join(', ')}</Text>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
-
-  return (
-    <View style={chatStyles.container}>
-      <Text style={chatStyles.title}>Assigned Faculty List</Text>
-      <FlatList
-        data={facultyList}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      />
-    </View>
-  );
-}
 
 function MenuScreen({ navigation, route }) {
   const { userData } = route.params || {};
@@ -72,14 +36,16 @@ function MenuScreen({ navigation, route }) {
         data={menuItems}
         keyExtractor={(item) => item.title}
         numColumns={3}
-        contentContainerStyle={{ padding: 10 }}
+        contentContainerStyle={styles.grid}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.menuTile}
             onPress={() => navigation.navigate(item.screen, { userData })}
           >
-            <Ionicons name={item.icon} size={32} color="#4f46e5" style={{ marginBottom: 8 }} />
-            <Text style={styles.menuText}>{item.title}</Text>
+            <Ionicons name={item.icon} size={28} color="#4f46e5" style={{ marginBottom: 8 }} />
+            <Text style={styles.menuText} numberOfLines={1} ellipsizeMode="tail">
+              {item.title}
+            </Text>
           </TouchableOpacity>
         )}
       />
@@ -96,8 +62,6 @@ export default function StudentParentTabs({ route }) {
         tabBarIcon: ({ color, size }) => {
           let iconName;
           if (route.name === 'Home') iconName = 'home-outline';
-          else if (route.name === 'Chat') iconName = 'chatbubble-ellipses-outline';
-          else if (route.name === 'Assignments') iconName = 'document-text-outline';
           else if (route.name === 'Menu') iconName = 'grid-outline';
 
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -118,19 +82,6 @@ export default function StudentParentTabs({ route }) {
         }}
       />
       <Tab.Screen
-        name="Chat"
-        component={ChatScreen}
-        options={{
-          headerTitle: 'Chat with Faculty',
-          tabBarLabel: 'Chat',
-        }}
-      />
-      <Tab.Screen
-        name="Assignments"
-        component={AssignmentDashboard}
-        options={{ headerTitle: 'Assignments' }}
-      />
-      <Tab.Screen
         name="Menu"
         component={MenuScreen}
         initialParams={params}
@@ -140,16 +91,23 @@ export default function StudentParentTabs({ route }) {
   );
 }
 
+const { width } = Dimensions.get('window');
+const tileWidth = (width - 60) / 3; // Adjust padding/margin if needed
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
     backgroundColor: '#fff',
   },
+  grid: {
+    padding: 10,
+    paddingBottom: 30,
+  },
   menuTile: {
-    flex: 1,
-    margin: 10,
-    padding: 16,
+    width: tileWidth,
+    margin: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 6,
     backgroundColor: '#eef2ff',
     alignItems: 'center',
     justifyContent: 'center',
@@ -158,46 +116,11 @@ const styles = StyleSheet.create({
     minHeight: 100,
   },
   menuText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
     textAlign: 'center',
     color: '#1e3a8a',
-  },
-});
-
-const chatStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#f3f4f6',
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 12,
-    color: '#4f46e5',
-  },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    marginBottom: 10,
-    backgroundColor: '#e0e7ff',
-    borderRadius: 8,
-    elevation: 2,
-  },
-  name: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1e3a8a',
-  },
-  subject: {
-    fontSize: 14,
-    color: '#555',
-  },
-  classes: {
-    fontSize: 13,
-    color: '#777',
-    marginTop: 2,
+    flexShrink: 1,
+    includeFontPadding: false,
   },
 });
