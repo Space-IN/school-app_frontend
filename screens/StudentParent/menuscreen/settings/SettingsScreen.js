@@ -1,3 +1,4 @@
+// screens/StudentParent/menuscreen/SettingsScreen.js
 import React from 'react';
 import {
   View,
@@ -41,11 +42,6 @@ export default function SettingsScreen() {
       title: 'Fees Section',
       icon: 'card-outline',
       screen: 'FeesScreen',
-    },
-    {
-      title: 'Manage Leaves',
-      icon: 'calendar-outline',
-      screen: 'LeavesScreen',
     },
     {
       title: 'Change Password',
