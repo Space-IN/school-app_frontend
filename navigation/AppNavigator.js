@@ -98,7 +98,7 @@ export default function AppNavigator() {
       <Stack.Screen name="FilteredStudentsScreen" component={FilteredStudentsScreen} />
       <Stack.Screen name="DeletedStudentsScreen" component={DeletedStudentsScreen}/>
       <Stack.Screen name="DeletedFacultyScreen" component={DeletedFacultyScreen}/>
-    
+
       <Stack.Screen name="AdminPosterManager" component={AdminPosterManager} />
 
       
