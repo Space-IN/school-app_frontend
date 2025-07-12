@@ -58,7 +58,7 @@ export default function AdminDashboard({ navigation }) {
   const handleAddFaculty = () => navigation.navigate('AddFacultyScreen');
   const handleViewStudents = () => navigation.navigate('AllStudentsScreen');
   const handleViewFaculty = () => navigation.navigate('AllFacultyScreen');
-  const handleAddSubject = () => navigation.navigate('AddSubjectScreen');
+
   const handlePosterManagement = () => navigation.navigate('AdminPosterManager');
 
   if (loading) {
