@@ -3,136 +3,183 @@ import {
   View,
   Text,
   TextInput,
-  Button,
-  StyleSheet,
-  Alert,
   ScrollView,
-  ActivityIndicator,
+  StyleSheet,
+  Button,
+  Alert,
+  Dimensions,
 } from 'react-native';
 import axios from 'axios';
+import BASE_URL from '../../config/baseURL';
 
-export default function AddStudentScreen({ navigation }) {
-  const [name, setName] = useState('');
-  const [userId, setUserId] = useState('');
-  const [className, setClassName] = useState('');
-  const [section, setSection] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+const AddStudentScreen = () => {
+  const [form, setForm] = useState({
+    name: '',
+    userId: '',
+    password: '',
+    className: '',
+    section: '',
+    dob: '',
+    gender: '',
+    address: '',
+    admissionDate: '',
+    bloodGroup: '',
+    profileImage: '',
 
-  const handleAddStudent = async () => {
-    if (!name || !userId || !className || !section || !password) {
-      Alert.alert('Validation Error', 'Please fill in all fields');
-      return;
+    // ✅ Parent-related fields
+    fatherName: '',
+    fatherOccupation: '',
+    fatherContact: '',
+    motherName: '',
+    motherOccupation: '',
+    motherContact: '',
+    parentEmail: '',
+  });
+
+  const handleChange = (field, value) => {
+    setForm({ ...form, [field]: value });
+  };
+
+  const handleSubmit = async () => {
+    const requiredFields = ['name', 'userId', 'password', 'className', 'section'];
+    for (let field of requiredFields) {
+      if (!form[field]) {
+        Alert.alert('Validation Error', `Please fill in the ${field} field.`);
+        return;
+      }
     }
 
-    const payload = {
-      name: name.trim(),
-      userId: userId.trim().toLowerCase(),
-      className: className.trim(),
-      section: section.trim(),
-      password: password.trim(),
-    };
-
-    console.log('📦 Sending student data:', payload);
-
     try {
-      setLoading(true);
+      const payload = {
+        name: form.name.trim(),
+        userId: form.userId.trim().toLowerCase(),
+        password: form.password.trim(),
+        className: form.className.trim(),
+        section: form.section.trim().toUpperCase(),
+        dob: form.dob?.trim() || '',
+        gender: form.gender?.trim() || '',
+        address: form.address?.trim() || '',
+        admissionDate: form.admissionDate?.trim() || '',
+        bloodGroup: form.bloodGroup?.trim() || '',
+        profileImage: form.profileImage?.trim() || '',
 
-      const response = await axios.post('http://10.221.34.143:5000/api/admin/add-student', payload);
+        // ✅ Parent data
+        fatherName: form.fatherName?.trim() || '',
+        fatherOccupation: form.fatherOccupation?.trim() || '',
+        fatherContact: form.fatherContact?.trim() || '',
+        motherName: form.motherName?.trim() || '',
+        motherOccupation: form.motherOccupation?.trim() || '',
+        motherContact: form.motherContact?.trim() || '',
+        parentEmail: form.parentEmail?.trim() || '',
+      };
 
-      console.log('✅ Student added response:', response.data);
-      Alert.alert('Success', 'Student added successfully');
+      const res = await axios.post(`${BASE_URL}/api/admin/add-student`, payload);
+      Alert.alert('✅ Success', res.data.message);
 
-      // Optionally reset fields
-      setName('');
-      setUserId('');
-      setClassName('');
-      setSection('');
-      setPassword('');
+      setForm({
+        name: '',
+        userId: '',
+        password: '',
+        className: '',
+        section: '',
+        dob: '',
+        gender: '',
+        address: '',
+        admissionDate: '',
+        bloodGroup: '',
+        profileImage: '',
+        fatherName: '',
+        fatherOccupation: '',
+        fatherContact: '',
+        motherName: '',
+        motherOccupation: '',
+        motherContact: '',
+        parentEmail: '',
+      });
     } catch (err) {
-      console.error('❌ Add student error:', err.response?.data || err.message);
-      Alert.alert('Error', err.response?.data?.message || 'Failed to add student');
-    } finally {
-      setLoading(false);
+      console.error('❌ Error adding student:', err);
+      Alert.alert('❌ Error', err.response?.data?.message || 'Something went wrong');
     }
   };
 
+  const fields = [
+    ['name', 'Full Name'],
+    ['userId', 'Student ID'],
+    ['password', 'Password'],
+    ['className', 'Class (e.g. 6)'],
+    ['section', 'Section (e.g. A)'],
+    ['dob', 'Date of Birth (YYYY-MM-DD)'],
+    ['gender', 'Gender'],
+    ['address', 'Address'],
+    ['admissionDate', 'Admission Date (optional)'],
+    ['bloodGroup', 'Blood Group (optional)'],
+    ['profileImage', 'Profile Image URL (optional)'],
+    // ✅ Parent Fields
+    ['fatherName', "Father's Name"],
+    ['fatherOccupation', "Father's Occupation"],
+    ['fatherContact', "Father's Contact"],
+    ['motherName', "Mother's Name"],
+    ['motherOccupation', "Mother's Occupation"],
+    ['motherContact', "Mother's Contact"],
+    ['parentEmail', 'Parent Email (optional)'],
+  ];
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Add New Student</Text>
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <View style={styles.form}>
+        <Text style={styles.title}>Add New Student</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Full Name"
-        value={name}
-        onChangeText={setName}
-      />
+        {fields.map(([field, placeholder]) => (
+          <TextInput
+            key={field}
+            placeholder={placeholder}
+            value={form[field]}
+            onChangeText={(text) => handleChange(field, text)}
+            style={styles.input}
+            autoCapitalize="none"
+          />
+        ))}
 
-      <TextInput
-        style={styles.input}
-        placeholder="User ID"
-        value={userId}
-        onChangeText={setUserId}
-        autoCapitalize="none"
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Class (e.g. 10)"
-        value={className}
-        onChangeText={setClassName}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Section (e.g. A)"
-        value={section}
-        onChangeText={setSection}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-
-      <View style={styles.button}>
-        {loading ? (
-          <ActivityIndicator size="small" color="#1e3a8a" />
-        ) : (
-          <Button title="Add Student" onPress={handleAddStudent} />
-        )}
+        <Button title="Add Student" onPress={handleSubmit} color="#1e3a8a" />
       </View>
     </ScrollView>
   );
-}
+};
+
+export default AddStudentScreen;
+
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    backgroundColor: '#f8f9ff',
+  scrollContainer: {
     flexGrow: 1,
-    justifyContent: 'center',
+    paddingVertical: 30,
+    backgroundColor: '#f0f4ff',
+  },
+  form: {
+    width: width > 400 ? 350 : '90%',
+    alignSelf: 'center',
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   title: {
-    fontSize: 22,
+    fontSize: 20,
+    fontWeight: '600',
     marginBottom: 20,
     color: '#1e3a8a',
-    fontWeight: 'bold',
     textAlign: 'center',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    marginBottom: 15,
-    padding: 12,
+    borderColor: '#aaa',
     borderRadius: 8,
-    fontSize: 16,
-    backgroundColor: '#fff',
-  },
-  button: {
-    marginTop: 10,
+    padding: 10,
+    marginBottom: 14,
+    backgroundColor: '#f9f9f9',
   },
 });
