@@ -18,6 +18,7 @@ import EditFacultyScreen from '../screens/Admin/EditFacultyScreen';
 import FilteredStudentsScreen from '../screens/Admin/FilteredStudentsScreen';
 import DeletedStudentsScreen from '../screens/Admin/DeletedStudentsScreen';
 import DeletedFacultyScreen from '../screens/Admin/DeletedFacultyScreen'; 
+
 import AdminPosterManager from '../screens/Admin/AdminPosterManager';
 
 
@@ -97,6 +98,7 @@ export default function AppNavigator() {
       <Stack.Screen name="FilteredStudentsScreen" component={FilteredStudentsScreen} />
       <Stack.Screen name="DeletedStudentsScreen" component={DeletedStudentsScreen}/>
       <Stack.Screen name="DeletedFacultyScreen" component={DeletedFacultyScreen}/>
+
       <Stack.Screen name="AdminPosterManager" component={AdminPosterManager} />
 
       
