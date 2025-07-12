@@ -60,7 +60,6 @@ export default function AdminDashboard({ navigation }) {
   const handleViewFaculty = () => navigation.navigate('AllFacultyScreen');
 
   const handlePosterManagement = () => navigation.navigate('AdminPosterManager');
-
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
