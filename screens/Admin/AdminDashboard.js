@@ -58,7 +58,14 @@ export default function AdminDashboard({ navigation }) {
   const handleAddFaculty = () => navigation.navigate('AddFacultyScreen');
   const handleViewStudents = () => navigation.navigate('AllStudentsScreen');
   const handleViewFaculty = () => navigation.navigate('AllFacultyScreen');
-  const handleAddSubject = () => navigation.navigate('AddSubjectScreen');
+
+  // const handleAddSubject = () => navigation.navigate('AddSubjectScreen');
+
+  const handleAddSubjectMaster = () => navigation.navigate('AddSubjectMasterScreen');
+  const handleAssignSubject = () => navigation.navigate('AssignSubjectScreen');
+
+  
+  const handleAddEvent = () => navigation.navigate('AddEventScreen');
 
   if (loading) {
     return (
@@ -105,13 +112,42 @@ export default function AdminDashboard({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.sectionTitle}>📚 Subject Management</Text>
+
+
+
+             <Text style={styles.sectionTitle}>📅 Event Management</Text>
+<View style={styles.row}>
+  <TouchableOpacity style={styles.tileButton} onPress={handleAddEvent}>
+    <Ionicons name="calendar-outline" size={30} color="#fff" />
+    <Text style={styles.tileText}>Add Event</Text>
+  </TouchableOpacity>
+</View>
+
+   
+    <Text style={styles.sectionTitle}>📚 Subject Management</Text>
+<View style={styles.row}>
+  <TouchableOpacity style={styles.tileButton} onPress={handleAddSubjectMaster}>
+    <Ionicons name="book-outline" size={30} color="#fff" />
+    <Text style={styles.tileText}>Add Subject Master</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity style={styles.tileButton} onPress={handleAssignSubject}>
+    <Ionicons name="create-outline" size={30} color="#fff" />
+    <Text style={styles.tileText}>Assign Subject</Text>
+  </TouchableOpacity>
+</View>
+
+
+        {/* <Text style={styles.sectionTitle}>📚 Subject Management</Text>
         <View style={styles.row}>
           <TouchableOpacity style={styles.tileButton} onPress={handleAddSubject}>
             <Ionicons name="book-outline" size={30} color="#fff" />
             <Text style={styles.tileText}>Add Subject</Text>
           </TouchableOpacity>
         </View>
+ */}
+
+
       </ScrollView>
     </SafeAreaView>
   );

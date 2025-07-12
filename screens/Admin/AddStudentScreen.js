@@ -38,7 +38,7 @@ export default function AddStudentScreen({ navigation }) {
     try {
       setLoading(true);
 
-      const response = await axios.post('http://10.221.34.140:5000/api/admin/add-student', payload);
+      const response = await axios.post('http://10.221.34.143:5000/api/admin/add-student', payload);
 
       console.log('✅ Student added response:', response.data);
       Alert.alert('Success', 'Student added successfully');

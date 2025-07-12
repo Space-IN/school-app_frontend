@@ -18,7 +18,10 @@ import EditFacultyScreen from '../screens/Admin/EditFacultyScreen';
 import FilteredStudentsScreen from '../screens/Admin/FilteredStudentsScreen';
 import DeletedStudentsScreen from '../screens/Admin/DeletedStudentsScreen';
 import DeletedFacultyScreen from '../screens/Admin/DeletedFacultyScreen'; 
-import AddSubjectScreen from '../screens/Admin/AddSubjectScreen'; 
+// import AddSubjectScreen from '../screens/Admin/AddSubjectScreen'; 
+import AddEventScreen from '../screens/Admin/Eventmanagement/AddEventScreen';
+import AddSubjectMasterScreen from '../screens/Admin/subjectManagement/AddSubjectMasterScreen';
+import AssignSubjectScreen from '../screens/Admin/subjectManagement/AssignSubjectScreen';
 
 
 
@@ -99,8 +102,13 @@ export default function AppNavigator() {
       <Stack.Screen name="FilteredStudentsScreen" component={FilteredStudentsScreen} />
       <Stack.Screen name="DeletedStudentsScreen" component={DeletedStudentsScreen}/>
       <Stack.Screen name="DeletedFacultyScreen" component={DeletedFacultyScreen}/>
-      <Stack.Screen name="AddSubjectScreen" component={AddSubjectScreen} />
+      {/* <Stack.Screen name="AddSubjectScreen" component={AddSubjectScreen} /> */}
       
+      <Stack.Screen name="AddEventScreen" component={AddEventScreen} options={{ title: 'Add Event' }} />
+
+      <Stack.Screen name="AddSubjectMasterScreen" component={AddSubjectMasterScreen} />
+      <Stack.Screen name="AssignSubjectScreen" component={AssignSubjectScreen} />
+
 
 
 

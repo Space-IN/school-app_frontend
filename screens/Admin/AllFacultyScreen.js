@@ -16,7 +16,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import BASE_URL from '../../config/baseURL';
 
 export default function AllFacultyScreen({ navigation }) {
-  const [activeTab, setActiveTab] = useState('active'); // 'active' or 'deleted'
+  const [activeTab, setActiveTab] = useState('active');
   const [facultyList, setFacultyList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -25,9 +25,12 @@ export default function AllFacultyScreen({ navigation }) {
     setLoading(true);
     setError('');
     try {
-      const res = await axios.get(
-        `${BASE_URL}/api/admin/faculty${activeTab === 'deleted' ? '/deleted' : ''}`
-      );
+      const endpoint =
+        activeTab === 'deleted'
+          ? `${BASE_URL}/api/admin/faculty/deleted`
+          : `${BASE_URL}/api/faculty/all`;
+
+      const res = await axios.get(endpoint);
       setFacultyList(res.data || []);
     } catch (err) {
       console.error(`❌ Error fetching ${activeTab} faculty:`, err);
@@ -43,10 +46,10 @@ export default function AllFacultyScreen({ navigation }) {
     }, [activeTab])
   );
 
-  const confirmAction = (title, message, onConfirm, confirmText = 'Yes', cancelText = 'Cancel') => {
+  const confirmAction = (title, message, onConfirm) => {
     Alert.alert(title, message, [
-      { text: cancelText, style: 'cancel' },
-      { text: confirmText, onPress: onConfirm, style: 'destructive' },
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Yes', onPress: onConfirm, style: 'destructive' },
     ]);
   };
 
@@ -89,11 +92,22 @@ export default function AllFacultyScreen({ navigation }) {
   const renderFacultyCard = (fac) => (
     <View key={fac._id} style={styles.facultyCard}>
       <Text style={styles.name}>{fac.name} ({fac.userId})</Text>
-      <Text style={styles.meta}>Class: {fac.classAssigned} {fac.section}</Text>
-      <Text style={styles.meta}>Direct Subject: {fac.subject}</Text>
-      <Text style={styles.meta}>
-        Assigned Subjects: {fac.assignedSubjects?.join(', ') || 'None'}
-      </Text>
+
+      {(fac.classAssigned || fac.section) && (
+        <Text style={styles.meta}>
+          Class: {fac.classAssigned || 'N/A'} {fac.section || ''}
+        </Text>
+      )}
+
+      {fac.subject && (
+        <Text style={styles.meta}>Direct Subject: {fac.subject}</Text>
+      )}
+
+      {fac.assignedSubjects && fac.assignedSubjects.length > 0 && (
+        <Text style={styles.meta}>
+          Assigned Subjects: {fac.assignedSubjects.join(', ')}
+        </Text>
+      )}
 
       <View style={styles.actionRow}>
         {activeTab === 'active' ? (

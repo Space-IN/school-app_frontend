@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,8 +6,10 @@ import {
   Button,
   StyleSheet,
   Alert,
-  ActivityIndicator,
+  ScrollView,
+  TouchableOpacity,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
 import BASE_URL from '../../config/baseURL';
 
@@ -15,48 +17,34 @@ export default function EditFacultyScreen({ route, navigation }) {
   const { faculty } = route.params;
 
   const [name, setName] = useState(faculty.name || '');
-  const [grade, setGrade] = useState(faculty.grade || ''); // ✅ Was classAssigned
-  const [section, setSection] = useState(faculty.section || '');
-  const [subjects, setSubjects] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState(faculty.email || '');
+  const [gender, setGender] = useState(faculty.gender || 'Male');
+  const [dob, setDob] = useState(new Date(faculty.dateOfBirth || new Date()));
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [address, setAddress] = useState(faculty.address || '');
+  const [phone, setPhone] = useState(faculty.phone || '');
+  const [password, setPassword] = useState(faculty.password || '');
+  const [showPassword, setShowPassword] = useState(false);
 
-  useEffect(() => {
-    const fetchAssignedSubjects = async () => {
-      try {
-        const res = await axios.get(`${BASE_URL}/api/admin/subjects/faculty/${faculty.userId}`);
-        const assignedSubjects = res.data?.map((s) => s.name) || [];
-
-        const allSubjectsSet = new Set();
-        if (faculty.subject) allSubjectsSet.add(faculty.subject);
-        assignedSubjects.forEach((s) => allSubjectsSet.add(s));
-
-        setSubjects(Array.from(allSubjectsSet).join(', '));
-      } catch (err) {
-        console.error('❌ Error fetching assigned subjects:', err);
-        Alert.alert('Error', 'Failed to load assigned subjects.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAssignedSubjects();
-  }, []);
+  const handleDateChange = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) setDob(selectedDate);
+  };
 
   const handleUpdate = async () => {
     const updated = {
       name: name.trim(),
-      grade: grade.trim(), // ✅ field name matches backend
-      section: section.trim().toUpperCase(),
-      subject: subjects
-        .split(',')
-        .map((s) => s.trim())
-        .filter((s) => s) // remove empty values
-        .join(', '),
+      email: email.trim(),
+      gender,
+      dateOfBirth: dob.toISOString().substring(0, 10),
+      address: address.trim(),
+      phone: phone.trim(),
+      password: password.trim(),
     };
 
     try {
       await axios.put(`${BASE_URL}/api/admin/faculty/${faculty.userId}`, updated);
-      Alert.alert('Success', 'Faculty updated successfully');
+      Alert.alert('✅ Success', 'Faculty updated successfully');
       navigation.goBack();
     } catch (err) {
       console.error('❌ Error updating faculty:', err.response?.data || err.message);
@@ -64,60 +52,106 @@ export default function EditFacultyScreen({ route, navigation }) {
     }
   };
 
-  if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#1e3a8a" />
-        <Text style={{ marginTop: 10, color: '#1e3a8a' }}>Loading subjects...</Text>
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.heading}>Edit Faculty</Text>
 
       <TextInput
         value={name}
         onChangeText={setName}
-        placeholder="Faculty Name"
-        style={styles.input}
-      />
-      <TextInput
-        value={grade}
-        onChangeText={setGrade}
-        placeholder="Grade (e.g., 10)"
-        style={styles.input}
-      />
-      <TextInput
-        value={section}
-        onChangeText={setSection}
-        placeholder="Section (e.g., A)"
-        style={styles.input}
-      />
-      <TextInput
-        value={subjects}
-        onChangeText={setSubjects}
-        placeholder="Subjects (comma separated)"
+        placeholder="Full Name"
         style={styles.input}
       />
 
+      <TextInput
+        value={email}
+        onChangeText={setEmail}
+        placeholder="Email"
+        style={styles.input}
+        keyboardType="email-address"
+      />
+
+      <TextInput
+        value={phone}
+        onChangeText={setPhone}
+        placeholder="Phone"
+        style={styles.input}
+        keyboardType="phone-pad"
+      />
+
+      <TextInput
+        value={address}
+        onChangeText={setAddress}
+        placeholder="Address"
+        style={styles.input}
+      />
+
+      <Text style={styles.label}>Date of Birth</Text>
+      <TouchableOpacity
+        style={styles.dateInput}
+        onPress={() => setShowDatePicker(true)}
+      >
+        <Text>{dob.toISOString().substring(0, 10)}</Text>
+      </TouchableOpacity>
+      {showDatePicker && (
+        <DateTimePicker
+          value={dob}
+          mode="date"
+          display="default"
+          onChange={handleDateChange}
+          maximumDate={new Date()}
+        />
+      )}
+
+      <Text style={styles.label}>Gender</Text>
+      <View style={styles.genderWrapper}>
+        <Button
+          title="Male"
+          color={gender === 'Male' ? '#1e3a8a' : '#ccc'}
+          onPress={() => setGender('Male')}
+        />
+        <Button
+          title="Female"
+          color={gender === 'Female' ? '#1e3a8a' : '#ccc'}
+          onPress={() => setGender('Female')}
+        />
+        <Button
+          title="Other"
+          color={gender === 'Other' ? '#1e3a8a' : '#ccc'}
+          onPress={() => setGender('Other')}
+        />
+      </View>
+
+      <TextInput
+        value={password}
+        onChangeText={setPassword}
+        placeholder="Password"
+        secureTextEntry={!showPassword}
+        style={styles.input}
+      />
+      <TouchableOpacity onPress={() => setShowPassword((prev) => !prev)}>
+        <Text style={styles.togglePassword}>
+          {showPassword ? '🙈 Hide Password' : '👁️ Show Password'}
+        </Text>
+      </TouchableOpacity>
+
       <Button title="Save Changes" color="#1e3a8a" onPress={handleUpdate} />
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: 35,
     backgroundColor: '#f0f4ff',
-    flex: 1,
+    flexGrow: 1,
   },
   heading: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 20,
     color: '#1e3a8a',
+    textAlign: 'center',
   },
   input: {
     borderColor: '#ccc',
@@ -127,9 +161,27 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#fff',
   },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  dateInput: {
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 12,
+    marginBottom: 15,
+    backgroundColor: '#fff',
+  },
+  label: {
+    fontWeight: 'bold',
+    marginBottom: 6,
+    color: '#1e3a8a',
+  },
+  genderWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+  togglePassword: {
+    color: '#1e3a8a',
+    marginBottom: 15,
+    textAlign: 'right',
   },
 });

@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import ProfileHeader from '../../../components/ProfileHeader';
 import axios from 'axios';
-import { academicCalendar } from '../../../data/academicCalendar';
+
 
 const imageFiles = [
   require('../../../assets/class.png'),
@@ -31,6 +31,7 @@ export default function StudentParentHome() {
   const navigation = useNavigation();
   const scrollRef = useRef(null);
   const { width: screenWidth } = useWindowDimensions();
+  const [events, setEvents] = useState([]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [subjects, setSubjects] = useState([]);
@@ -106,7 +107,7 @@ export default function StudentParentHome() {
 
       try {
         const res = await axios.get(
-          `http://10.221.34.140:5000/api/admin/subjects/class/${className}/section/${section}`
+          `http://10.221.34.143:5000/api/admin/subjects/class/${className}/section/${section}`
         );
         setSubjects(res.data || []);
       } catch (err) {
@@ -117,8 +118,28 @@ export default function StudentParentHome() {
     fetchSubjects();
   }, [className, section]);
 
-  const today = new Date().toISOString().split('T')[0];
-  const todayEvents = academicCalendar.filter((item) => item.date === today);
+
+
+  useEffect(() => {
+  const fetchEvents = async () => {
+    try {
+      const response = await axios.get('http://10.221.34.143:5000/api/events');
+      setEvents(response.data || []);
+    } catch (err) {
+      console.error('Failed to fetch events:', err.message);
+    }
+  };
+
+  fetchEvents();
+}, []);
+
+
+const today = new Date().toISOString().split('T')[0];
+const todayEvents = events.filter((event) => {
+  const eventDate = new Date(event.date).toISOString().split('T')[0];
+  return eventDate === today;
+});
+
 
   return (
     <ScrollView style={styles.container}>
@@ -215,19 +236,23 @@ export default function StudentParentHome() {
         )}
       </View>
 
-      <View style={styles.eventContainer}>
-        <Text style={styles.eventHeader}>Today's Event</Text>
-        {todayEvents.length > 0 ? (
-          todayEvents.map((event, index) => (
-            <View key={index} style={styles.eventBox}>
-              <Text style={styles.eventTitle}>{event.title}</Text>
-              <Text style={styles.eventDesc}>{event.description}</Text>
-            </View>
-          ))
-        ) : (
-          <Text style={styles.noEvent}>No events for today.</Text>
-        )}
+    <View style={styles.eventContainer}>
+  <Text style={styles.eventHeader}>Today's Event</Text>
+  {todayEvents.length > 0 ? (
+    todayEvents.map((event, index) => (
+      <View key={index} style={styles.eventBox}>
+        <Text style={styles.eventTitle}>{event.title}</Text>
+        <Text style={styles.eventDesc}>{event.description}</Text>
       </View>
+    ))
+  ) : (
+    <Text style={styles.noEvent}>No events for today.</Text>
+  )}
+</View>
+
+
+
+
     </ScrollView>
   );
 }
@@ -321,3 +346,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
+
+
+
+
+
