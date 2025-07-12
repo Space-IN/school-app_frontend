@@ -59,6 +59,7 @@ export default function AdminDashboard({ navigation }) {
   const handleViewStudents = () => navigation.navigate('AllStudentsScreen');
   const handleViewFaculty = () => navigation.navigate('AllFacultyScreen');
 
+
    
 
   const handleAddSubjectMaster = () => navigation.navigate('AddSubjectMasterScreen');
@@ -69,6 +70,9 @@ export default function AdminDashboard({ navigation }) {
 
   const handlePosterManagement = () => navigation.navigate('AdminPosterManager');
 
+
+
+  const handlePosterManagement = () => navigation.navigate('AdminPosterManager');
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -149,8 +153,16 @@ export default function AdminDashboard({ navigation }) {
 
 
 
+
     
 
+        <Text style={styles.sectionTitle}>📢 Manage Posters</Text>
+        <View style={styles.row}>
+          <TouchableOpacity style={styles.tileButton} onPress={handlePosterManagement}>
+            <Ionicons name="images-outline" size={30} color="#fff" />
+            <Text style={styles.tileText}>Manage Posters</Text>
+          </TouchableOpacity>
+    
       </ScrollView>
     </SafeAreaView>
   );

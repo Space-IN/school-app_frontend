@@ -14,7 +14,11 @@ import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import BASE_URL from '../../config/baseURL';
 
-export default function                                  
+
+                                  
+
+export default function AdminPosterManager() {
+
   const [poster, setPoster] = useState({
     type: 'academic',
     title: '',

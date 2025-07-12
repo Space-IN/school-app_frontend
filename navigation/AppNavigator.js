@@ -18,11 +18,17 @@ import EditFacultyScreen from '../screens/Admin/EditFacultyScreen';
 import FilteredStudentsScreen from '../screens/Admin/FilteredStudentsScreen';
 import DeletedStudentsScreen from '../screens/Admin/DeletedStudentsScreen';
 import DeletedFacultyScreen from '../screens/Admin/DeletedFacultyScreen'; 
+
  
 import AddEventScreen from '../screens/Admin/Eventmanagement/AddEventScreen';
 import AddSubjectMasterScreen from '../screens/Admin/subjectManagement/AddSubjectMasterScreen';
 import AssignSubjectScreen from '../screens/Admin/subjectManagement/AssignSubjectScreen';
+ 
+
+
 import AdminPosterManager from '../screens/Admin/AdminPosterManager';
+
+
 
 
 
@@ -30,7 +36,6 @@ import AdminPosterManager from '../screens/Admin/AdminPosterManager';
 // Student/Parent Sub Screens
 import SubjectDashboard from '../screens/StudentParent/homescreen/SubjectDashboard';
 import StudentProfileScreen from '../screens/StudentParent/homescreen/StudentProfileScreen';
-import ChatMessageScreen from '../screens/StudentParent/chatscreen/ChatMessageScreen';
 import AttendanceStudent from '../screens/StudentParent/menuscreen/AttendanceScreen';
 import TimetableScreen from '../screens/StudentParent/menuscreen/TimetableScreen';
 import NoticeBoardScreen from '../screens/StudentParent/menuscreen/NoticeBoardScreen';
@@ -42,7 +47,6 @@ import AcademicCalendarScreen from '../screens/StudentParent/menuscreen/Academic
 import SettingsScreen from '../screens/StudentParent/menuscreen/settings/SettingsScreen';
 import ExamDetailScreen from '../screens/StudentParent/menuscreen/ExamDetailScreen';
 import FeesScreen from '../screens/StudentParent/menuscreen/settings/FeesScreen';
-import LeavesScreen from '../screens/StudentParent/menuscreen/settings/LeavesScreen';
 import ChangePasswordScreen from '../screens/StudentParent/menuscreen/settings/ChangePasswordScreen';
 import PrivacyPolicyScreen from '../screens/StudentParent/menuscreen/settings/PrivacyPolicyScreen';
 import TermsScreen from '../screens/StudentParent/menuscreen/settings/TermsScreen';
@@ -103,6 +107,10 @@ export default function AppNavigator() {
       <Stack.Screen name="FilteredStudentsScreen" component={FilteredStudentsScreen} />
       <Stack.Screen name="DeletedStudentsScreen" component={DeletedStudentsScreen}/>
       <Stack.Screen name="DeletedFacultyScreen" component={DeletedFacultyScreen}/>
+
+
+      <Stack.Screen name="AdminPosterManager" component={AdminPosterManager} />
+
       
       
       <Stack.Screen name="AddEventScreen" component={AddEventScreen} options={{ title: 'Add Event' }} />
@@ -117,7 +125,6 @@ export default function AppNavigator() {
       {/* Student/Parent */}
       <Stack.Screen name="SubjectDashboard" component={SubjectDashboard} />
       <Stack.Screen name="StudentProfile" component={StudentProfileScreen} />
-      <Stack.Screen name="ChatMessage" component={ChatMessageScreen} />
       <Stack.Screen name="AttendanceScreen" component={AttendanceStudent} />
       <Stack.Screen name="TimetableScreen" component={TimetableScreen} />
       <Stack.Screen name="NoticeBoardScreen" component={NoticeBoardScreen} />
@@ -129,7 +136,6 @@ export default function AppNavigator() {
       <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
       <Stack.Screen name="ExamDetail" component={ExamDetailScreen} />
       <Stack.Screen name="FeesScreen" component={FeesScreen} />
-      <Stack.Screen name="LeavesScreen" component={LeavesScreen} />
       <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} />
       <Stack.Screen name="PrivacyPolicyScreen" component={PrivacyPolicyScreen} />
       <Stack.Screen name="TermsScreen" component={TermsScreen} />
