@@ -59,6 +59,19 @@ export default function AdminDashboard({ navigation }) {
   const handleViewStudents = () => navigation.navigate('AllStudentsScreen');
   const handleViewFaculty = () => navigation.navigate('AllFacultyScreen');
 
+
+   
+
+  const handleAddSubjectMaster = () => navigation.navigate('AddSubjectMasterScreen');
+  const handleAssignSubject = () => navigation.navigate('AssignSubjectScreen');
+
+  
+  const handleAddEvent = () => navigation.navigate('AddEventScreen');
+
+  const handlePosterManagement = () => navigation.navigate('AdminPosterManager');
+
+
+
   const handlePosterManagement = () => navigation.navigate('AdminPosterManager');
   if (loading) {
     return (
@@ -105,13 +118,43 @@ export default function AdminDashboard({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.sectionTitle}>📚 Subject Management</Text>
+
+
+
+             <Text style={styles.sectionTitle}>📅 Event Management</Text>
+<View style={styles.row}>
+  <TouchableOpacity style={styles.tileButton} onPress={handleAddEvent}>
+    <Ionicons name="calendar-outline" size={30} color="#fff" />
+    <Text style={styles.tileText}>Add Event</Text>
+  </TouchableOpacity>
+</View>
+
+   
+    <Text style={styles.sectionTitle}>📚 Subject Management</Text>
+<View style={styles.row}>
+  <TouchableOpacity style={styles.tileButton} onPress={handleAddSubjectMaster}>
+    <Ionicons name="book-outline" size={30} color="#fff" />
+    <Text style={styles.tileText}>Add Subject Master</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity style={styles.tileButton} onPress={handleAssignSubject}>
+    <Ionicons name="create-outline" size={30} color="#fff" />
+    <Text style={styles.tileText}>Assign Subject</Text>
+  </TouchableOpacity>
+</View> 
+
+<Text style={styles.sectionTitle}>📢 Manage Posters</Text>
         <View style={styles.row}>
-          <TouchableOpacity style={styles.tileButton} onPress={handleAddSubject}>
-            <Ionicons name="book-outline" size={30} color="#fff" />
-            <Text style={styles.tileText}>Add Subject</Text>
+          <TouchableOpacity style={styles.tileButton} onPress={handlePosterManagement}>
+            <Ionicons name="images-outline" size={30} color="#fff" />
+            <Text style={styles.tileText}>Manage Posters</Text>
           </TouchableOpacity>
         </View>
+
+
+
+
+    
 
         <Text style={styles.sectionTitle}>📢 Manage Posters</Text>
         <View style={styles.row}>
@@ -119,7 +162,7 @@ export default function AdminDashboard({ navigation }) {
             <Ionicons name="images-outline" size={30} color="#fff" />
             <Text style={styles.tileText}>Manage Posters</Text>
           </TouchableOpacity>
-        </View>
+    
       </ScrollView>
     </SafeAreaView>
   );
