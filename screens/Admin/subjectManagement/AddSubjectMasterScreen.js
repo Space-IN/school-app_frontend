@@ -16,7 +16,7 @@ const AddSubjectMasterScreen = () => {
     }
 
     try {
-      const res = await axios.post(`${BASE_URL}/api/admin/subject-master`, {
+      const res = await axios.post(`${BASE_URL}/api/subject/subject-master`, {
         name: name.trim(),
         code: code.trim().toUpperCase(),
       });

@@ -43,7 +43,7 @@ export default function EditFacultyScreen({ route, navigation }) {
     };
 
     try {
-      await axios.put(`${BASE_URL}/api/admin/faculty/${faculty.userId}`, updated);
+      await axios.put(`${BASE_URL}/api/faculty/${faculty.userId}`, updated);
       Alert.alert('✅ Success', 'Faculty updated successfully');
       navigation.goBack();
     } catch (err) {

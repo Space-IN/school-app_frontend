@@ -25,7 +25,7 @@ export default function DeletedFacultyScreen({ navigation }) {
 
   const fetchDeletedFaculty = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/admin/faculty/deleted`);
+      const res = await axios.get(`${BASE_URL}/api/faculty/deleted`);
       setFaculty(res.data || []);
     } catch (err) {
       console.error('❌ Error fetching deleted faculty:', err.message);
@@ -36,7 +36,7 @@ export default function DeletedFacultyScreen({ navigation }) {
 
   const handleRestore = async (userId) => {
     try {
-      await axios.patch(`${BASE_URL}/api/admin/faculty/restore/${userId}`);
+      await axios.patch(`${BASE_URL}/api/faculty/restore/${userId}`);
       Alert.alert('Restored', 'Faculty has been restored successfully.');
       fetchDeletedFaculty();
     } catch (err) {

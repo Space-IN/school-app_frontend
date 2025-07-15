@@ -28,8 +28,8 @@ import AssignSubjectScreen from '../screens/Admin/subjectManagement/AssignSubjec
 
 import AdminPosterManager from '../screens/Admin/AdminPosterManager';
 
-
-
+import ClassScheduleScreen from '../screens/Admin/classScheduleManagement/ClassScheduleScreen';
+import ClassScheduleViewScreen from '../screens/Admin/classScheduleManagement/ClassScheduleViewScreen';
 
 
 
@@ -109,7 +109,7 @@ export default function AppNavigator() {
       <Stack.Screen name="DeletedFacultyScreen" component={DeletedFacultyScreen}/>
 
 
-      <Stack.Screen name="AdminPosterManager" component={AdminPosterManager} />
+       
 
       
       
@@ -119,8 +119,8 @@ export default function AppNavigator() {
       <Stack.Screen name="AssignSubjectScreen" component={AssignSubjectScreen} />
       <Stack.Screen name="AdminPosterManager" component={AdminPosterManager} />
 
-
-
+      <Stack.Screen name="ClassScheduleScreen"component={ClassScheduleScreen}options={{ title: 'Class Schedule' }}/>
+      <Stack.Screen name="ClassScheduleViewScreen" component={ClassScheduleViewScreen} options={{ title: 'View Class Schedule' }} />
 
       {/* Student/Parent */}
       <Stack.Screen name="SubjectDashboard" component={SubjectDashboard} />

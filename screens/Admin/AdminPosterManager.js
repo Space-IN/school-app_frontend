@@ -43,7 +43,7 @@ export default function AdminPosterManager() {
   const handleImagePick = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaType.IMAGE, // ✅ use updated constant
+        mediaTypes: ImagePicker?.MediaType?.IMAGE || ImagePicker .MediaTypeOptions.Images, // ✅ use updated constant
         allowsEditing: true,
         quality: 1,
       });

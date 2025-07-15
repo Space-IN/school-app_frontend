@@ -59,6 +59,8 @@ export default function AdminDashboard({ navigation }) {
   const handleViewStudents = () => navigation.navigate('AllStudentsScreen');
   const handleViewFaculty = () => navigation.navigate('AllFacultyScreen');
 
+  const handleClassSchedule = () => navigation.navigate('ClassScheduleScreen');
+
 
    
 
@@ -67,8 +69,9 @@ export default function AdminDashboard({ navigation }) {
 
   
   const handleAddEvent = () => navigation.navigate('AddEventScreen');
+  const handleViewClassSchedule = () => navigation.navigate('ClassScheduleViewScreen');
 
-  const handlePosterManagement = () => navigation.navigate('AdminPosterManager');
+   
 
 
 
@@ -143,14 +146,23 @@ export default function AdminDashboard({ navigation }) {
   </TouchableOpacity>
 </View> 
 
-<Text style={styles.sectionTitle}>📢 Manage Posters</Text>
-        <View style={styles.row}>
-          <TouchableOpacity style={styles.tileButton} onPress={handlePosterManagement}>
-            <Ionicons name="images-outline" size={30} color="#fff" />
-            <Text style={styles.tileText}>Manage Posters</Text>
-          </TouchableOpacity>
-        </View>
 
+<Text style={styles.sectionTitle}>🗓️ Class Schedule</Text>
+<View style={styles.row}>
+  <TouchableOpacity style={styles.tileButton} onPress={handleClassSchedule}>
+    <Ionicons name="calendar-outline" size={30} color="#fff" />
+    <Text style={styles.tileText}>Class Schedule</Text>
+  </TouchableOpacity>
+
+
+  <TouchableOpacity style={styles.tileButton} onPress={handleViewClassSchedule}>
+  <Ionicons name="eye-outline" size={30} color="#fff" />
+  <Text style={styles.tileText}>View Schedule</Text>
+</TouchableOpacity>
+
+</View>
+
+ 
 
 
 
@@ -162,6 +174,7 @@ export default function AdminDashboard({ navigation }) {
             <Ionicons name="images-outline" size={30} color="#fff" />
             <Text style={styles.tileText}>Manage Posters</Text>
           </TouchableOpacity>
+          </View>
     
       </ScrollView>
     </SafeAreaView>

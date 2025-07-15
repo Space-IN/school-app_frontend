@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+ 
 import {
   View,
   Text,
@@ -9,6 +10,8 @@ import {
   Image,
   ImageBackground,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -152,6 +155,10 @@ export default function LoginScreen({ route, navigation }) {
       style={styles.background}
       resizeMode="cover"
     >
+
+      <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+       style={{ flex: 1 }}>
+
       <View style={styles.overlay}>
         <Image source={getRoleIcon()} style={styles.icon} resizeMode="contain" />
         <Text style={styles.title}>Login as {role}</Text>
@@ -177,6 +184,7 @@ export default function LoginScreen({ route, navigation }) {
           <Button title="Login" onPress={loginUser} />
         )}
       </View>
+      </KeyboardAvoidingView>
     </ImageBackground>
   );
 }
