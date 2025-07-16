@@ -80,7 +80,7 @@ export default function FacultyDashboard({ navigation }) {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await axios.get('http://10.221.34.143:5000/api/events');
+        const response = await axios.get('http://10.221.34.140:5000/api/events');
         setEvents(response.data || []);
       } catch (err) {
         console.error('Failed to fetch events:', err.message);

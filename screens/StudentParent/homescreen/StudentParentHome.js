@@ -84,7 +84,7 @@ export default function StudentParentHome() {
 
       try {
         const res = await axios.get(
-          `http://10.221.34.143:5000/api/admin/subjects/class/${className}/section/${section}`
+          `http://10.221.34.140:5000/api/admin/subjects/class/${className}/section/${section}`
         );
         setSubjects(res.data || []);
       } catch (err) {
