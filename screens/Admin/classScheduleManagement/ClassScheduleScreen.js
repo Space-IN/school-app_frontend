@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   Alert,
   ScrollView,
   Platform,
-  StatusBar
+  StatusBar,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as DocumentPicker from 'expo-document-picker';
@@ -17,28 +17,40 @@ import axios from 'axios';
 import BASE_URL from '../../../config/baseURL';
 
 export default function ClassScheduleXLSXUpload() {
-  const [classList, setClassList] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedSection, setSelectedSection] = useState('');
-
   const [excelData, setExcelData] = useState([]);
   const [uploading, setUploading] = useState(false);
 
-  useEffect(() => {
-    fetchClassList();
-  }, []);
+  const CLASS_OPTIONS = Array.from({ length: 10 }, (_, i) => `${i + 1}`);
+  const SECTION_OPTIONS = ['A', 'B', 'C', 'D'];
 
-  const fetchClassList = async () => {
-    try {
-      const res = await axios.get(`${BASE_URL}/api/subject/assigned-classes`);
-      setClassList(res.data || []);
-    } catch (err) {
-      console.error('❌ Error fetching classes:', err);
-      Alert.alert('Error', 'Failed to load class list');
+ const validateClassSection = async (cls, section) => {
+  try {
+    const res = await axios.post(`${BASE_URL}/api/subject/check-class-section`, {
+      classAssigned: cls,
+      section,
+    });
+
+    if (res.data.exists) {
+      return true;
+    } else {
+      Alert.alert('Invalid', 'This Class-Section is not assigned to any faculty.');
+      return false;
     }
-  };
+  } catch (err) {
+    const message =
+      err.response?.data?.message || 'Could not validate Class-Section combination.';
+    Alert.alert('Error', message);
+    return false;
+  }
+};
+
 
   const handlePickExcel = async () => {
+    const isValid = await validateClassSection(selectedClass, selectedSection);
+    if (!isValid) return;
+
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
@@ -55,8 +67,16 @@ export default function ClassScheduleXLSXUpload() {
         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-        console.log('✅ Excel Parsed:', jsonData);
-        setExcelData(jsonData);
+        const cleanedData = jsonData.map((row) => ({
+          day: row.day,
+          periodNumber: Number(row.periodNumber),
+          timeSlot: row.timeSlot,
+          subjectName: row.subjectName?.trim() || null,
+          facultyId: typeof row.facultyId === 'string' ? row.facultyId.trim() : '',
+        }));
+
+        console.log('✅ Excel Parsed:', cleanedData);
+        setExcelData(cleanedData);
       }
     } catch (err) {
       console.error('❌ Error reading Excel file:', err);
@@ -75,28 +95,44 @@ export default function ClassScheduleXLSXUpload() {
 
     try {
       setUploading(true);
-
       const weeklySchedule = [];
       const groupedByDay = {};
+
+
+      
 
       for (const row of excelData) {
         const day = row.day;
         if (!groupedByDay[day]) groupedByDay[day] = [];
+const subjectName =
+  typeof row.subjectName === 'string' ? row.subjectName.trim() : null;
+
+
+        const rawFacultyId =
+          typeof row.facultyId === 'string' ? row.facultyId.trim() : '';
+        if (rawFacultyId === '') {
+          console.warn(`⚠️ Skipping row: Missing facultyId on day ${day}`);
+          continue;
+        }
 
         groupedByDay[day].push({
           periodNumber: Number(row.periodNumber),
           timeSlot: row.timeSlot,
-          subjectMasterId: row.subjectMasterId.trim() === '' ? null : row.subjectMasterId.trim(),
-          facultyId: row.facultyId,
+          subjectName,
+          facultyId: rawFacultyId,
         });
       }
+
+
+
+
 
       for (const [day, periods] of Object.entries(groupedByDay)) {
         weeklySchedule.push({ day, periods });
       }
 
       const payload = {
-        classAssigned: `Class ${selectedClass}`,
+        classAssigned: selectedClass,
         section: selectedSection,
         weeklySchedule,
       };
@@ -118,22 +154,18 @@ export default function ClassScheduleXLSXUpload() {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>📂 Upload Class Schedule via Excel (.xlsx)</Text>
 
-      {/* Class Picker */}
       <Text style={styles.label}>Class:</Text>
-
       <Picker
         selectedValue={selectedClass}
         style={styles.picker}
         onValueChange={(value) => setSelectedClass(value)}
       >
         <Picker.Item label="Select Class" value="" />
-        {Array.isArray(classList) &&
-          [...new Set(classList.map(item => item.classAssigned))].map((cls, i) => (
-            <Picker.Item key={i} label={cls} value={cls} />
-          ))}
+        {CLASS_OPTIONS.map((cls, idx) => (
+          <Picker.Item key={idx} label={cls} value={cls} />
+        ))}
       </Picker>
 
-      {/* Section Picker */}
       <Text style={styles.label}>Section:</Text>
       <Picker
         selectedValue={selectedSection}
@@ -141,13 +173,11 @@ export default function ClassScheduleXLSXUpload() {
         onValueChange={(value) => setSelectedSection(value)}
       >
         <Picker.Item label="Select Section" value="" />
-        {Array.isArray(classList) &&
-          [...new Set(classList.map(item => item.section))].map((sec, i) => (
-            <Picker.Item key={i} label={sec} value={sec} />
-          ))}
+        {SECTION_OPTIONS.map((sec, idx) => (
+          <Picker.Item key={idx} label={sec} value={sec} />
+        ))}
       </Picker>
 
-      {/* File Upload */}
       <TouchableOpacity style={styles.button} onPress={handlePickExcel}>
         <Text style={styles.buttonText}>📁 Choose Excel File</Text>
       </TouchableOpacity>
