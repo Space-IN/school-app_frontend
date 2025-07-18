@@ -49,7 +49,7 @@ export default function RoleSelection({ navigation }) {
 
   return (
     <ImageBackground
-      source={require('../assets/schoolbackground.png')}
+      source={require('../assets/schoolbackgroundd.png')}
       style={styles.background}
       resizeMode="cover"
     >

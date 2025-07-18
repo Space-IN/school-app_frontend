@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
- 
 import {
   View,
   Text,
@@ -11,7 +10,10 @@ import {
   ImageBackground,
   ActivityIndicator,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+  ScrollView,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -32,13 +34,12 @@ export default function LoginScreen({ route, navigation }) {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://10.221.34.143:5000/api/auth/login', {
+      const response = await axios.post('http://10.221.34.140:5000/api/auth/login', {
         userId: normalizedId,
         password,
       });
 
       const user = response.data;
-
       console.log('✅ Logged in user data:', user);
 
       if (!user.role) {
@@ -66,64 +67,51 @@ export default function LoginScreen({ route, navigation }) {
       // ✅ Navigate based on role
       switch (user.role) {
         case 'Admin':
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'AdminDashboard' }],
-          });
+          navigation.reset({ index: 0, routes: [{ name: 'AdminDashboard' }] });
           break;
-
         case 'Faculty':
           navigation.reset({
             index: 0,
-            routes: [
-              {
-                name: 'FacultyTabs',
-                params: {
-                  userId: user.userId,
-                  name: user.name,
-                  grades: user.grades || [],
-                  section: user.section,
-                  assignedSubjects: user.assignedSubjects || [],
-                },
+            routes: [{
+              name: 'FacultyTabs',
+              params: {
+                userId: user.userId,
+                name: user.name,
+                grades: user.grades || [],
+                section: user.section,
+                assignedSubjects: user.assignedSubjects || [],
               },
-            ],
+            }],
           });
           break;
-
         case 'Student':
           navigation.reset({
             index: 0,
-            routes: [
-              {
-                name: 'StudentParentTabs',
-                params: {
-                  userId: user.userId,
-                  studentName: user.studentName,
-                  className: user.className,
-                  section: user.section,
-                },
+            routes: [{
+              name: 'StudentParentTabs',
+              params: {
+                userId: user.userId,
+                studentName: user.studentName,
+                className: user.className,
+                section: user.section,
               },
-            ],
+            }],
           });
           break;
-
         case 'Parent':
           navigation.reset({
             index: 0,
-            routes: [
-              {
-                name: 'StudentParentTabs',
-                params: {
-                  userId: user.userId,
-                  studentName: user.student?.name,
-                  className: user.student?.className,
-                  section: user.student?.section,
-                },
+            routes: [{
+              name: 'StudentParentTabs',
+              params: {
+                userId: user.userId,
+                studentName: user.student?.name,
+                className: user.student?.className,
+                section: user.student?.section,
               },
-            ],
+            }],
           });
           break;
-
         default:
           Alert.alert('Login Failed', 'Unknown user role.');
           break;
@@ -155,50 +143,72 @@ export default function LoginScreen({ route, navigation }) {
       style={styles.background}
       resizeMode="cover"
     >
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.loginBox}>
+              <Image source={getRoleIcon()} style={styles.icon} resizeMode="contain" />
+              <Text style={styles.title}>Login as {role}</Text>
 
-      <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-       style={{ flex: 1 }}>
+              <TextInput
+                placeholder="User ID"
+                value={userId}
+                onChangeText={setUserId}
+                style={styles.input}
+                autoCapitalize="none"
+              />
+              <TextInput
+                placeholder="Password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                style={styles.input}
+              />
 
-      <View style={styles.overlay}>
-        <Image source={getRoleIcon()} style={styles.icon} resizeMode="contain" />
-        <Text style={styles.title}>Login as {role}</Text>
-
-        <TextInput
-          placeholder="User ID"
-          value={userId}
-          onChangeText={setUserId}
-          style={styles.input}
-          autoCapitalize="none"
-        />
-        <TextInput
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          style={styles.input}
-        />
-
-        {loading ? (
-          <ActivityIndicator size="large" color="#1e3a8a" style={{ marginTop: 10 }} />
-        ) : (
-          <Button title="Login" onPress={loginUser} />
-        )}
-      </View>
+              {loading ? (
+                <ActivityIndicator size="large" color="#1e3a8a" style={{ marginTop: 10 }} />
+              ) : (
+                <Button title="Login" onPress={loginUser} />
+              )}
+            </View>
+          </ScrollView>
+        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  background: { flex: 1, width: '100%', height: '100%' },
-  overlay: {
+  background: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.88)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    width: '100%',
+    height: '100%',
   },
-  icon: { width: 100, height: 100, marginBottom: 20 },
+  container: {
+    flex: 1,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 24,
+  },
+  loginBox: {
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    padding: 24,
+    borderRadius: 16,
+    alignItems: 'center',
+  },
+  icon: {
+    width: 100,
+    height: 100,
+    marginBottom: 20,
+  },
   title: {
     fontSize: 24,
     marginBottom: 20,
@@ -208,11 +218,12 @@ const styles = StyleSheet.create({
   },
   input: {
     width: '100%',
+    height: 56, // 👈 Increased size here
     borderWidth: 1,
     borderColor: '#ccc',
     marginBottom: 15,
-    padding: 10,
-    borderRadius: 5,
+    paddingHorizontal: 16,
+    borderRadius: 10,
     backgroundColor: '#fff',
     fontSize: 16,
   },

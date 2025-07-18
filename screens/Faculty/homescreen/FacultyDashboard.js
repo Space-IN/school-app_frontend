@@ -91,6 +91,17 @@ export default function FacultyDashboard({ navigation }) {
 
 
 
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get('${BASE_URL}/api/events');
+        setEvents(response.data || []);
+      } catch (err) {
+        console.error('Failed to fetch events:', err.message);
+      }
+    };
+
+
 
 
 

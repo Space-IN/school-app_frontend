@@ -24,19 +24,14 @@ export default function PosterCarousel() {
     const fetchPosters = async () => {
       try {
         const res = await axios.get(`${BASE_URL}/api/posters/all`);
-        console.log('✅ Posters fetched:', res.data);
-
-        // Remove .filter for debugging; filter can be added later
         const validPosters = (res.data || []).reverse();
         setPosters(validPosters);
-        console.log('🎯 Valid Posters:', validPosters);
       } catch (err) {
         console.error('❌ Error loading posters:', err.message);
       } finally {
         setLoading(false);
       }
     };
-
     fetchPosters();
   }, []);
 
@@ -73,7 +68,7 @@ export default function PosterCarousel() {
 
   return (
     <View style={{ marginBottom: 20 }}>
-      <Text style={styles.heading}>📌 Latest Notices & Events</Text>
+      <Text style={styles.heading}>Latest Notices & Events</Text>
 
       <View>
         <ScrollView
@@ -88,18 +83,20 @@ export default function PosterCarousel() {
           scrollEventThrottle={16}
         >
           {posters.map((poster, index) => (
-            <View key={index} style={{ width }}>
+            <View key={index} style={[styles.slide, { width }]}>
               <Image
                 source={
                   poster.imageUrl
                     ? { uri: poster.imageUrl }
-                    : require('../assets/placeholder.png') // optional fallback
+                    : require('../assets/placeholder.png')
                 }
-                style={{ width: width, height: width * 0.6 }}
+                style={styles.posterImage}
                 resizeMode="cover"
               />
               <View style={styles.captionBox}>
                 <Text style={styles.posterTitle}>{poster.title}</Text>
+
+                {/* ✅ FIXED: Wrapped poster.description in <Text> */}
                 {!!poster.description?.trim() && (
                   <Text style={styles.posterDescription}>{poster.description}</Text>
                 )}
@@ -151,6 +148,16 @@ const styles = StyleSheet.create({
     color: '#000',
     marginVertical: 10,
     paddingHorizontal: 12,
+  },
+  slide: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+  },
+  posterImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
   },
   captionBox: {
     backgroundColor: '#e0f2fe',
