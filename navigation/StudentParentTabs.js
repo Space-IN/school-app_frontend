@@ -22,20 +22,20 @@ function MenuScreen({ navigation, route }) {
     { title: 'Attendance', screen: 'AttendanceScreen', icon: 'checkmark-done-circle' },
     { title: 'Timetable', screen: 'TimetableScreen', icon: 'calendar-outline' },
     { title: 'Notice Board', screen: 'NoticeBoardScreen', icon: 'megaphone-outline' },
-    { title: 'Exams', screen: 'ExamsScreen', icon: 'document-text-outline' },
-    { title: 'Results', screen: 'ResultsScreen', icon: 'bar-chart-outline' },
-    { title: 'Report', screen: 'ReportScreen', icon: 'clipboard-outline' },
+    // ✅ shanks change - Removed Exams
+    // ✅ shanks change - Removed Results
+    // ✅ shanks change - Removed Report
     { title: 'Parent Profile', screen: 'ParentProfileScreen', icon: 'person-circle-outline' },
     { title: 'Academic Calendar', screen: 'AcademicCalendarScreen', icon: 'calendar-number-outline' },
     { title: 'Settings', screen: 'SettingsScreen', icon: 'settings-outline' },
-  ];
+  ]; // ✅ shanks change - Updated menu
 
   return (
     <View style={styles.container}>
       <FlatList
         data={menuItems}
         keyExtractor={(item) => item.title}
-        numColumns={3}
+        numColumns={2} // ✅ shanks change - changed from 3 to 2 columns
         contentContainerStyle={styles.grid}
         renderItem={({ item }) => (
           <TouchableOpacity
@@ -92,7 +92,7 @@ export default function StudentParentTabs({ route }) {
 }
 
 const { width } = Dimensions.get('window');
-const tileWidth = (width - 60) / 3; // Adjust padding/margin if needed
+const tileWidth = (width - 48) / 2; // ✅ shanks change - tile size for 2-column layout
 
 const styles = StyleSheet.create({
   container: {

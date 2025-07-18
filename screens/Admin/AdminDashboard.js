@@ -1,3 +1,5 @@
+// ✅ AdminDashboard.js
+
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -58,24 +60,16 @@ export default function AdminDashboard({ navigation }) {
   const handleAddFaculty = () => navigation.navigate('AddFacultyScreen');
   const handleViewStudents = () => navigation.navigate('AllStudentsScreen');
   const handleViewFaculty = () => navigation.navigate('AllFacultyScreen');
-
   const handleClassSchedule = () => navigation.navigate('ClassScheduleScreen');
-
-
-   
-
   const handleAddSubjectMaster = () => navigation.navigate('AddSubjectMasterScreen');
   const handleAssignSubject = () => navigation.navigate('AssignSubjectScreen');
-
-  
   const handleAddEvent = () => navigation.navigate('AddEventScreen');
   const handleViewClassSchedule = () => navigation.navigate('ClassScheduleViewScreen');
-
-   
-
-
-
   const handlePosterManagement = () => navigation.navigate('AdminPosterManager');
+
+  // ✅ NEW: Handle Add Notice navigation
+  const handleAddNotice = () => navigation.navigate('AddNoticeScreen'); // 🆕 Added handler
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -121,66 +115,60 @@ export default function AdminDashboard({ navigation }) {
           </TouchableOpacity>
         </View>
 
+        <Text style={styles.sectionTitle}>📅 Event Management</Text>
+        <View style={styles.row}>
+          <TouchableOpacity style={styles.tileButton} onPress={handleAddEvent}>
+            <Ionicons name="calendar-outline" size={30} color="#fff" />
+            <Text style={styles.tileText}>Add Event</Text>
+          </TouchableOpacity>
+        </View>
 
+        <Text style={styles.sectionTitle}>📚 Subject Management</Text>
+        <View style={styles.row}>
+          <TouchableOpacity style={styles.tileButton} onPress={handleAddSubjectMaster}>
+            <Ionicons name="book-outline" size={30} color="#fff" />
+            <Text style={styles.tileText}>Add Subject Master</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.tileButton} onPress={handleAssignSubject}>
+            <Ionicons name="create-outline" size={30} color="#fff" />
+            <Text style={styles.tileText}>Assign Subject</Text>
+          </TouchableOpacity>
+        </View>
 
+        <Text style={styles.sectionTitle}>🗓️ Class Schedule</Text>
+        <View style={styles.row}>
+          <TouchableOpacity style={styles.tileButton} onPress={handleClassSchedule}>
+            <Ionicons name="calendar-outline" size={30} color="#fff" />
+            <Text style={styles.tileText}>Class Schedule</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.tileButton} onPress={handleViewClassSchedule}>
+            <Ionicons name="eye-outline" size={30} color="#fff" />
+            <Text style={styles.tileText}>View Schedule</Text>
+          </TouchableOpacity>
+        </View>
 
-             <Text style={styles.sectionTitle}>📅 Event Management</Text>
-<View style={styles.row}>
-  <TouchableOpacity style={styles.tileButton} onPress={handleAddEvent}>
-    <Ionicons name="calendar-outline" size={30} color="#fff" />
-    <Text style={styles.tileText}>Add Event</Text>
-  </TouchableOpacity>
-</View>
+        {/* ✅ NEW: Add Notice tab */}
+        <Text style={styles.sectionTitle}>📢 Notices</Text>
+        <View style={styles.row}>
+          <TouchableOpacity style={styles.tileButton} onPress={handleAddNotice}>
+            <Ionicons name="megaphone-outline" size={30} color="#fff" />
+            <Text style={styles.tileText}>Add Notice</Text>
+          </TouchableOpacity>
+        </View>
 
-   
-    <Text style={styles.sectionTitle}>📚 Subject Management</Text>
-<View style={styles.row}>
-  <TouchableOpacity style={styles.tileButton} onPress={handleAddSubjectMaster}>
-    <Ionicons name="book-outline" size={30} color="#fff" />
-    <Text style={styles.tileText}>Add Subject Master</Text>
-  </TouchableOpacity>
-
-  <TouchableOpacity style={styles.tileButton} onPress={handleAssignSubject}>
-    <Ionicons name="create-outline" size={30} color="#fff" />
-    <Text style={styles.tileText}>Assign Subject</Text>
-  </TouchableOpacity>
-</View> 
-
-
-<Text style={styles.sectionTitle}>🗓️ Class Schedule</Text>
-<View style={styles.row}>
-  <TouchableOpacity style={styles.tileButton} onPress={handleClassSchedule}>
-    <Ionicons name="calendar-outline" size={30} color="#fff" />
-    <Text style={styles.tileText}>Class Schedule</Text>
-  </TouchableOpacity>
-
-
-  <TouchableOpacity style={styles.tileButton} onPress={handleViewClassSchedule}>
-  <Ionicons name="eye-outline" size={30} color="#fff" />
-  <Text style={styles.tileText}>View Schedule</Text>
-</TouchableOpacity>
-
-</View>
-
- 
-
-
-
-    
-
-        <Text style={styles.sectionTitle}>📢 Manage Posters</Text>
+        <Text style={styles.sectionTitle}>🖼️ Manage Posters</Text>
         <View style={styles.row}>
           <TouchableOpacity style={styles.tileButton} onPress={handlePosterManagement}>
             <Ionicons name="images-outline" size={30} color="#fff" />
             <Text style={styles.tileText}>Manage Posters</Text>
           </TouchableOpacity>
-          </View>
-    
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+// ✅ Styles remain unchanged
 const styles = StyleSheet.create({
   container: {
     flex: 1,

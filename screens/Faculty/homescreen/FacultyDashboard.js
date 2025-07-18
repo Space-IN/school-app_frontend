@@ -1,4 +1,3 @@
-// screens/Faculty/homescreen/FacultyDashboard.js
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   View,
@@ -8,11 +7,14 @@ import {
   ScrollView,
   FlatList,
   TouchableOpacity,
+  Platform,
+  StatusBar,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ProfileHeader from '../../../components/ProfileHeader';
 import axios from 'axios';
 import BASE_URL from '../../../config/baseURL';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function FacultyDashboard({ navigation }) {
   const [facultyInfo, setFacultyInfo] = useState(null);
@@ -20,6 +22,31 @@ export default function FacultyDashboard({ navigation }) {
   const [schedule, setSchedule] = useState([]);
   const [events, setEvents] = useState([]);
   const [grades, setGrades] = useState([]);
+
+  const handleLogout = () => {
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Logout',
+        style: 'destructive',
+        onPress: async () => {
+          await AsyncStorage.removeItem('userData');
+          navigation.reset({ index: 0, routes: [{ name: 'RoleSelection' }] });
+        },
+      },
+    ]);
+  };
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity onPress={handleLogout} style={{ marginRight: 16, flexDirection: 'row', alignItems: 'center' }}>
+          <Ionicons name="log-out-outline" size={20} color="#d9534f" />
+          <Text style={{ color: '#d9534f', marginLeft: 4, fontWeight: '600' }}>Logout</Text>
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -47,57 +74,53 @@ export default function FacultyDashboard({ navigation }) {
     }
   };
 
+  const fetchFacultySchedule = async (facultyId) => {
+    try {
+      const res = await axios.get(`${BASE_URL}/api/schedule/faculty/${facultyId}`);
+      const fullSchedule = res.data.schedule || [];
 
+      const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
+      const todayScheduleRaw = fullSchedule.filter(dayObj => dayObj.day === todayName);
 
+      const todaySchedule = todayScheduleRaw.map(dayObj => ({
+        ...dayObj,
+        periods: dayObj.periods.map(period => ({
+          ...period,
+          classAssigned: dayObj.classAssigned,
+          section: dayObj.section,
+        }))
+      }));
 
- const fetchFacultySchedule = async (facultyId) => {
-  try {
-    const res = await axios.get(`${BASE_URL}/api/schedule/faculty/${facultyId}`);
-    const fullSchedule = res.data.schedule || [];
+      setSchedule(todaySchedule);
 
-    const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-
-    const todayScheduleRaw = fullSchedule.filter(dayObj => dayObj.day === todayName);
-
-    // 🔧 Merge classAssigned + section into each period
-    const todaySchedule = todayScheduleRaw.map(dayObj => ({
-      ...dayObj,
-      periods: dayObj.periods.map(period => ({
-        ...period,
-        classAssigned: dayObj.classAssigned,
-        section: dayObj.section,
-      }))
-    }));
-
-    setSchedule(todaySchedule);
-
-    // 🔧 Extract grades too
-    const gradeSet = new Set();
-    todaySchedule.forEach(day => {
-      day.periods.forEach(p => {
-        const classAssigned = p.classAssigned;
-        if (classAssigned) {
-          const grade = classAssigned.trim().split(' ')[1]?.[0];
-          if (grade) gradeSet.add(`Class ${grade}`);
-        }
+      const gradeSet = new Set();
+      todaySchedule.forEach(day => {
+        day.periods.forEach(p => {
+          const classAssigned = p.classAssigned;
+          if (classAssigned) {
+            const grade = classAssigned.trim().split(' ')[1]?.[0];
+            if (grade) gradeSet.add(`Class ${grade}`);
+          }
+        });
       });
-    });
-    setGrades([...gradeSet]);
-  } catch (err) {
-    console.error('❌ Error fetching schedule:', err.message);
-  }
-};
+      setGrades([...gradeSet]);
+    } catch (err) {
+      console.error('❌ Error fetching schedule:', err.message);
+    }
+  };
 
-
-
-
-
-
-
-
-
-
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/api/events`);
+        setEvents(response.data || []);
+      } catch (err) {
+        console.error('Failed to fetch events:', err.message);
+      }
+    };
+    fetchEvents();
+  }, []);
 
   const handleGradePress = (grade) => {
     navigation.navigate('Classes', {
@@ -126,50 +149,28 @@ export default function FacultyDashboard({ navigation }) {
 
   const renderScheduleTimeline = () => {
     return (
-
-
       <View style={styles.timelineContainer}>
-  {schedule.map((day, dayIdx) => (
-    <View key={dayIdx} style={{ marginBottom: 16 }}>
-      <Text style={styles.dayHeading}>{day.day}</Text>
-      {day.periods.map((period, idx) => (
-        <View key={idx} style={styles.timelineItem}>
-          <View style={styles.timelineDot} />
-          <View style={styles.timelineContent}>
-            <Text style={styles.timelineTime}>
-              #{period.periodNumber} - {period.timeSlot}
-            </Text>
-<Text style={styles.timelineClass}>
-  {period.classAssigned} {period.section} - {period.subjectMasterId?.name || 'Subject N/A'}
-</Text>
-
-
-
-
+        {schedule.map((day, dayIdx) => (
+          <View key={dayIdx} style={{ marginBottom: 16 }}>
+            <Text style={styles.dayHeading}>{day.day}</Text>
+            {day.periods.map((period, idx) => (
+              <View key={idx} style={styles.timelineItem}>
+                <View style={styles.timelineDot} />
+                <View style={styles.timelineContent}>
+                  <Text style={styles.timelineTime}>
+                    #{period.periodNumber} - {period.timeSlot}
+                  </Text>
+                  <Text style={styles.timelineClass}>
+                    {period.classAssigned} {period.section} - {period.subjectMasterId?.name || 'Subject N/A'}
+                  </Text>
+                </View>
+              </View>
+            ))}
           </View>
-        </View>
-      ))}
-    </View>
-  ))}
-</View>
-
-
-
-
+        ))}
+      </View>
     );
   };
-
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await axios.get(`${BASE_URL}/api/events`);
-        setEvents(response.data || []);
-      } catch (err) {
-        console.error('Failed to fetch events:', err.message);
-      }
-    };
-    fetchEvents();
-  }, []);
 
   const today = new Date().toISOString().split('T')[0];
   const todayEvents = events.filter((event) => {
@@ -212,7 +213,7 @@ export default function FacultyDashboard({ navigation }) {
         />
       )}
 
-      <Text style={styles.sectionTitle}> Today Schedule</Text>
+      <Text style={styles.sectionTitle}>Today Schedule</Text>
       {renderScheduleTimeline()}
 
       <View style={styles.eventContainer}>
@@ -233,7 +234,12 @@ export default function FacultyDashboard({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafe', padding: 20 },
+  container: {
+    flex: 1,
+    backgroundColor: '#f9fafe',
+    padding: 20,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',

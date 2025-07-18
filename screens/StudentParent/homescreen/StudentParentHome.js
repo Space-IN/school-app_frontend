@@ -13,7 +13,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import ProfileHeader from '../../../components/ProfileHeader';
 import axios from 'axios';
-import { academicCalendar } from '../../../data/academicCalendar';
 import PosterCarousel from '../../../components/PosterCarousel';
 
 export default function StudentParentHome() {
@@ -24,7 +23,7 @@ export default function StudentParentHome() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [subjects, setSubjects] = useState([]);
-  const [posterCount, setPosterCount] = useState(1); // Will update when posters are loaded
+  const [eventsToday, setEventsToday] = useState([]); // 🟡 shanks change
 
   const params = route.params || {};
   const { studentName, className, section, userId } = params;
@@ -42,7 +41,6 @@ export default function StudentParentHome() {
     height: '160 cm',
   };
 
-  // 🔐 Logout
   useLayoutEffect(() => {
     navigation.setOptions({
       title: 'Student/Parent Dashboard',
@@ -77,26 +75,46 @@ export default function StudentParentHome() {
     });
   }, [navigation]);
 
-  // 🔄 Fetch subjects
+  // 🟡 Fetch subjects
   useEffect(() => {
     const fetchSubjects = async () => {
       if (!className || !section) return;
-
       try {
         const res = await axios.get(
+<<<<<<< HEAD
           `http://10.221.34.145:5000/api/admin/subjects/class/${className}/section/${section}`
+=======
+          `http://10.221.34.140:5000/api/admin/subjects/class/${className}/section/${section}`
+>>>>>>> a7ba68d6e9bf451dd3f8436f6868c5a443293108
         );
         setSubjects(res.data || []);
       } catch (err) {
         console.error('Failed to load subjects:', err.message);
       }
     };
-
     fetchSubjects();
   }, [className, section]);
 
-  const today = new Date().toISOString().split('T')[0];
-  const todayEvents = academicCalendar.filter((item) => item.date === today);
+  // 🟡 Fetch today's events
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const res = await axios.get('http://10.221.34.140:5000/api/events');
+        const allEvents = res.data || [];
+        const today = new Date().toISOString().split('T')[0];
+
+        const filtered = allEvents.filter(
+          (event) => new Date(event.date).toISOString().split('T')[0] === today
+        );
+
+        setEventsToday(filtered);
+      } catch (err) {
+        console.error('Error fetching events:', err.message);
+      }
+    };
+
+    fetchEvents();
+  }, []);
 
   return (
     <ScrollView style={styles.container}>
@@ -107,9 +125,6 @@ export default function StudentParentHome() {
         <ProfileHeader nameOrId={displayName} className={className} section={section} />
       </TouchableOpacity>
 
-      
-
-      {/* ✅ New PosterCarousel replaces hardcoded image carousel */}
       <PosterCarousel />
 
       <Text style={styles.sectionTitle}>My Subjects</Text>
@@ -139,8 +154,8 @@ export default function StudentParentHome() {
 
       <View style={styles.eventContainer}>
         <Text style={styles.eventHeader}>Today's Event</Text>
-        {todayEvents.length > 0 ? (
-          todayEvents.map((event, index) => (
+        {eventsToday.length > 0 ? (
+          eventsToday.map((event, index) => (
             <View key={index} style={styles.eventBox}>
               <Text style={styles.eventTitle}>{event.title}</Text>
               <Text style={styles.eventDesc}>{event.description}</Text>
@@ -156,13 +171,6 @@ export default function StudentParentHome() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  sliderHeading: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
-    marginVertical: 12,
-    paddingHorizontal: 12,
-  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
