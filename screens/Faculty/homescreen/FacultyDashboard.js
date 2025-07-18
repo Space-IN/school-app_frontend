@@ -17,7 +17,9 @@ import BASE_URL from '../../../config/baseURL';
 export default function FacultyDashboard({ navigation }) {
   const [facultyInfo, setFacultyInfo] = useState(null);
   const [subjects, setSubjects] = useState([]);
+  const [schedule, setSchedule] = useState([]);
   const [events, setEvents] = useState([]);
+  const [grades, setGrades] = useState([]);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -25,76 +27,77 @@ export default function FacultyDashboard({ navigation }) {
       const parsed = stored ? JSON.parse(stored) : null;
 
       if (parsed?.role !== 'Faculty') {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'RoleSelection' }],
-        });
+        navigation.reset({ index: 0, routes: [{ name: 'RoleSelection' }] });
       } else {
         setFacultyInfo(parsed);
         fetchAssignedSubjects(parsed.userId);
+        fetchFacultySchedule(parsed.userId);
       }
     };
 
     loadUser();
   }, []);
 
- const fetchAssignedSubjects = async (facultyId) => {
+  const fetchAssignedSubjects = async (facultyId) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/subject/assigned/faculty/${facultyId}`);
+      setSubjects(response.data || []);
+    } catch (err) {
+      console.error(`❌ Error fetching subjects:`, err.message);
+    }
+  };
+
+
+
+
+
+ const fetchFacultySchedule = async (facultyId) => {
   try {
-    const response = await axios.get(
-      `${BASE_URL}/api/subject/assigned/faculty/${facultyId}`
-    );
-    setSubjects(response.data || []);
+    const res = await axios.get(`${BASE_URL}/api/schedule/faculty/${facultyId}`);
+    const fullSchedule = res.data.schedule || [];
+
+    const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+
+    const todayScheduleRaw = fullSchedule.filter(dayObj => dayObj.day === todayName);
+
+    // 🔧 Merge classAssigned + section into each period
+    const todaySchedule = todayScheduleRaw.map(dayObj => ({
+      ...dayObj,
+      periods: dayObj.periods.map(period => ({
+        ...period,
+        classAssigned: dayObj.classAssigned,
+        section: dayObj.section,
+      }))
+    }));
+
+    setSchedule(todaySchedule);
+
+    // 🔧 Extract grades too
+    const gradeSet = new Set();
+    todaySchedule.forEach(day => {
+      day.periods.forEach(p => {
+        const classAssigned = p.classAssigned;
+        if (classAssigned) {
+          const grade = classAssigned.trim().split(' ')[1]?.[0];
+          if (grade) gradeSet.add(`Class ${grade}`);
+        }
+      });
+    });
+    setGrades([...gradeSet]);
   } catch (err) {
-    console.error(`❌ Error fetching subjects for faculty ${facultyId}:`, err.message);
+    console.error('❌ Error fetching schedule:', err.message);
   }
 };
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <TouchableOpacity
-          onPress={() => {
-            Alert.alert('Logout', 'Are you sure you want to logout?', [
-              { text: 'Cancel', style: 'cancel' },
-              {
-                text: 'Logout',
-                style: 'destructive',
-                onPress: async () => {
-                  await AsyncStorage.removeItem('userData');
-                  navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'RoleSelection' }],
-                  });
-                },
-              },
-            ]);
-          }}
-          style={{ marginRight: 10 }}
-        >
-          <Text style={{ color: '#d9534f', fontWeight: 'bold' }}>Logout</Text>
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await axios.get('http://10.221.34.143:5000/api/events');
-        setEvents(response.data || []);
-      } catch (err) {
-        console.error('Failed to fetch events:', err.message);
-      }
-    };
 
-    fetchEvents();
-  }, []);
 
-  const today = new Date().toISOString().split('T')[0];
-  const todayEvents = events.filter((event) => {
-    const eventDate = new Date(event.date).toISOString().split('T')[0];
-    return eventDate === today;
-  });
+
+
+
+
+
+
 
   const handleGradePress = (grade) => {
     navigation.navigate('Classes', {
@@ -102,7 +105,7 @@ export default function FacultyDashboard({ navigation }) {
       params: {
         openGrade: grade,
         redirectedFromHome: true,
-        grades: facultyInfo?.grades || [],
+        grades,
         userId: facultyInfo?.userId,
       },
     });
@@ -115,37 +118,64 @@ export default function FacultyDashboard({ navigation }) {
   );
 
   const renderSubjectItem = ({ item }) => (
-  <View style={styles.subjectCard}>
-    <Text style={styles.subjectName}>{item.name}</Text>
-    <Text style={styles.subjectDetails}>
-      Class {item.classAssigned} - {item.section}
-    </Text>
-  </View>
-);
+    <View style={styles.subjectCard}>
+      <Text style={styles.subjectName}>{item.name}</Text>
+      <Text style={styles.subjectDetails}>Class {item.classAssigned} - {item.section}</Text>
+    </View>
+  );
 
   const renderScheduleTimeline = () => {
-    const schedule = [
-      { time: '9:00 AM', class: '9A - Math' },
-      { time: '10:00 AM', class: '10B - Science' },
-      { time: '11:30 AM', class: '11C - Social' },
-      { time: '12:30 PM', class: '5A - Kannada' },
-    ];
-
     return (
+
+
       <View style={styles.timelineContainer}>
-        {schedule.map((item, index) => (
-          <View key={index} style={styles.timelineItem}>
-            <View style={styles.timelineDot} />
-            {index !== schedule.length - 1 && <View style={styles.timelineLine} />}
-            <View style={styles.timelineContent}>
-              <Text style={styles.timelineTime}>{item.time}</Text>
-              <Text style={styles.timelineClass}>{item.class}</Text>
-            </View>
+  {schedule.map((day, dayIdx) => (
+    <View key={dayIdx} style={{ marginBottom: 16 }}>
+      <Text style={styles.dayHeading}>{day.day}</Text>
+      {day.periods.map((period, idx) => (
+        <View key={idx} style={styles.timelineItem}>
+          <View style={styles.timelineDot} />
+          <View style={styles.timelineContent}>
+            <Text style={styles.timelineTime}>
+              #{period.periodNumber} - {period.timeSlot}
+            </Text>
+<Text style={styles.timelineClass}>
+  {period.classAssigned} {period.section} - {period.subjectMasterId?.name || 'Subject N/A'}
+</Text>
+
+
+
+
           </View>
-        ))}
-      </View>
+        </View>
+      ))}
+    </View>
+  ))}
+</View>
+
+
+
+
     );
   };
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/api/events`);
+        setEvents(response.data || []);
+      } catch (err) {
+        console.error('Failed to fetch events:', err.message);
+      }
+    };
+    fetchEvents();
+  }, []);
+
+  const today = new Date().toISOString().split('T')[0];
+  const todayEvents = events.filter((event) => {
+    const eventDate = new Date(event.date).toISOString().split('T')[0];
+    return eventDate === today;
+  });
 
   if (!facultyInfo) {
     return (
@@ -161,7 +191,7 @@ export default function FacultyDashboard({ navigation }) {
 
       <Text style={styles.sectionTitle}>My Grades</Text>
       <FlatList
-        data={facultyInfo.grades || []}
+        data={grades}
         renderItem={renderGradeTile}
         keyExtractor={(item, index) => `${item}-${index}`}
         numColumns={3}
@@ -170,20 +200,19 @@ export default function FacultyDashboard({ navigation }) {
       />
 
       <Text style={styles.sectionTitle}>My Subjects</Text>
-{subjects.length === 0 ? (
-  <Text style={{ color: '#666', marginBottom: 20 }}>No subjects assigned yet.</Text>
-) : (
-  <FlatList
-    data={subjects}
-    renderItem={renderSubjectItem}
-    keyExtractor={(item, index) => `${item.name}-${index}`}
-    scrollEnabled={false}
-    contentContainerStyle={{ gap: 10, marginBottom: 20 }}
-  />
-)}
+      {subjects.length === 0 ? (
+        <Text style={{ color: '#666', marginBottom: 20 }}>No subjects assigned yet.</Text>
+      ) : (
+        <FlatList
+          data={subjects}
+          renderItem={renderSubjectItem}
+          keyExtractor={(item, index) => `${item.name}-${index}`}
+          scrollEnabled={false}
+          contentContainerStyle={{ gap: 10, marginBottom: 20 }}
+        />
+      )}
 
-
-      <Text style={styles.sectionTitle}>Today's Schedule</Text>
+      <Text style={styles.sectionTitle}> Today Schedule</Text>
       {renderScheduleTimeline()}
 
       <View style={styles.eventContainer}>
@@ -203,23 +232,15 @@ export default function FacultyDashboard({ navigation }) {
   );
 }
 
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f9fafe',
-    padding: 20,
-  },
+  container: { flex: 1, backgroundColor: '#f9fafe', padding: 20 },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginVertical: 12,
     color: '#1e3a8a',
   },
-  gradesContainer: {
-    gap: 10,
-    marginBottom: 20,
-  },
+  gradesContainer: { gap: 10, marginBottom: 20 },
   gradeTile: {
     backgroundColor: '#4b4bfa',
     paddingVertical: 12,
@@ -230,11 +251,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flex: 1,
   },
-  gradeText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#fff',
-  },
+  gradeText: { fontSize: 16, fontWeight: '500', color: '#fff' },
   subjectCard: {
     backgroundColor: '#e3e9ff',
     padding: 14,
@@ -242,15 +259,13 @@ const styles = StyleSheet.create({
     borderLeftWidth: 5,
     borderLeftColor: '#4b4bfa',
   },
-  subjectName: {
+  subjectName: { fontSize: 16, fontWeight: '600', color: '#1e3a8a' },
+  subjectDetails: { fontSize: 14, color: '#555', marginTop: 4 },
+  dayHeading: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
+    marginBottom: 8,
     color: '#1e3a8a',
-  },
-  subjectDetails: {
-    fontSize: 14,
-    color: '#555',
-    marginTop: 4,
   },
   timelineContainer: {
     marginTop: 10,
@@ -260,39 +275,21 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   timelineItem: {
-    marginBottom: 20,
+    marginBottom: 14,
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
   timelineDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: '#4b4bfa',
     marginRight: 10,
     marginTop: 4,
   },
-  timelineLine: {
-    position: 'absolute',
-    top: 16,
-    left: 5,
-    width: 2,
-    height: 40,
-    backgroundColor: '#ccc',
-  },
-  timelineContent: {
-    marginLeft: 10,
-  },
-  timelineTime: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#1e3a8a',
-  },
-  timelineClass: {
-    fontSize: 14,
-    color: '#333',
-  },
-  
+  timelineContent: { marginLeft: 5 },
+  timelineTime: { fontSize: 14, fontWeight: 'bold', color: '#1e3a8a' },
+  timelineClass: { fontSize: 14, color: '#333' },
   eventContainer: {
     marginTop: 25,
     marginHorizontal: 12,
@@ -307,24 +304,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: '#1d4ed8',
   },
-  eventBox: {
-    marginBottom: 10,
-  },
-  eventTitle: {
-    fontWeight: '600',
-    fontSize: 15,
-    color: '#0f172a',
-  },
-  eventDesc: {
-    color: '#334155',
-    fontSize: 14,
-  },
-  noEvent: {
-    color: '#6b7280',
-    fontSize: 14,
-  },
-   
-
+  eventBox: { marginBottom: 10 },
+  eventTitle: { fontWeight: '600', fontSize: 15, color: '#0f172a' },
+  eventDesc: { color: '#334155', fontSize: 14 },
+  noEvent: { color: '#6b7280', fontSize: 14 },
 });
-
-
