@@ -44,7 +44,9 @@ export default function AddEventScreen({ navigation }) {
 
   const handleAddEvent = async () => {
     try {
+
       await axios.post(`${BASE_URL}/api/events/add`, {
+
         title,
         description,
         date,

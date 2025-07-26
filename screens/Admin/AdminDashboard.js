@@ -15,10 +15,14 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import axios from 'axios';
+import { BASE_URL } from '../../config/baseURL';
+import PosterCarousel from '../../components/PosterCarousel';
 
 export default function AdminDashboard({ navigation }) {
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [events , setEvents] = useState([]);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -56,6 +60,9 @@ export default function AdminDashboard({ navigation }) {
     ]);
   };
 
+  
+
+
   const handleAddStudent = () => navigation.navigate('AddStudentScreen');
   const handleAddFaculty = () => navigation.navigate('AddFacultyScreen');
   const handleViewStudents = () => navigation.navigate('AllStudentsScreen');
@@ -69,6 +76,14 @@ export default function AdminDashboard({ navigation }) {
 
   // ✅ NEW: Handle Add Notice navigation
   const handleAddNotice = () => navigation.navigate('AddNoticeScreen'); // 🆕 Added handler
+
+const today = new Date().toISOString().split('T')[0];
+  const todayEvents = events.filter((event) => {
+    const eventDate = new Date(event.date).toISOString().split('T')[0];
+    return eventDate === today;
+  });
+
+   
 
   if (loading) {
     return (
@@ -90,6 +105,12 @@ export default function AdminDashboard({ navigation }) {
           <Text style={styles.greeting}>Hello, {userId} 👋</Text>
           <Text style={styles.subtitle}>Welcome to the Admin Dashboard</Text>
         </View>
+
+         
+         <PosterCarousel />
+
+          
+
         <Text style={styles.sectionTitle}>➕ Add Users</Text>
         <View style={styles.row}>
           <TouchableOpacity style={styles.tileButton} onPress={handleAddStudent}>

@@ -5,7 +5,7 @@ export default function FeesScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Fees Details</Text>
-      <Text style={styles.subtitle}>No fee data available currently.</Text>
+      <Text style={styles.subtitle}>No fee data available currently.(❁´◡`❁)(❁´◡`❁)(❁´◡`❁)(❁´◡`❁)(❁´◡`❁)(❁´◡`❁)(❁´◡`❁)(❁´◡`❁)</Text>
     </View>
   );
 }
