@@ -1,52 +1,99 @@
-import React from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
-import { users } from '../../../data/mockUsers';
+// screens/Faculty/students/FacultyStudentsScreen.js
 
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, ActivityIndicator, StyleSheet, SafeAreaView } from 'react-native';
+import axios from 'axios';
+import BASE_URL from '../../../config/baseURL';
 
 export default function FacultyStudentsScreen({ route }) {
-  const { grade } = route.params || {};
-  const formattedClass = grade.slice(0, -1); // Extract number (e.g., "9A" -> "9")
+  const { grade, section = 'A' } = route.params || {};
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Filter students from mockUsers who match this class and section
-  const studentList = Object.values(users).filter(user =>
-    user.role === 'Student' &&
-    user.className?.replace('th', '') === formattedClass &&
-    grade.endsWith(user.section)
-  );
+  useEffect(() => {
+    fetchStudents();
+  }, []);
 
-  const renderStudent = ({ item }) => (
+  const fetchStudents = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/admin/students/grade/${grade}/section/${section}`);
+      setStudents(response.data);
+    } catch (error) {
+      console.error('Error fetching students:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderItem = ({ item }) => (
     <View style={styles.studentCard}>
       <Text style={styles.name}>{item.name}</Text>
-      <Text style={styles.subText}>Class: {item.className} - {item.section}</Text>
+      <Text style={styles.id}>ID: {item.userId}</Text>
     </View>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Students in {grade}</Text>
-      {studentList.length > 0 ? (
-        <FlatList
-          data={studentList}
-          renderItem={renderStudent}
-          keyExtractor={(item, index) => `${item.name}-${index}`}
-        />
-      ) : (
-        <Text style={styles.noData}>No students found for {grade}</Text>
-      )}
-    </View>
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>📚 Students of Class {grade} - Section {section}</Text>
+      </View>
+
+      {/* Body */}
+      <View style={styles.body}>
+        {loading ? (
+          <ActivityIndicator size="large" color="#4b4bfa" />
+        ) : (
+          <FlatList
+            data={students}
+            keyExtractor={(item) => item._id}
+            renderItem={renderItem}
+            contentContainerStyle={{ paddingBottom: 16 }}
+          />
+        )}
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#f9fafe' },
-  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 16, color: '#1e3a8a' },
-  studentCard: {
-    backgroundColor: '#e0e7ff',
-    padding: 16,
-    borderRadius: 10,
-    marginBottom: 12,
+  container: {
+    flex: 1,
+    backgroundColor: '#f6f9ff',
+    padding:20,
   },
-  name: { fontSize: 16, fontWeight: '600', color: '#1e40af' },
-  subText: { fontSize: 14, color: '#555' },
-  noData: { fontSize: 16, color: '#888', textAlign: 'center', marginTop: 20 },
+  header: {
+    padding: 16,
+    backgroundColor: '#4b4bfa',
+    alignItems: 'center',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    elevation: 3,
+  },
+  headerTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  body: {
+    flex: 1,
+    padding: 16,
+  },
+  studentCard: {
+    padding: 16,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    marginBottom: 12,
+    elevation: 2,
+  },
+  name: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
+  id: {
+    fontSize: 14,
+    color: '#777',
+    marginTop: 4,
+  },
 });

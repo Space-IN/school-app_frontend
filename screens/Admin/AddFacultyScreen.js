@@ -61,7 +61,7 @@ const AddFacultyScreen = () => {
         password: password.trim(),
       };
 
-      const response = await axios.post('http://10.221.34.145:5000/api/faculty/add', payload);
+      const response = await axios.post('http://10.221.34.143:5000/api/faculty/add', payload);
       Alert.alert('Success', response.data.message);
 
       setFormData({

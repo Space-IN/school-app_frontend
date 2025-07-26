@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, use } from 'react';
 import {
   View,
   Text,
@@ -9,30 +9,72 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import {io} from 'socket.io-client';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const NoticeBoardScreen = ({ route }) => {
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const socketRef = useRef(null);
 
-  const userId = route.params?.userId;
-  const role = 'students';
+  const [userId, setUserId] = useState('');
+  const [role, setRole] = useState('');
+ 
 
-  useEffect(() => {
-    const fetchNotices = async () => {
-      try {
-        const res = await axios.get(
-          `http://10.221.34.140:5000/api/notices/user/${role}/${userId}`
-        );
-        setNotices(res.data);
-      } catch (err) {
-        console.error('Error fetching notices:', err);
-      } finally {
-        setLoading(false);
+   
+
+ 
+
+useEffect(() => {
+  const initialize = async () => {
+    try {
+      const stored = await AsyncStorage.getItem('userData');
+      const parsed = stored ? JSON.parse(stored) : null;
+
+      if (!parsed?.userId || !parsed?.role) {
+        console.warn('User ID or role not found in AsyncStorage');
+        return;
       }
-    };
 
-    fetchNotices();
-  }, []);
+      const normalizedRole = parsed.role.toLowerCase(); // 'student' or 'faculty'
+      const id = parsed.userId;
+
+      setUserId(id);
+      setRole(normalizedRole);
+
+      // 👇 API call based on role and ID
+      const res = await axios.get(
+        `http://10.221.34.143:5000/api/notices/user/${normalizedRole}/${id}`
+      );
+      setNotices(res.data);
+
+      // 👇 Socket connection setup
+      socketRef.current = io("http://10.221.34.143:5000", {
+        query: { userId: id, role: normalizedRole },
+      });
+
+      socketRef.current.on("recieve_notice", (data) => {
+        setNotices((prev) => [data, ...prev]);
+      });
+    } catch (err) {
+      console.error("Error initializing NoticeBoard:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  initialize();
+
+  return () => {
+    socketRef.current?.disconnect();
+  };
+}, []);
+
+
+
+
+
+
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>

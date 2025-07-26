@@ -1,3 +1,4 @@
+// component/PosterCarousel.js
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
@@ -7,6 +8,7 @@ import {
   StyleSheet,
   useWindowDimensions,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   ActivityIndicator,
 } from 'react-native';
 import axios from 'axios';
@@ -19,6 +21,8 @@ export default function PosterCarousel() {
   const [posters, setPosters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [expandedIndices, setExpandedIndices] = useState({});
+  const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
 
   useEffect(() => {
     const fetchPosters = async () => {
@@ -37,17 +41,25 @@ export default function PosterCarousel() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (posters.length > 0) {
+      if (autoScrollEnabled && posters.length > 0) {
         const next = (currentIndex + 1) % posters.length;
         scrollToIndex(next);
       }
     }, 5000);
+
     return () => clearInterval(interval);
-  }, [currentIndex, posters]);
+  }, [autoScrollEnabled, currentIndex, posters]);
 
   const scrollToIndex = (index) => {
     scrollRef.current?.scrollTo({ x: index * width, animated: true });
     setCurrentIndex(index);
+  };
+
+  const toggleExpanded = (index) => {
+    setExpandedIndices((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
   };
 
   if (loading) {
@@ -76,35 +88,68 @@ export default function PosterCarousel() {
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
+          scrollEventThrottle={16}
           onScroll={(e) => {
             const index = Math.round(e.nativeEvent.contentOffset.x / width);
             setCurrentIndex(index);
           }}
-          scrollEventThrottle={16}
         >
-          {posters.map((poster, index) => (
-            <View key={index} style={[styles.slide, { width }]}>
-              <Image
-                source={
-                  poster.imageUrl
-                    ? { uri: poster.imageUrl }
-                    : require('../assets/placeholder.png')
-                }
-                style={styles.posterImage}
-                resizeMode="cover"
-              />
-              <View style={styles.captionBox}>
-                <Text style={styles.posterTitle}>{poster.title}</Text>
+          {posters.map((poster, index) => {
+            const isExpanded = expandedIndices[index];
+            const isLong = poster.description?.length > 120;
 
-                {/* ✅ FIXED: Wrapped poster.description in <Text> */}
-                {!!poster.description?.trim() && (
-                  <Text style={styles.posterDescription}>{poster.description}</Text>
-                )}
-              </View>
-            </View>
-          ))}
+            return (
+              <TouchableWithoutFeedback
+                key={index}
+                onPressIn={() => setAutoScrollEnabled(false)}
+                onPressOut={() => setAutoScrollEnabled(true)}
+              >
+                <View style={[styles.slide, { width }]}>
+                  <Image
+                    source={
+                      poster.imageUrl
+                        ? { uri: poster.imageUrl }
+                        : require('../assets/placeholder.png')
+                    }
+                    style={styles.posterImage}
+                    resizeMode="cover"
+                  />
+
+                  <View style={styles.captionBox}>
+                    <Text
+                      style={styles.posterTitle}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {poster.title}
+                    </Text>
+
+                    {!!poster.description?.trim() && (
+                      <>
+                        <Text
+                          style={styles.posterDescription}
+                          numberOfLines={isExpanded ? undefined : 3}
+                        >
+                          {poster.description}
+                        </Text>
+
+                        {isLong && (
+                          <TouchableOpacity onPress={() => toggleExpanded(index)}>
+                            <Text style={styles.moreButton}>
+                              {isExpanded ? 'Show Less' : 'Show More'}
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                      </>
+                    )}
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
+            );
+          })}
         </ScrollView>
 
+        {/* Navigation Buttons */}
         <TouchableOpacity
           style={[styles.navButton, { left: 10 }]}
           onPress={() => {
@@ -125,6 +170,7 @@ export default function PosterCarousel() {
           <Ionicons name="chevron-forward-circle" size={36} color="#2563eb" />
         </TouchableOpacity>
 
+        {/* Dots */}
         <View style={styles.dotsContainer}>
           {posters.map((_, index) => (
             <View
@@ -157,12 +203,17 @@ const styles = StyleSheet.create({
   posterImage: {
     width: '100%',
     height: 200,
-    borderRadius: 10,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
   },
   captionBox: {
     backgroundColor: '#e0f2fe',
-    padding: 10,
     paddingHorizontal: 16,
+    paddingVertical: 8,
+    minHeight: 90,
+    justifyContent: 'center',
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
   },
   posterTitle: {
     fontWeight: '700',
@@ -173,6 +224,12 @@ const styles = StyleSheet.create({
   posterDescription: {
     fontSize: 14,
     color: '#334155',
+  },
+  moreButton: {
+    color: '#2563eb',
+    fontWeight: '500',
+    marginTop: 4,
+    fontSize: 14,
   },
   navButton: {
     position: 'absolute',

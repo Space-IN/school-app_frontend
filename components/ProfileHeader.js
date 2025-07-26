@@ -1,9 +1,11 @@
 // components/ProfileHeader.js
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, onpress } from 'react-native';
 
 export default function ProfileHeader({ nameOrId, className, section }) {
   return (
+   
+    <TouchableOpacity onpress={onpress} activeOpacity={0.8}>
     <View style={styles.container}>
       <View style={styles.avatar}>
         <Text style={styles.avatarText}>
@@ -21,6 +23,7 @@ export default function ProfileHeader({ nameOrId, className, section }) {
         )}
       </View>
     </View>
+    </TouchableOpacity>
   );
 }
 
