@@ -90,7 +90,6 @@ export default function AdminDashboard({ navigation }) {
           <Text style={styles.greeting}>Hello, {userId} 👋</Text>
           <Text style={styles.subtitle}>Welcome to the Admin Dashboard</Text>
         </View>
-
         <Text style={styles.sectionTitle}>➕ Add Users</Text>
         <View style={styles.row}>
           <TouchableOpacity style={styles.tileButton} onPress={handleAddStudent}>

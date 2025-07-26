@@ -14,7 +14,7 @@ export default function FacultyProfileScreen() {
         const parsed = stored ? JSON.parse(stored) : null;
         if (!parsed?.userId) return;
 
-        const res = await axios.get(`http://10.221.34.140:5000/api/faculty/${parsed.userId}`);
+        const res = await axios.get(`http://10.221.34.141:5000/api/faculty/${parsed.userId}`);
         setFacultyData(res.data);
       } catch (err) {
         console.error('❌ Error fetching faculty data:', err);

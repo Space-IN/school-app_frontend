@@ -34,9 +34,10 @@ export default function LoginScreen({ route, navigation }) {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://10.221.34.140:5000/api/auth/login', {
+      const response = await axios.post('http://10.221.34.141:5000/api/auth/login', {
         userId: normalizedId,
         password,
+        role,
       });
 
       const user = response.data;

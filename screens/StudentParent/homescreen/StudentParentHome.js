@@ -23,7 +23,7 @@ export default function StudentParentHome() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [subjects, setSubjects] = useState([]);
-  const [eventsToday, setEventsToday] = useState([]); // 🟡 shanks change
+  const [eventsToday, setEventsToday] = useState([]);
 
   const params = route.params || {};
   const { studentName, className, section, userId } = params;
@@ -81,9 +81,9 @@ export default function StudentParentHome() {
       if (!className || !section) return;
       try {
         const res = await axios.get(
-          `http://10.221.34.140:5000/api/admin/subjects/class/${className}/section/${section}`
+          `http://10.221.34.141:5000/api/schedule/subjects/${className}/${section}`
         );
-        setSubjects(res.data || []);
+        setSubjects(res.data.subjects || []);
       } catch (err) {
         console.error('Failed to load subjects:', err.message);
       }
@@ -95,7 +95,7 @@ export default function StudentParentHome() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await axios.get('http://10.221.34.140:5000/api/events');
+        const res = await axios.get('http://10.221.34.141:5000/api/events');
         const allEvents = res.data || [];
         const today = new Date().toISOString().split('T')[0];
 

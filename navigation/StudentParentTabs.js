@@ -22,13 +22,10 @@ function MenuScreen({ navigation, route }) {
     { title: 'Attendance', screen: 'AttendanceScreen', icon: 'checkmark-done-circle' },
     { title: 'Timetable', screen: 'TimetableScreen', icon: 'calendar-outline' },
     { title: 'Notice Board', screen: 'NoticeBoardScreen', icon: 'megaphone-outline' },
-    // ✅ shanks change - Removed Exams
-    // ✅ shanks change - Removed Results
-    // ✅ shanks change - Removed Report
     { title: 'Parent Profile', screen: 'ParentProfileScreen', icon: 'person-circle-outline' },
     { title: 'Academic Calendar', screen: 'AcademicCalendarScreen', icon: 'calendar-number-outline' },
     { title: 'Settings', screen: 'SettingsScreen', icon: 'settings-outline' },
-  ]; // ✅ shanks change - Updated menu
+  ]; // 
 
   return (
     <View style={styles.container}>

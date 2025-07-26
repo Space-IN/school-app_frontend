@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  ScrollView,
+  Dimensions,
+} from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import axios from 'axios';
 
@@ -27,6 +34,8 @@ export default function AcademicCalendarScreen() {
   const [markedDates, setMarkedDates] = useState({});
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [monthEvents, setMonthEvents] = useState([]);
+  const [showNoEventMsg, setShowNoEventMsg] = useState(false);
+  const screenHeight = Dimensions.get('window').height;
 
   useEffect(() => {
     fetchEvents();
@@ -34,7 +43,7 @@ export default function AcademicCalendarScreen() {
 
   const fetchEvents = async () => {
     try {
-      const res = await axios.get('http://10.221.34.140:5000/api/events');
+      const res = await axios.get('http://10.221.34.141:5000/api/events');
       setEvents(res.data || []);
       markEventDates(res.data);
     } catch (err) {
@@ -54,12 +63,36 @@ export default function AcademicCalendarScreen() {
     setMarkedDates(marks);
   };
 
-  const onDayPress = day => {
-    setSelectedDate(day.dateString);
+  const onDayPress = (day) => {
+    const selected = day.dateString;
+    setSelectedDate(selected);
+
+    const hasEvent = events.some(e =>
+      new Date(e.date).toISOString().split('T')[0] === selected
+    );
+
+    if (!hasEvent) {
+      setShowNoEventMsg(true);
+      setTimeout(() => setShowNoEventMsg(false), 4000);
+    }
+
+    const filteredMonthEvents = events.filter(e => {
+      const eventDate = new Date(e.date);
+      return eventDate.getMonth() === currentMonth;
+    });
+
+    const selectedEvents = filteredMonthEvents.filter(e =>
+      new Date(e.date).toISOString().split('T')[0] === selected
+    );
+    const otherEvents = filteredMonthEvents.filter(e =>
+      new Date(e.date).toISOString().split('T')[0] !== selected
+    );
+
+    setMonthEvents([...selectedEvents, ...otherEvents]);
   };
 
   const onMonthChange = (month) => {
-    setCurrentMonth(month.month - 1); // JS months are 0-based
+    setCurrentMonth(month.month - 1);
   };
 
   useEffect(() => {
@@ -70,18 +103,33 @@ export default function AcademicCalendarScreen() {
     setMonthEvents(filtered);
   }, [currentMonth, events]);
 
-  const renderEvent = ({ item }) => (
-    <View style={styles.eventBox}>
-      <Text style={styles.eventTitle}>{item.title}</Text>
-      <Text style={styles.eventDesc}>{item.description}</Text>
-    </View>
-  );
+  const renderEvent = ({ item }) => {
+    const formattedDate = new Date(item.date).toLocaleDateString('en-IN', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+
+    const isHighlighted = selectedDate === new Date(item.date).toISOString().split('T')[0];
+
+    return (
+      <View style={[styles.eventBox, isHighlighted && styles.highlightedEvent]}>
+        <Text style={styles.eventTitle}>{item.title}</Text>
+        <Text style={styles.eventDesc}>{item.description}</Text>
+        <Text style={styles.eventDate}>{formattedDate}</Text>
+      </View>
+    );
+  };
 
   const today = new Date().toISOString().split('T')[0];
   const todaysEvents = events.filter(e => new Date(e.date).toISOString().split('T')[0] === today);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: screenHeight * 0.12 }}
+    >
       <Text style={styles.heading}>Academic Calendar</Text>
 
       <Calendar
@@ -102,6 +150,12 @@ export default function AcademicCalendarScreen() {
         }}
         style={styles.calendar}
       />
+
+      {showNoEventMsg && (
+        <View style={styles.noEventPopup}>
+          <Text style={styles.noEventPopupText}>No events on this date</Text>
+        </View>
+      )}
 
       <Text style={styles.sectionTitle}>Today's Events</Text>
       {todaysEvents.length > 0 ? (
@@ -163,6 +217,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     elevation: 1,
   },
+  highlightedEvent: {
+    borderWidth: 2,
+    borderColor: '#1e40af',
+    backgroundColor: '#e0e7ff',
+  },
   eventTitle: {
     fontSize: 16,
     fontWeight: '600',
@@ -173,9 +232,26 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 14,
   },
+  eventDate: {
+    color: '#1e40af',
+    marginTop: 6,
+    fontSize: 13,
+    fontStyle: 'italic',
+  },
   noEvents: {
     color: '#6b7280',
     fontSize: 14,
     marginBottom: 20,
+  },
+  noEventPopup: {
+    backgroundColor: '#fee2e2',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  noEventPopupText: {
+    color: '#b91c1c',
+    textAlign: 'center',
+    fontWeight: '500',
   },
 });

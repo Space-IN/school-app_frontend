@@ -14,11 +14,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import BASE_URL from '../../config/baseURL';
 
-
-                                  
-
 export default function AdminPosterManager() {
-
   const [poster, setPoster] = useState({
     type: 'academic',
     title: '',
@@ -26,7 +22,8 @@ export default function AdminPosterManager() {
     imageUrl: '',
   });
 
-  // Request permission for media library
+  const [posters, setPosters] = useState([]);
+
   useEffect(() => {
     (async () => {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -34,7 +31,40 @@ export default function AdminPosterManager() {
         Alert.alert('Permission Denied', 'Please allow media access in settings');
       }
     })();
+
+    fetchPosters();
   }, []);
+
+  const fetchPosters = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/api/posters/all`);
+      setPosters(res.data);
+    } catch (err) {
+      console.error('❌ Fetch error:', err.message);
+      Alert.alert('Error', 'Failed to load posters');
+    }
+  };
+
+  const deletePoster = async (id) => {
+    try {
+      await axios.delete(`${BASE_URL}/api/posters/delete/${id}`);
+      fetchPosters(); // Refresh list
+    } catch (err) {
+      console.error('❌ Delete error:', err.message);
+      Alert.alert('Error', 'Failed to delete poster');
+    }
+  };
+
+  const confirmDelete = (id) => {
+    Alert.alert(
+      'Delete Poster',
+      'Are you sure you want to delete this poster?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: () => deletePoster(id) },
+      ]
+    );
+  };
 
   const handleChange = (field, value) => {
     setPoster({ ...poster, [field]: value });
@@ -43,7 +73,7 @@ export default function AdminPosterManager() {
   const handleImagePick = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker?.MediaType?.IMAGE || ImagePicker .MediaTypeOptions.Images, // ✅ use updated constant
+        mediaTypes: ImagePicker?.MediaType?.IMAGE || ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         quality: 1,
       });
@@ -80,9 +110,10 @@ export default function AdminPosterManager() {
     }
 
     try {
-      const res = await axios.post(`${BASE_URL}/api/posters/add-poster`, poster);
+      const res = await axios.post(`${BASE_URL}/api/posters/add`, poster);
       Alert.alert('✅ Success', res.data.message);
       setPoster({ type: 'academic', title: '', description: '', imageUrl: '' });
+      fetchPosters(); // Refresh list after new addition
     } catch (err) {
       console.error('❌ Submit error:', err);
       Alert.alert('Error', err.response?.data?.message || 'Failed to add poster');
@@ -139,6 +170,23 @@ export default function AdminPosterManager() {
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={styles.buttonText}>Submit Poster</Text>
       </TouchableOpacity>
+
+      {/* 🟦 Poster List Section */}
+      <Text style={[styles.heading, { marginTop: 30 }]}>📰 Current Posters</Text>
+      {posters.map((item) => (
+        <View key={item._id} style={styles.posterCard}>
+          <Text style={styles.posterTitle}>{item.title}</Text>
+          <Text style={styles.posterDate}>
+            Created: {new Date(item.createdAt).toLocaleDateString()}
+          </Text>
+          <TouchableOpacity
+            onPress={() => confirmDelete(item._id)}
+            style={styles.deleteBtn}
+          >
+            <Text style={styles.deleteText}>🗑️ Delete</Text>
+          </TouchableOpacity>
+        </View>
+      ))}
     </ScrollView>
   );
 }
@@ -200,5 +248,37 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '700',
     fontSize: 16,
+  },
+  posterCard: {
+    marginTop: 15,
+    padding: 15,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    shadowColor: '#aaa',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  posterTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1e293b',
+  },
+  posterDate: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 4,
+  },
+  deleteBtn: {
+    marginTop: 10,
+    backgroundColor: '#ef4444',
+    padding: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  deleteText: {
+    color: '#fff',
+    fontWeight: '600',
   },
 });
