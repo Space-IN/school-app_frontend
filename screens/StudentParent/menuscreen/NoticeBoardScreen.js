@@ -43,13 +43,16 @@ useEffect(() => {
       setRole(normalizedRole);
 
       // 👇 API call based on role and ID
-      const res = await axios.get(
-        `http://10.221.34.143:5000/api/notices/user/${normalizedRole}/${id}`
+
+        `http://10.221.34.141:5000/api/notices/user/${normalizedRole}/${id}`
+
       );
       setNotices(res.data);
 
       // 👇 Socket connection setup
-      socketRef.current = io("http://10.221.34.143:5000", {
+
+      socketRef.current = io("http://10.221.34.141:5000", {
+
         query: { userId: id, role: normalizedRole },
       });
 
@@ -69,10 +72,6 @@ useEffect(() => {
     socketRef.current?.disconnect();
   };
 }, []);
-
-
-
-
 
 
 

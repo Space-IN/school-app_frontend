@@ -105,6 +105,7 @@ const today = new Date().toISOString().split('T')[0];
           <Text style={styles.greeting}>Hello, {userId} 👋</Text>
           <Text style={styles.subtitle}>Welcome to the Admin Dashboard</Text>
         </View>
+
          
          <PosterCarousel />
 

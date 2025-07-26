@@ -81,7 +81,9 @@ export default function StudentParentHome() {
       if (!className || !section) return;
       try {
         const res = await axios.get(
-          `http://10.221.34.143:5000/api/schedule/subjects/${className}/${section}`
+
+          `http://10.221.34.141:5000/api/schedule/subjects/${className}/${section}`
+
         );
         setSubjects(res.data.subjects || []);
       } catch (err) {
@@ -95,7 +97,9 @@ export default function StudentParentHome() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await axios.get('http://10.221.34.143:5000/api/events');
+
+        const res = await axios.get('http://10.221.34.141:5000/api/events');
+
         const allEvents = res.data || [];
         const today = new Date().toISOString().split('T')[0];
 

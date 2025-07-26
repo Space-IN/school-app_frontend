@@ -16,7 +16,9 @@ const AddNoticeScreen = () => {
   const [message, setMessage] = useState("");
   const [target, setTarget] = useState("all");
   const [specificIds, setSpecificIds] = useState("");
-  const socket = io("http://10.221.34.143:5000");
+
+  const socket = io("http://10.221.34.141:5000");
+
 
   const handleAddNotice = async () => {
     if (!title || !message) {
@@ -25,7 +27,10 @@ const AddNoticeScreen = () => {
     }
 
     try {
-      await axios.post("http://10.221.34.143:5000/api/notices/add", {
+
+      await axios.post("http://10.221.34.141:5000/api/notices/add", {
+
+
         title,
         message,
         target,
@@ -124,6 +129,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonText: { color: "#fff", fontWeight: "bold" },
+
 });
+
+});
+
 
 
