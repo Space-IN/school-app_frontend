@@ -45,10 +45,10 @@ export default function FacultyTabs({ route }) {
       screenOptions={({ route }) => ({
         tabBarActiveTintColor: '#4b4bfa',
         tabBarInactiveTintColor: '#888',
-        headerShown: route.name === 'Home',
+        headerShown: route.name === 'FacultyHomeScreen',
         tabBarIcon: ({ color, size }) => {
           const icons = {
-            Home: 'home',
+            FacultyHomeScreen: 'home',
             Classes: 'book',
             Schedule: 'calendar',
             Profile: 'person',
@@ -57,7 +57,7 @@ export default function FacultyTabs({ route }) {
         },
       })}
     >
-      <Tab.Screen name="Home" component={FacultyDashboard} initialParams={userData} />
+      <Tab.Screen name="FacultyHomeScreen" component={FacultyDashboard} initialParams={userData} />
       <Tab.Screen name="Classes" component={ClassesStack} initialParams={userData} />
       <Tab.Screen name="Schedule" component={FacultyScheduleScreen} initialParams={userData} />
       <Tab.Screen name="Profile" component={FacultyProfileScreen} initialParams={userData} />

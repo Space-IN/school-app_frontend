@@ -121,9 +121,9 @@ export default function AllFacultyScreen({ navigation }) {
             <Text style={styles.softDeleteBtn} onPress={() => handleSoftDelete(fac.userId)}>
               🗑️ Soft Delete
             </Text>
-            <Text style={styles.deleteBtn} onPress={() => handleHardDelete(fac.userId)}>
+            {/* <Text style={styles.deleteBtn} onPress={() => handleHardDelete(fac.userId)}>
               ❌ Delete
-            </Text>
+            </Text> */}
           </>
         ) : (
           <>

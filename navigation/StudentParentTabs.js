@@ -40,7 +40,7 @@ function MenuScreen({ navigation, route }) {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.menuTile}
-            onPress={() => navigation.navigate(item.screen, { userData })}
+            onPress={() => navigation.navigate(item.screen, { ...userData })}
           >
             <Ionicons name={item.icon} size={28} color="#4f46e5" style={{ marginBottom: 8 }} />
             <Text style={styles.menuText} numberOfLines={1} ellipsizeMode="tail">
