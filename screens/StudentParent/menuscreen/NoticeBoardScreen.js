@@ -20,11 +20,6 @@ const NoticeBoardScreen = ({ route }) => {
   const [userId, setUserId] = useState('');
   const [role, setRole] = useState('');
  
-
-   
-
- 
-
 useEffect(() => {
   const initialize = async () => {
     try {
@@ -43,16 +38,13 @@ useEffect(() => {
       setRole(normalizedRole);
 
       // 👇 API call based on role and ID
-
+      const res = await axios.get(
         `http://10.221.34.141:5000/api/notices/user/${normalizedRole}/${id}`
-
       );
       setNotices(res.data);
 
       // 👇 Socket connection setup
-
       socketRef.current = io("http://10.221.34.141:5000", {
-
         query: { userId: id, role: normalizedRole },
       });
 
@@ -72,7 +64,6 @@ useEffect(() => {
     socketRef.current?.disconnect();
   };
 }, []);
-
 
 
   const renderItem = ({ item }) => (
