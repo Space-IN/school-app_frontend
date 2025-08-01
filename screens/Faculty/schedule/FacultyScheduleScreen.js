@@ -1,5 +1,3 @@
-// screens/Faculty/schedule/FacultySchedulesScreen.js
-
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -9,7 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
-  StatusBar
+  StatusBar,
 } from 'react-native';
 import axios from 'axios';
 import BASE_URL from '../../../config/baseURL';
@@ -64,16 +62,20 @@ export default function FacultySchedulesScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>📘 {facultyName}'s Schedule</Text>
+      {/* 🟦 Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>📘 {facultyName}'s Schedule</Text>
+      </View>
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#1d4ed8" />
-      ) : Object.keys(groupedSchedule).length === 0 ? (
-        <Text style={styles.infoText}>📭 No schedule found.</Text>
-      ) : (
-        <ScrollView style={styles.scrollSection}>
-          {Object.entries(groupedSchedule).map(([day, periods], index) => (
-            <View key={index} style={styles.dayBlock}>
+      {/* Body */}
+      <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
+        {loading ? (
+          <ActivityIndicator size="large" color="#4b4bfa" style={{ marginTop: 30 }} />
+        ) : Object.keys(groupedSchedule).length === 0 ? (
+          <Text style={styles.noSchedule}>📭 No schedule found.</Text>
+        ) : (
+          Object.entries(groupedSchedule).map(([day, periods], index) => (
+            <View key={index} style={styles.dayCard}>
               <Text style={styles.dayTitle}>{day}</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <View style={styles.table}>
@@ -95,15 +97,13 @@ export default function FacultySchedulesScreen() {
                       <Text style={[styles.cell, styles.col4]}>{p.classAssigned}</Text>
                       <Text style={[styles.cell, styles.col5]}>{p.section}</Text>
                     </View>
-
-                    
                   ))}
                 </View>
               </ScrollView>
             </View>
-          ))}
-        </ScrollView>
-      )}
+          ))
+        )}
+      </ScrollView>
     </View>
   );
 }
@@ -111,35 +111,39 @@ export default function FacultySchedulesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#f6f9ff',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    paddingHorizontal: 16,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginTop: 20,
-    marginBottom: 16,
-    color: '#1e3a8a',
+  header: {
+    padding: 16,
+    backgroundColor: '#4b4bfa',
+    alignItems: 'center',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    elevation: 3,
+  },
+  headerTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  body: {
+    flex: 1,
+    padding: 16,
+  },
+  noSchedule: {
     textAlign: 'center',
-  },
-  scrollSection: {
-    paddingBottom: 40,
-  },
-  infoText: {
-    textAlign: 'center',
-    marginTop: 20,
+    marginTop: 30,
     fontSize: 16,
-    color: '#6b7280',
+    color: '#888',
   },
-  dayBlock: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
+  dayCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
     marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    overflow: 'hidden',
     elevation: 2,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
   },
   dayTitle: {
     backgroundColor: '#e0f2fe',

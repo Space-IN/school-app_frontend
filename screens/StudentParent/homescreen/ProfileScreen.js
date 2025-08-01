@@ -21,6 +21,7 @@ export default function ProfileHeader({ nameOrId, className, section, studentNam
   );
 }
 
+
 const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',

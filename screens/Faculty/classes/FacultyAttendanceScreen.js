@@ -1,9 +1,20 @@
-// FacultyAttendanceScreen.js
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, TouchableOpacity, ActivityIndicator, Alert, StyleSheet, Text } from 'react-native';
+import {
+  View,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  StatusBar,
+} from 'react-native';
 import axios from 'axios';
 import BASE_URL from '../../../config/baseURL';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function FacultyAttendanceScreen({ route }) {
   const { grade, section, subjectMasterId, facultyId } = route.params;
@@ -11,6 +22,14 @@ export default function FacultyAttendanceScreen({ route }) {
   const [attendance, setAttendance] = useState({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [summary, setSummary] = useState(null);
+
+  const navigation = useNavigation();
+
+  const filteredStudents = students.filter(student =>
+    student.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -25,7 +44,9 @@ export default function FacultyAttendanceScreen({ route }) {
 
   const loadStudents = async () => {
     try {
-      const { data } = await axios.get(`${BASE_URL}/api/admin/students/grade/${grade}/section/${section}`);
+      const { data } = await axios.get(
+        `${BASE_URL}/api/admin/students/grade/${grade}/section/${section}`
+      );
       setStudents(data);
     } catch (err) {
       console.error('Error loading students:', err);
@@ -42,7 +63,10 @@ export default function FacultyAttendanceScreen({ route }) {
 
   const handleSubmit = async () => {
     if (!subjectMasterId) {
-      return Alert.alert('Error', 'No subject assigned to you today for this class/section.');
+      return Alert.alert(
+        'Error',
+        'No subject assigned to you today for this class/section.'
+      );
     }
 
     setSubmitting(true);
@@ -57,16 +81,23 @@ export default function FacultyAttendanceScreen({ route }) {
       date,
       attendanceList: students.map(s => ({
         userId: s.userId,
-        status: attendance[s._id] || 'Absent',
+        status: attendance[s._id] ?? 'Absent',
       })),
     };
-
-    console.log('📦 Submitting Attendance Payload:', payload);
 
     try {
       await axios.post(`${BASE_URL}/api/attendance/mark`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      const presentCount = payload.attendanceList.filter(
+        entry => entry.status === 'Present'
+      ).length;
+      const totalCount = payload.attendanceList.length;
+      const absentCount = totalCount - presentCount;
+
+      setSummary({ present: presentCount, absent: absentCount });
+
       Alert.alert('Success', 'Attendance marked successfully!');
     } catch (err) {
       const msg = err.response?.data?.message || err.message;
@@ -77,55 +108,86 @@ export default function FacultyAttendanceScreen({ route }) {
     }
   };
 
-  if (loading) return <ActivityIndicator style={{ flex: 1 }} size="large" color="#4b4bfa" />;
+  if (loading)
+    return (
+      <ActivityIndicator style={{ flex: 1 }} size="large" color="#4a90e2" />
+    );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
+
       {/* 🟦 Header */}
       <View style={styles.header}>
-        <Text style={styles.headerText}>Attendance for Today</Text>
+        <Text style={styles.headerText}>📋 Attendance for Today</Text>
         <Text style={styles.dateText}>{today}</Text>
       </View>
 
-      {/* 🟩 List */}
+      <TextInput
+        placeholder="Search students..."
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        style={styles.searchBar}
+      />
+
       <FlatList
-        data={students}
+        data={filteredStudents}
         keyExtractor={i => i._id}
         renderItem={({ item }) => {
           const status = attendance[item._id] || 'Absent';
           return (
             <TouchableOpacity
               onPress={() => toggleStatus(item._id)}
-              style={[styles.card, status === 'Present' ? styles.present : styles.absent]}
+              style={[
+                styles.card,
+                status === 'Present' ? styles.present : styles.absent,
+              ]}
             >
               <Text style={styles.name}>{item.name}</Text>
               <Text style={styles.status}>{status}</Text>
             </TouchableOpacity>
           );
         }}
+        contentContainerStyle={styles.listContent}
       />
 
-      {/* 🟨 Submit Button */}
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={submitting}>
-        <Text style={styles.submitText}>{submitting ? 'Submitting...' : 'Submit Attendance'}</Text>
+      <TouchableOpacity
+        style={styles.submitButton}
+        onPress={handleSubmit}
+        disabled={submitting}
+      >
+        <Text style={styles.submitText}>
+          {submitting ? 'Submitting...' : 'Submit Attendance'}
+        </Text>
       </TouchableOpacity>
-    </View>
+
+      {summary && (
+        <View style={styles.summaryContainer}>
+          <Text style={styles.summaryText}>
+            🟢 Present: {summary?.present ?? 0} | 🔴 Absent:{' '}
+            {summary?.absent ?? 0}
+          </Text>
+        </View>
+      )}
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 26, backgroundColor: '#f6f9ff' },
-
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f5f7fa',
+  },
   header: {
-    marginBottom: 20,
-    padding: 16,
-    backgroundColor: '#4b4bfa',
-    borderRadius: 12,
+    paddingVertical: 20,
+    backgroundColor: '#4a90e2',
     alignItems: 'center',
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
   },
   headerText: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 22,
+    fontWeight: 'bold',
     color: '#fff',
   },
   dateText: {
@@ -133,22 +195,71 @@ const styles = StyleSheet.create({
     color: '#e0e0ff',
     marginTop: 4,
   },
-
-  card: {
-    padding: 16,
+  searchBar: {
+    padding: 12,
+    marginHorizontal: 16,
+    marginTop: 16,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    backgroundColor: '#fff',
+  },
+  listContent: {
+    padding: 15,
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 12,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+  },
+  present: {
+    borderLeftWidth: 6,
+    borderLeftColor: '#4caf50',
+  },
+  absent: {
+    borderLeftWidth: 6,
+    borderLeftColor: '#f44336',
+  },
+  name: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  status: {
+    fontSize: 14,
+    marginTop: 5,
+    color: '#555',
+  },
+  submitButton: {
+    backgroundColor: '#4a90e2',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginHorizontal: 16,
+    marginTop: 16,
     marginBottom: 10,
   },
-  present: { backgroundColor: '#d4f8d4' },
-  absent: { backgroundColor: '#f8d4d4' },
-  name: { fontSize: 18, fontWeight: '600' },
-  status: { fontSize: 14, color: '#333', marginTop: 4 },
-  submitButton: {
-    backgroundColor: '#4b4bfa',
-    padding: 16,
+  submitText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  summaryContainer: {
+    marginHorizontal: 16,
+    marginBottom: 20,
+    padding: 12,
+    backgroundColor: '#eef6ff',
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 10,
   },
-  submitText: { color: '#fff', fontWeight: 'bold' },
+  summaryText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
 });
