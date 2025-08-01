@@ -1,5 +1,5 @@
 // screens/StudentParent/homescreen/StudentParentHome.js
-import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
+import React, { useLayoutEffect, useRef, useState, useEffect, } from 'react';
 import {
   View,
   Text,
@@ -82,7 +82,7 @@ export default function StudentParentHome() {
       try {
         const res = await axios.get(
 
-          `http://10.221.34.141:5000/api/schedule/subjects/${className}/${section}`
+          `http://10.221.34.140:5000/api/schedule/subjects/${className}/${section}`
 
         );
         setSubjects(res.data.subjects || []);
@@ -98,7 +98,7 @@ export default function StudentParentHome() {
     const fetchEvents = async () => {
       try {
 
-        const res = await axios.get('http://10.221.34.141:5000/api/events');
+        const res = await axios.get('http://10.221.34.140:5000/api/events');
 
         const allEvents = res.data || [];
         const today = new Date().toISOString().split('T')[0];
@@ -118,12 +118,29 @@ export default function StudentParentHome() {
 
   return (
     <ScrollView style={styles.container}>
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={() => navigation.navigate('StudentProfile', { profile: profileData })}
-      >
-        <ProfileHeader nameOrId={displayName} className={className} section={section} />
-      </TouchableOpacity>
+
+     <TouchableOpacity
+  activeOpacity={0.8}
+  onPress={() => {
+    console.log('✅ Tapped ProfileHeader');
+    navigation.navigate('StudentProfileScreen', { profile: profileData });
+  }}
+  style={{ flex: 1 }}
+>
+  <View>
+    <ProfileHeader
+      nameOrId={displayName}
+      className={className}
+      section={section}
+    />
+  </View>
+</TouchableOpacity>
+
+
+      {/* <Button
+  title="Go to Profile"
+  onPress={() => navigation.getParent()?.navigate('StudentProfileScreen', { profile: profileData })}
+/> */}
 
       <PosterCarousel />
 
@@ -134,14 +151,15 @@ export default function StudentParentHome() {
           subjects.map((item, index) => (
             <TouchableOpacity
               key={index}
-              style={[styles.subjectTile, { backgroundColor: item.color || '#60a5fa' }]}
-              onPress={() =>
-                navigation.navigate('SubjectDashboard', {
-                  subjectName: item.name,
-                  chapters: item.chapters || [],
-                  announcements: item.announcements || [],
-                })
-              }
+              style={[styles.subjectTile, { backgroundColor: item.color || '#467fc5ff' }]}
+              activeOpacity={1}
+              // onPress={() =>
+              //   navigation.navigate('SubjectDashboard', {
+              //     subjectName: item.name,
+              //     chapters: item.chapters || [],
+              //     announcements: item.announcements || [],
+              //   })
+              // }
             >
               <Ionicons name={item.icon || 'book'} size={30} color="#fff" />
               <Text style={styles.subjectText}>{item.name}</Text>

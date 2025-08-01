@@ -37,14 +37,17 @@ import FacultyTestsScreen from '../screens/Faculty/classes/FacultyTestsScreen';
 import FacultyPerformanceScreen from '../screens/Faculty/classes/FacultyPerformanceScreen';
 import FacultyScheduleScreen from '../screens/Faculty/schedule/FacultyScheduleScreen';
 import FacultyProfileScreen from '../screens/Faculty/profile/FacultyProfileScreen';
+ 
 import ManagePerformanceTab from '../screens/Faculty/classes/performance/ManagePerformanceTab';
 import ViewPerformanceTab from '../screens/Faculty/classes/performance/ViewPerformanceTab';
 import StudentSubjectMarksScreen from '../screens/Faculty/classes/performance/StudentSubjectMarksScreen';
 import ManagePerformanceTabs from '../screens/Faculty/classes/performance/ManagePerformanceTabs';
 
+ 
+import PastAttendanceScreen from '../screens/Faculty/classes/PastAttendanceScreen'; // ✅ shanks changes: added Past Attendance Screen
+ 
 
-
-
+import MonthlySummaryScreen from '../screens/Faculty/classes/MonthlySummaryScreen'; // ✅ shanks changes: added Monthly Summary Screen
 
 // Student/Parent Screens
 import StudentParentTabs from './StudentParentTabs';
@@ -128,16 +131,22 @@ export default function AppNavigator() {
       <Stack.Screen name="FacultyPerformanceScreen" component={ManagePerformanceTabs} />
       <Stack.Screen name="FacultyScheduleScreen" component={FacultyScheduleScreen} />
       <Stack.Screen name="FacultyProfileScreen" component={FacultyProfileScreen} />
+ 
       <Stack.Screen name="ManagePerformanceTab" component={ManagePerformanceTab} />
       <Stack.Screen name="ViewPerformanceTab" component={ViewPerformanceTab} />
       <Stack.Screen name="StudentSubjectMarksScreen" component={StudentSubjectMarksScreen} />
 
+ 
+
+      <Stack.Screen name="PastAttendanceScreen" component={PastAttendanceScreen} /> 
+      <Stack.Screen name="MonthlySummaryScreen" component={MonthlySummaryScreen} />
+ 
       
 
       {/* Student/Parent */}
       <Stack.Screen name="StudentParentTabs" component={StudentParentTabs} />
       <Stack.Screen name="SubjectDashboard" component={SubjectDashboard} />
-      <Stack.Screen name="StudentProfile" component={StudentProfileScreen} />
+      <Stack.Screen name="StudentProfileScreen" component={StudentProfileScreen} />
       <Stack.Screen name="AttendanceScreen" component={AttendanceStudent} />
       <Stack.Screen name="TimetableScreen" component={TimetableScreen} />
       <Stack.Screen name="NoticeBoardScreen" component={NoticeBoardScreen} />
