@@ -1,4 +1,4 @@
-// ✅ shanks changes: cleaned, updated, and added missing screen imports
+//AppNavigation.js
 import React, { useEffect, useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, ActivityIndicator } from 'react-native';
@@ -37,7 +37,15 @@ import FacultyTestsScreen from '../screens/Faculty/classes/FacultyTestsScreen';
 import FacultyPerformanceScreen from '../screens/Faculty/classes/FacultyPerformanceScreen';
 import FacultyScheduleScreen from '../screens/Faculty/schedule/FacultyScheduleScreen';
 import FacultyProfileScreen from '../screens/Faculty/profile/FacultyProfileScreen';
+ 
+import ManagePerformanceTab from '../screens/Faculty/classes/performance/ManagePerformanceTab';
+import ViewPerformanceTab from '../screens/Faculty/classes/performance/ViewPerformanceTab';
+import StudentSubjectMarksScreen from '../screens/Faculty/classes/performance/StudentSubjectMarksScreen';
+import ManagePerformanceTabs from '../screens/Faculty/classes/performance/ManagePerformanceTabs';
+
+ 
 import PastAttendanceScreen from '../screens/Faculty/classes/PastAttendanceScreen'; // ✅ shanks changes: added Past Attendance Screen
+ 
 
 import MonthlySummaryScreen from '../screens/Faculty/classes/MonthlySummaryScreen'; // ✅ shanks changes: added Monthly Summary Screen
 
@@ -57,6 +65,7 @@ import ChangePasswordScreen from '../screens/StudentParent/menuscreen/settings/C
 import PrivacyPolicyScreen from '../screens/StudentParent/menuscreen/settings/PrivacyPolicyScreen';
 import TermsScreen from '../screens/StudentParent/menuscreen/settings/TermsScreen';
 import AboutScreen from '../screens/StudentParent/menuscreen/settings/AboutScreen';
+import StudentPerformanceScreen from '../screens/StudentParent/menuscreen/StudentPerformanceScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -119,12 +128,19 @@ export default function AppNavigator() {
       <Stack.Screen name="FacultyAttendanceScreen" component={FacultyAttendanceScreen} />
       <Stack.Screen name="FacultyAssignmentsScreen" component={FacultyAssignmentsScreen} />
       <Stack.Screen name="FacultyTestsScreen" component={FacultyTestsScreen} />
-      <Stack.Screen name="FacultyPerformanceScreen" component={FacultyPerformanceScreen} />
+      <Stack.Screen name="FacultyPerformanceScreen" component={ManagePerformanceTabs} />
       <Stack.Screen name="FacultyScheduleScreen" component={FacultyScheduleScreen} />
       <Stack.Screen name="FacultyProfileScreen" component={FacultyProfileScreen} />
+ 
+      <Stack.Screen name="ManagePerformanceTab" component={ManagePerformanceTab} />
+      <Stack.Screen name="ViewPerformanceTab" component={ViewPerformanceTab} />
+      <Stack.Screen name="StudentSubjectMarksScreen" component={StudentSubjectMarksScreen} />
+
+ 
 
       <Stack.Screen name="PastAttendanceScreen" component={PastAttendanceScreen} /> 
       <Stack.Screen name="MonthlySummaryScreen" component={MonthlySummaryScreen} />
+ 
       
 
       {/* Student/Parent */}
@@ -143,6 +159,7 @@ export default function AppNavigator() {
       <Stack.Screen name="PrivacyPolicyScreen" component={PrivacyPolicyScreen} />
       <Stack.Screen name="TermsScreen" component={TermsScreen} />
       <Stack.Screen name="AboutScreen" component={AboutScreen} />
+      <Stack.Screen name="StudentPerformanceScreen" component={StudentPerformanceScreen} />
     </Stack.Navigator>
   );
 }

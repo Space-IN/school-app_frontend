@@ -9,6 +9,7 @@ import FacultyClassesScreen from '../screens/Faculty/classes/FacultyClassesScree
 import FacultyClassDashboard from '../screens/Faculty/classes/FacultyClassDashboard';
 import FacultyScheduleScreen from '../screens/Faculty/schedule/FacultyScheduleScreen';
 import FacultyProfileScreen from '../screens/Faculty/profile/FacultyProfileScreen';
+import ViewPerformanceTab from '../screens/Faculty/classes/performance/ViewPerformanceTab';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -24,7 +25,28 @@ function ClassesStack({ route }) {
         initialParams={{ grades, userId, openGrade, redirectedFromHome }}
         options={{ title: 'My Assigned Classes' }}
       />
-      <Stack.Screen name="FacultyClassDashboard" component={FacultyClassDashboard} />
+      <Stack.Screen
+        name="FacultyClassDashboard"
+        component={FacultyClassDashboard}
+        options={{ title: 'Class Dashboard' }}
+      />
+      <Stack.Screen
+        name="FacultyPerformanceScreen"
+        component={require('../screens/Faculty/classes/FacultyPerformanceScreen').default}
+        options={{ title: 'Performance' }}
+      />
+      <Stack.Screen
+        name="StudentSubjectMarksScreen"
+        component={require('../screens/Faculty/classes/performance/StudentSubjectMarksScreen').default}
+        options={{ title: 'Student Marks' }}
+      />
+
+      <Stack.Screen
+        name="ViewPerformanceTab"
+        component={ViewPerformanceTab}
+        options={{ title: 'View Performance' }}
+      />
+
     </Stack.Navigator>
   );
 }

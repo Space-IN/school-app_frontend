@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
   View,
@@ -10,35 +10,53 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-// ✅ Screens
+// Screens
 import StudentParentHome from '../screens/StudentParent/homescreen/StudentParentHome';
 
 const Tab = createBottomTabNavigator();
 
 function MenuScreen({ navigation, route }) {
-  const { userData } = route.params || {};
+  // ✅ Get both userId and userData directly from route.params
+  const { userId, userData } = route?.params || {};
+
+  useEffect(() => {
+    console.log('📦 MenuScreen route params:', route?.params);
+    if (!userId) {
+      console.warn('⚠️ No userId found in MenuScreen params');
+    }
+  }, []);
 
   const menuItems = [
     { title: 'Attendance', screen: 'AttendanceScreen', icon: 'checkmark-done-circle' },
     { title: 'Timetable', screen: 'TimetableScreen', icon: 'calendar-outline' },
     { title: 'Notice Board', screen: 'NoticeBoardScreen', icon: 'megaphone-outline' },
+    { title: 'Performance', screen: 'StudentPerformanceScreen', icon: 'stats-chart-outline' },
     { title: 'Parent Profile', screen: 'ParentProfileScreen', icon: 'person-circle-outline' },
     { title: 'Academic Calendar', screen: 'AcademicCalendarScreen', icon: 'calendar-number-outline' },
     { title: 'Settings', screen: 'SettingsScreen', icon: 'settings-outline' },
+ 
+  ];
+ 
     {title: 'studentProfile', screen: 'StudentProfileScreen', icon: 'person-outline'},
   ]; // 
+ 
 
   return (
     <View style={styles.container}>
       <FlatList
         data={menuItems}
         keyExtractor={(item) => item.title}
-        numColumns={2} // ✅ shanks change - changed from 3 to 2 columns
+        numColumns={2}
         contentContainerStyle={styles.grid}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.menuTile}
-            onPress={() => navigation.navigate(item.screen, { ...userData })}
+            onPress={() =>
+              navigation.navigate(item.screen, {
+                userId,     // ✅ Always pass userId
+                userData,   // ✅ Optionally pass full userData
+              })
+            }
           >
             <Ionicons name={item.icon} size={28} color="#4f46e5" style={{ marginBottom: 8 }} />
             <Text style={styles.menuText} numberOfLines={1} ellipsizeMode="tail">
@@ -53,6 +71,12 @@ function MenuScreen({ navigation, route }) {
 
 export default function StudentParentTabs({ route }) {
   const params = route?.params || {};
+  const userId = params?.userId;
+  const userData = params?.userData || params;
+
+  useEffect(() => {
+    console.log('📦 Received route params in StudentParentTabs:', params);
+  }, []);
 
   return (
     <Tab.Navigator
@@ -73,7 +97,7 @@ export default function StudentParentTabs({ route }) {
       <Tab.Screen
         name="Home"
         component={StudentParentHome}
-        initialParams={params}
+        initialParams={{ userId, userData }}
         options={{
           tabBarLabel: 'Home',
           headerTitle: 'Student/Parent Dashboard',
@@ -82,7 +106,7 @@ export default function StudentParentTabs({ route }) {
       <Tab.Screen
         name="Menu"
         component={MenuScreen}
-        initialParams={params}
+        initialParams={{ userId, userData }}
         options={{ headerTitle: 'Menu' }}
       />
     </Tab.Navigator>
@@ -90,7 +114,7 @@ export default function StudentParentTabs({ route }) {
 }
 
 const { width } = Dimensions.get('window');
-const tileWidth = (width - 48) / 2; // ✅ shanks change - tile size for 2-column layout
+const tileWidth = (width - 48) / 2;
 
 const styles = StyleSheet.create({
   container: {

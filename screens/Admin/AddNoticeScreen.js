@@ -411,6 +411,7 @@ const styles = StyleSheet.create({
   },
   deleteText: { color: "#d00", fontWeight: "bold" },
 
+ 
   noticeDate: {
     fontSize: 16,
     color: "#666",
@@ -418,3 +419,4 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
   },
 });
+ 
