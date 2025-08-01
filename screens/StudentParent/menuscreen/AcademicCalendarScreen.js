@@ -45,7 +45,7 @@ export default function AcademicCalendarScreen() {
   const fetchEvents = async () => {
     try {
 
-      const res = await axios.get('http://10.221.34.141:5000/api/events');
+      const res = await axios.get('http://10.221.34.140:5000/api/events');
 
       setEvents(res.data || []);
       markEventDates(res.data);

@@ -1,9 +1,17 @@
 // screens/StudentProfileScreen.js
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { useRoute } from '@react-navigation/native'; // ✅ Missing import fixed
 import BASE_URL from '../../../config/baseURL';
 
 const iconMap = {
@@ -36,6 +44,7 @@ const allowedKeys = [
 ];
 
 const StudentProfileScreen = () => {
+  const route = useRoute(); // ✅ now properly used
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 

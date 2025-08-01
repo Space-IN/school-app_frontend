@@ -89,55 +89,56 @@ export default function AllFacultyScreen({ navigation }) {
     });
   };
 
-  const renderFacultyCard = (fac) => (
-    <View key={fac._id} style={styles.facultyCard}>
-      <Text style={styles.name}>{fac.name} ({fac.userId})</Text>
+ const renderFacultyCard = (fac) => (
+  <View key={fac._id} style={styles.facultyCard}>
+    <Text style={styles.name}>{fac.name} ({fac.userId})</Text>
 
-      {(fac.classAssigned || fac.section) && (
-        <Text style={styles.meta}>
-          Class: {fac.classAssigned || 'N/A'} {fac.section || ''}
-        </Text>
+    {Array.isArray(fac.subjectAssignments) && fac.subjectAssignments.length > 0 && (
+      <>
+        {fac.subjectAssignments.map((subj, index) => (
+          <View key={index} style={{ marginTop: 4 }}>
+            <Text style={styles.meta}>
+              📘 Subject: <Text style={{ fontWeight: 'bold' }}>{subj.subject}</Text>
+            </Text>
+            {subj.assignments.map((a, idx) => (
+              <Text key={idx} style={styles.meta}>
+                ➤ Class {a.class} - Section {a.section}
+              </Text>
+            ))}
+          </View>
+        ))}
+      </>
+    )}
+
+    <View style={styles.actionRow}>
+      {activeTab === 'active' ? (
+        <>
+          <Text
+            style={styles.editBtn}
+            onPress={() => navigation.navigate('EditFacultyScreen', { faculty: fac })}
+          >
+            ✏️ Edit
+          </Text>
+          <Text style={styles.softDeleteBtn} onPress={() => handleSoftDelete(fac.userId)}>
+            🗑️ Soft Delete
+          </Text>
+        </>
+      ) : (
+        <>
+          <Text style={styles.restoreBtn} onPress={() => handleRestore(fac.userId)}>
+            🔁 Restore
+          </Text>
+          <Text style={styles.deleteBtn} onPress={() => handleHardDelete(fac.userId)}>
+            ❌ Delete
+          </Text>
+        </>
       )}
-
-      {fac.subject && (
-        <Text style={styles.meta}>Direct Subject: {fac.subject}</Text>
-      )}
-
-      {fac.assignedSubjects && fac.assignedSubjects.length > 0 && (
-        <Text style={styles.meta}>
-          Assigned Subjects: {fac.assignedSubjects.join(', ')}
-        </Text>
-      )}
-
-      <View style={styles.actionRow}>
-        {activeTab === 'active' ? (
-          <>
-            <Text
-              style={styles.editBtn}
-              onPress={() => navigation.navigate('EditFacultyScreen', { faculty: fac })}
-            >
-              ✏️ Edit
-            </Text>
-            <Text style={styles.softDeleteBtn} onPress={() => handleSoftDelete(fac.userId)}>
-              🗑️ Soft Delete
-            </Text>
-            {/* <Text style={styles.deleteBtn} onPress={() => handleHardDelete(fac.userId)}>
-              ❌ Delete
-            </Text> */}
-          </>
-        ) : (
-          <>
-            <Text style={styles.restoreBtn} onPress={() => handleRestore(fac.userId)}>
-              🔁 Restore
-            </Text>
-            <Text style={styles.deleteBtn} onPress={() => handleHardDelete(fac.userId)}>
-              ❌ Delete
-            </Text>
-          </>
-        )}
-      </View>
     </View>
-  );
+  </View>
+);
+
+
+
 
   return (
     <SafeAreaView style={styles.container}>

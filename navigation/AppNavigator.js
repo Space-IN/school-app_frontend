@@ -37,9 +37,9 @@ import FacultyTestsScreen from '../screens/Faculty/classes/FacultyTestsScreen';
 import FacultyPerformanceScreen from '../screens/Faculty/classes/FacultyPerformanceScreen';
 import FacultyScheduleScreen from '../screens/Faculty/schedule/FacultyScheduleScreen';
 import FacultyProfileScreen from '../screens/Faculty/profile/FacultyProfileScreen';
+import PastAttendanceScreen from '../screens/Faculty/classes/PastAttendanceScreen'; // ✅ shanks changes: added Past Attendance Screen
 
-
-
+import MonthlySummaryScreen from '../screens/Faculty/classes/MonthlySummaryScreen'; // ✅ shanks changes: added Monthly Summary Screen
 
 // Student/Parent Screens
 import StudentParentTabs from './StudentParentTabs';
@@ -122,12 +122,15 @@ export default function AppNavigator() {
       <Stack.Screen name="FacultyPerformanceScreen" component={FacultyPerformanceScreen} />
       <Stack.Screen name="FacultyScheduleScreen" component={FacultyScheduleScreen} />
       <Stack.Screen name="FacultyProfileScreen" component={FacultyProfileScreen} />
+
+      <Stack.Screen name="PastAttendanceScreen" component={PastAttendanceScreen} /> 
+      <Stack.Screen name="MonthlySummaryScreen" component={MonthlySummaryScreen} />
       
 
       {/* Student/Parent */}
       <Stack.Screen name="StudentParentTabs" component={StudentParentTabs} />
       <Stack.Screen name="SubjectDashboard" component={SubjectDashboard} />
-      <Stack.Screen name="StudentProfile" component={StudentProfileScreen} />
+      <Stack.Screen name="StudentProfileScreen" component={StudentProfileScreen} />
       <Stack.Screen name="AttendanceScreen" component={AttendanceStudent} />
       <Stack.Screen name="TimetableScreen" component={TimetableScreen} />
       <Stack.Screen name="NoticeBoardScreen" component={NoticeBoardScreen} />

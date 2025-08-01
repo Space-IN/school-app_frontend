@@ -1,7 +1,13 @@
-// screens/Faculty/students/FacultyStudentsScreen.js
-
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, ActivityIndicator, StyleSheet, SafeAreaView } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  ActivityIndicator,
+  StyleSheet,
+  StatusBar,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import axios from 'axios';
 import BASE_URL from '../../../config/baseURL';
 
@@ -16,7 +22,9 @@ export default function FacultyStudentsScreen({ route }) {
 
   const fetchStudents = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/api/admin/students/grade/${grade}/section/${section}`);
+      const response = await axios.get(
+        `${BASE_URL}/api/admin/students/grade/${grade}/section/${section}`
+      );
       setStudents(response.data);
     } catch (error) {
       console.error('Error fetching students:', error);
@@ -26,74 +34,76 @@ export default function FacultyStudentsScreen({ route }) {
   };
 
   const renderItem = ({ item }) => (
-    <View style={styles.studentCard}>
-      <Text style={styles.name}>{item.name}</Text>
-      <Text style={styles.id}>ID: {item.userId}</Text>
+    <View style={styles.card}>
+      <Text style={styles.studentName}>👤 {item.name}</Text>
+      <Text style={styles.studentId}>🆔 ID: {item.userId}</Text>
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
+      
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>📚 Students of Class {grade} - Section {section}</Text>
       </View>
 
-      {/* Body */}
-      <View style={styles.body}>
-        {loading ? (
-          <ActivityIndicator size="large" color="#4b4bfa" />
-        ) : (
-          <FlatList
-            data={students}
-            keyExtractor={(item) => item._id}
-            renderItem={renderItem}
-            contentContainerStyle={{ paddingBottom: 16 }}
-          />
-        )}
-      </View>
+      {/* Student List */}
+      {loading ? (
+        <ActivityIndicator size="large" style={{ marginTop: 30 }} />
+      ) : (
+        <FlatList
+          data={students}
+          keyExtractor={(item) => item._id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContent}
+        />
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    backgroundColor: '#f6f9ff',
-    padding:20,
+    backgroundColor: '#f5f7fa',
   },
   header: {
-    padding: 16,
-    backgroundColor: '#4b4bfa',
+    paddingVertical: 20,
+    backgroundColor: '#4a90e2',
     alignItems: 'center',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    elevation: 3,
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
   },
   headerTitle: {
     color: '#fff',
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
-  body: {
-    flex: 1,
-    padding: 16,
+  listContent: {
+    padding: 15,
   },
-  studentCard: {
-    padding: 16,
+  card: {
     backgroundColor: '#ffffff',
     borderRadius: 12,
+    padding: 15,
     marginBottom: 12,
-    elevation: 2,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
   },
-  name: {
-    fontSize: 18,
-    fontWeight: '600',
+  studentName: {
+    fontSize: 16,
+    fontWeight: 'bold',
     color: '#333',
   },
-  id: {
+  studentId: {
     fontSize: 14,
-    color: '#777',
-    marginTop: 4,
+    marginTop: 5,
+    color: '#555',
   },
 });
