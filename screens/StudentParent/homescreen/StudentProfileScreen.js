@@ -1,4 +1,3 @@
-// screens/StudentProfileScreen.js
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -11,7 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { useRoute } from '@react-navigation/native'; // ✅ Missing import fixed
+import { useRoute } from '@react-navigation/native';
 import BASE_URL from '../../../config/baseURL';
 
 const iconMap = {
@@ -44,23 +43,29 @@ const allowedKeys = [
 ];
 
 const StudentProfileScreen = () => {
-  const route = useRoute(); // ✅ now properly used
+  const route = useRoute();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async () => {
     try {
-      const stored = await AsyncStorage.getItem('userData');
-      const parsed = stored ? JSON.parse(stored) : null;
+      const passedStudent = route.params?.student || route.params?.studentData;
 
-      if (!parsed || parsed.role !== 'Student') {
-        Alert.alert('Error', 'Invalid student login');
-        return;
+      if (passedStudent) {
+        setProfile(passedStudent);
+      } else {
+        const stored = await AsyncStorage.getItem('userData');
+        const parsed = stored ? JSON.parse(stored) : null;
+
+        if (!parsed || parsed.role !== 'Student') {
+          Alert.alert('Error', 'Invalid student login');
+          return;
+        }
+
+        const userId = parsed.userId;
+        const response = await axios.get(`${BASE_URL}/api/admin/students/${userId}`);
+        setProfile(response.data);
       }
-
-      const userId = parsed.userId;
-      const response = await axios.get(`${BASE_URL}/api/admin/students/${userId}`);
-      setProfile(response.data);
     } catch (err) {
       console.error('❌ Error loading profile:', err);
       Alert.alert('Error', 'Failed to load student profile');

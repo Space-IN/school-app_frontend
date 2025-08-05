@@ -27,7 +27,7 @@ const AttendanceScreen = () => {
           return;
         }
 
-        const res = await fetch(`http://10.221.34.140:5000/api/attendance/student/${studentUserId}`);
+        const res = await fetch(`http://10.221.34.141:5000/api/attendance/student/${studentUserId}`);
         const data = await res.json();
 
         console.log('📦 Attendance response:', data);

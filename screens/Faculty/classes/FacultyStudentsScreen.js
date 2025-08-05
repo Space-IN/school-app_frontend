@@ -1,3 +1,4 @@
+// screens/faculty/FacultyStudentsScreen.js
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -6,15 +7,18 @@ import {
   ActivityIndicator,
   StyleSheet,
   StatusBar,
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import axios from 'axios';
 import BASE_URL from '../../../config/baseURL';
+import { useNavigation } from '@react-navigation/native';
 
 export default function FacultyStudentsScreen({ route }) {
   const { grade, section = 'A' } = route.params || {};
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigation = useNavigation();
 
   useEffect(() => {
     fetchStudents();
@@ -33,23 +37,28 @@ export default function FacultyStudentsScreen({ route }) {
     }
   };
 
+  const handleStudentPress = (student) => {
+    navigation.navigate('StudentProfileScreen', {
+      studentData: student,
+    });
+  };
+
   const renderItem = ({ item }) => (
-    <View style={styles.card}>
+    <TouchableOpacity onPress={() => handleStudentPress(item)} style={styles.card}>
       <Text style={styles.studentName}>👤 {item.name}</Text>
       <Text style={styles.studentId}>🆔 ID: {item.userId}</Text>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
-      
-      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>📚 Students of Class {grade} - Section {section}</Text>
+        <Text style={styles.headerTitle}>
+          📚 Students of Class {grade} - Section {section}
+        </Text>
       </View>
 
-      {/* Student List */}
       {loading ? (
         <ActivityIndicator size="large" style={{ marginTop: 30 }} />
       ) : (

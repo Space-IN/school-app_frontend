@@ -19,7 +19,9 @@ export default function App() {
         <AppNavigator />
       </NavigationContainer>
       <Toast />
-        </ SafeAreaProvider>
+
+      </SafeAreaProvider>
+
     </>
   );
 }

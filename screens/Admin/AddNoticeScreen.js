@@ -15,9 +15,9 @@ import {
 import axios from "axios";
 import { io } from "socket.io-client";
 import * as DocumentPicker from 'expo-document-picker';
-import {WebView} from 'react-native-webview';
 
-const BASE_URL = "http://10.221.34.140:5000";
+
+const BASE_URL = "http://10.221.34.141:5000";
 
 const AddNoticeScreen = () => {
   const [title, setTitle] = useState("");
@@ -125,10 +125,6 @@ const [previewUrl, setPreviewUrl] = useState('');
     Alert.alert('Upload Error', 'Failed to upload notice');
   }
 };
-
-
-
-
 
   const handleDeleteNotice = async (id) => {
     Alert.alert("Delete", "Are you sure you want to delete this notice?", [
