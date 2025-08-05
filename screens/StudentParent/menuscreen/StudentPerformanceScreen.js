@@ -28,7 +28,7 @@ const StudentPerformanceScreen = ({ route }) => {
 
       try {
         console.log('✅ Fetching performance for userId:', userId);
-        const response = await axios.get(`http://10.221.34.141:5000/api/performance/student/${userId}`);
+        const response = await axios.get(`http://10.221.34.140:5000/api/performance/student/${userId}`);
         const exams = response.data.performances || [];
         setPerformanceData(exams);
         if (exams.length) {
@@ -127,9 +127,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontSize: 14,
+    fontSize: 24,
     fontWeight: '500',
-    color: '#4b5563',
+    color: '#1e2c3fff',
     marginBottom: 8,
   },
   pickerWrapper: {

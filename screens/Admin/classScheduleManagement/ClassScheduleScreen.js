@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ScrollView,
   Platform,
   StatusBar,
+  SafeAreaView,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as DocumentPicker from 'expo-document-picker';
@@ -21,31 +22,52 @@ export default function ClassScheduleXLSXUpload() {
   const [selectedSection, setSelectedSection] = useState('');
   const [excelData, setExcelData] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [allSchedules, setAllSchedules] = useState([]);
+  const [expandedSchedules, setExpandedSchedules] = useState({});
 
   const CLASS_OPTIONS = Array.from({ length: 10 }, (_, i) => `${i + 1}`);
   const SECTION_OPTIONS = ['A', 'B', 'C', 'D'];
 
- const validateClassSection = async (cls, section) => {
-  try {
-    const res = await axios.post(`${BASE_URL}/api/subject/check-class-section`, {
-      classAssigned: cls,
-      section,
-    });
+  const toggleExpand = (key) => {
+    setExpandedSchedules((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
 
-    if (res.data.exists) {
-      return true;
-    } else {
-      Alert.alert('Invalid', 'This Class-Section is not assigned to any faculty.');
+  const fetchAll = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/api/schedule/all`);
+      setAllSchedules(res.data);
+    } catch (err) {
+      console.error("Error fetching schedules:", err.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchAll();
+  }, []);
+
+  const validateClassSection = async (cls, section) => {
+    try {
+      const res = await axios.post(`${BASE_URL}/api/subject/check-class-section`, {
+        classAssigned: cls,
+        section,
+      });
+
+      if (res.data.exists) {
+        return true;
+      } else {
+        Alert.alert('Invalid', 'This Class-Section is not assigned to any faculty.');
+        return false;
+      }
+    } catch (err) {
+      const message =
+        err.response?.data?.message || 'Could not validate Class-Section combination.';
+      Alert.alert('Error', message);
       return false;
     }
-  } catch (err) {
-    const message =
-      err.response?.data?.message || 'Could not validate Class-Section combination.';
-    Alert.alert('Error', message);
-    return false;
-  }
-};
-
+  };
 
   const handlePickExcel = async () => {
     const isValid = await validateClassSection(selectedClass, selectedSection);
@@ -75,7 +97,6 @@ export default function ClassScheduleXLSXUpload() {
           facultyId: typeof row.facultyId === 'string' ? row.facultyId.trim() : '',
         }));
 
-        console.log('✅ Excel Parsed:', cleanedData);
         setExcelData(cleanedData);
       }
     } catch (err) {
@@ -95,18 +116,14 @@ export default function ClassScheduleXLSXUpload() {
 
     try {
       setUploading(true);
-      const weeklySchedule = [];
       const groupedByDay = {};
-
-
-      
 
       for (const row of excelData) {
         const day = row.day;
         if (!groupedByDay[day]) groupedByDay[day] = [];
-const subjectName =
-  typeof row.subjectName === 'string' ? row.subjectName.trim() : null;
 
+        const subjectName =
+          typeof row.subjectName === 'string' ? row.subjectName.trim() : null;
 
         const rawFacultyId =
           typeof row.facultyId === 'string' ? row.facultyId.trim() : '';
@@ -123,13 +140,10 @@ const subjectName =
         });
       }
 
-
-
-
-
-      for (const [day, periods] of Object.entries(groupedByDay)) {
-        weeklySchedule.push({ day, periods });
-      }
+      const weeklySchedule = Object.entries(groupedByDay).map(([day, periods]) => ({
+        day,
+        periods,
+      }));
 
       const payload = {
         classAssigned: selectedClass,
@@ -139,9 +153,9 @@ const subjectName =
 
       const res = await axios.post(`${BASE_URL}/api/schedule/set`, payload);
 
-      console.log('✅ Schedule Saved:', res.data);
       Alert.alert('Success', 'Schedule uploaded and saved successfully!');
       setExcelData([]);
+      fetchAll(); // Refresh list after upload
     } catch (err) {
       console.error('❌ Upload error:', err.response?.data || err.message);
       Alert.alert('Error', err.response?.data?.message || 'Upload failed');
@@ -150,52 +164,134 @@ const subjectName =
     }
   };
 
+  const handleDelete = async (cls, section) => {
+    Alert.alert(
+      'Confirm Deletion',
+      `Are you sure you want to delete schedule for Class ${cls} - Section ${section}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await axios.delete(`${BASE_URL}/api/schedule/delete`, {
+                data: { classAssigned: cls, section },
+              });
+              Alert.alert('Deleted', 'Schedule deleted successfully.');
+              fetchAll(); // Refresh list after delete
+            } catch (err) {
+              console.error('Error deleting schedule:', err.message);
+              Alert.alert('Error', 'Could not delete schedule.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>📂 Upload Class Schedule via Excel (.xlsx)</Text>
+    <SafeAreaView style={{ flex: 1 }}>
+      <ScrollView style={styles.container}>
+        <View style={styles.contentWrapper}>
+          <Text style={styles.title}>📂 Upload Class Schedule via Excel (.xlsx)</Text>
 
-      <Text style={styles.label}>Class:</Text>
-      <Picker
-        selectedValue={selectedClass}
-        style={styles.picker}
-        onValueChange={(value) => setSelectedClass(value)}
-      >
-        <Picker.Item label="Select Class" value="" />
-        {CLASS_OPTIONS.map((cls, idx) => (
-          <Picker.Item key={idx} label={cls} value={cls} />
-        ))}
-      </Picker>
+          <Text style={styles.label}>Class:</Text>
+          <Picker
+            selectedValue={selectedClass}
+            style={styles.picker}
+            onValueChange={(value) => setSelectedClass(value)}
+          >
+            <Picker.Item label="Select Class" value="" />
+            {CLASS_OPTIONS.map((cls, idx) => (
+              <Picker.Item key={idx} label={cls} value={cls} />
+            ))}
+          </Picker>
 
-      <Text style={styles.label}>Section:</Text>
-      <Picker
-        selectedValue={selectedSection}
-        style={styles.picker}
-        onValueChange={(value) => setSelectedSection(value)}
-      >
-        <Picker.Item label="Select Section" value="" />
-        {SECTION_OPTIONS.map((sec, idx) => (
-          <Picker.Item key={idx} label={sec} value={sec} />
-        ))}
-      </Picker>
+          <Text style={styles.label}>Section:</Text>
+          <Picker
+            selectedValue={selectedSection}
+            style={styles.picker}
+            onValueChange={(value) => setSelectedSection(value)}
+          >
+            <Picker.Item label="Select Section" value="" />
+            {SECTION_OPTIONS.map((sec, idx) => (
+              <Picker.Item key={idx} label={sec} value={sec} />
+            ))}
+          </Picker>
 
-      <TouchableOpacity style={styles.button} onPress={handlePickExcel}>
-        <Text style={styles.buttonText}>📁 Choose Excel File</Text>
-      </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={handlePickExcel}>
+            <Text style={styles.buttonText}>📁 Choose Excel File</Text>
+          </TouchableOpacity>
 
-      {excelData.length > 0 && (
-        <Text style={{ marginVertical: 10 }}>✅ {excelData.length} rows parsed</Text>
-      )}
+          {excelData.length > 0 && (
+            <Text style={{ marginVertical: 10 }}>✅ {excelData.length} rows parsed</Text>
+          )}
 
-      <TouchableOpacity
-        style={[styles.button, { backgroundColor: '#10b981' }]}
-        onPress={handleUploadToServer}
-        disabled={uploading}
-      >
-        <Text style={styles.buttonText}>
-          {uploading ? 'Uploading...' : '📤 Upload to Server'}
-        </Text>
-      </TouchableOpacity>
-    </ScrollView>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: '#10b981' }]}
+            onPress={handleUploadToServer}
+            disabled={uploading}
+          >
+            <Text style={styles.buttonText}>
+              {uploading ? 'Uploading...' : '📤 Upload to Server'}
+            </Text>
+          </TouchableOpacity>
+
+          <Text style={styles.title}>📚 Existing Class Schedules</Text>
+
+          {allSchedules.length === 0 ? (
+            <Text>No schedules found</Text>
+          ) : (
+            allSchedules.map((schedule, idx) => {
+              const key = `${schedule.classAssigned}-${schedule.section}`;
+              const isExpanded = expandedSchedules[key];
+
+              return (
+                <View key={idx} style={styles.scheduleCard}>
+                  <Text style={styles.cardTitle}>
+                    Class {schedule.classAssigned} - Section {schedule.section}
+                  </Text>
+
+                  {isExpanded && (
+                    <View style={{ marginTop: 10 }}>
+                      {schedule.weeklySchedule.map((dayObj, i) => (
+                        <View key={i} style={{ marginBottom: 4 }}>
+                          <Text style={styles.dayText}>{dayObj.day}</Text>
+                          {dayObj.periods.map((p, j) => (
+                            <Text key={j} style={styles.periodText}>
+                              Period {p.periodNumber}: {p.timeSlot} — {} ({p.facultyId})
+                            </Text>
+                          ))}
+                        </View>
+                      ))}
+
+                      
+                    </View>
+                  )}
+
+                  <TouchableOpacity
+                        style={[styles.button, { backgroundColor: '#dc2626' }]}
+                        onPress={() => handleDelete(schedule.classAssigned, schedule.section)}
+                      >
+                        <Text style={styles.buttonText}>🗑 Delete Schedule</Text>
+                      </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.button, { backgroundColor: '#6b7280' }]}
+                    onPress={() => toggleExpand(key)}
+                  >
+                    <Text style={styles.buttonText}>
+                      {isExpanded ? '🔼 Less' : '🔽 More'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            })
+          )}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -205,6 +301,10 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     backgroundColor: '#fff',
     padding: 16,
+  },
+  contentWrapper: {
+    flex: 1,
+    paddingBottom: 60,
   },
   title: {
     fontSize: 22,
@@ -226,12 +326,38 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: '#2563eb',
     padding: 12,
-    marginVertical: 10,
+    marginTop: 10,
     borderRadius: 6,
     alignItems: 'center',
+    width: '100%',
   },
   buttonText: {
     color: '#fff',
     fontWeight: '600',
+  },
+  scheduleCard: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    padding: 10,
+    borderRadius: 8,
+    marginVertical: 8,
+    backgroundColor: '#f9fafb',
+    flexGrow: 1,
+    width: '100%',
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 6,
+    color: '#111827',
+  },
+  dayText: {
+    fontWeight: '600',
+    marginTop: 5,
+    color: '#374151',
+  },
+  periodText: {
+    marginLeft: 10,
+    color: '#4b5563',
   },
 });
