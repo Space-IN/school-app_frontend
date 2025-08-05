@@ -57,6 +57,10 @@ export default function FilteredStudentsScreen({ route, navigation }) {
     }
   };
 
+  const handleViewProfile = (student) => {
+    navigation.navigate('StudentProfileScreen', { student });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.topPadding} />
@@ -76,23 +80,25 @@ export default function FilteredStudentsScreen({ route, navigation }) {
           keyExtractor={(item, index) => index.toString()}
           contentContainerStyle={styles.list}
           renderItem={({ item }) => (
-            <View style={styles.card}>
-              <Text style={styles.name}>
-                {item.name} ({item.userId})
-              </Text>
-              <Text style={styles.details}>
-                Grade: {item.className} | Section: {item.section}
-              </Text>
+            <TouchableOpacity onPress={() => handleViewProfile(item)} activeOpacity={0.8}>
+              <View style={styles.card}>
+                <Text style={styles.name}>
+                  {item.name} ({item.userId})
+                </Text>
+                <Text style={styles.details}>
+                  Grade: {item.className} | Section: {item.section}
+                </Text>
 
-              <View style={styles.actionRow}>
-                <TouchableOpacity onPress={() => handleEdit(item)}>
-                  <Text style={styles.editBtn}>✏️</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleSoftDelete(item.userId)}>
-                  <Text style={styles.softDeleteBtn}>⚠️</Text>
-                </TouchableOpacity>
+                <View style={styles.actionRow}>
+                  <TouchableOpacity onPress={() => handleEdit(item)}>
+                    <Text style={styles.editBtn}>✏️</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => handleSoftDelete(item.userId)}>
+                    <Text style={styles.softDeleteBtn}>⚠️</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
+            </TouchableOpacity>
           )}
         />
       )}

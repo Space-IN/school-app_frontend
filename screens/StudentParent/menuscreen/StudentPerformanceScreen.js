@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingHorizontal: width * 0.05, // 5% horizontal padding
+    paddingHorizontal: width * 0.05, 
     paddingVertical: 16,
     backgroundColor: '#9ab4beff',
     padding: 40,
@@ -127,9 +127,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontSize: 14,
+    fontSize: 24,
     fontWeight: '500',
-    color: '#4b5563',
+    color: '#1e2c3fff',
     marginBottom: 8,
   },
   pickerWrapper: {

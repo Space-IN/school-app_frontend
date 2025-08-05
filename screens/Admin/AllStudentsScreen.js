@@ -1,3 +1,4 @@
+//school-app_frontend\screens\Admin\AllStudentsScreen.js
 import React, { useState } from 'react';
 import {
   View,

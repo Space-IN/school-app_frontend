@@ -62,7 +62,7 @@ const AddFacultyScreen = () => {
       };
 
 
-      const response = await axios.post('http://10.221.34.140:5000/api/faculty/add', payload);
+      const response = await axios.post('http://10.221.34.141:5000/api/faculty/add', payload);
 
       Alert.alert('Success', response.data.message);
 
