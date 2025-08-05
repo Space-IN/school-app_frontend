@@ -26,14 +26,6 @@ const NoticeBoardScreen = () => {
 
   const [userId, setUserId] = useState('');
   const [role, setRole] = useState('');
- 
- 
-useEffect(() => {
-  const initialize = async () => {
-    try {
-      const stored = await AsyncStorage.getItem('userData');
-      const parsed = stored ? JSON.parse(stored) : null;
- 
 
   // For PDF modal
   const [modalVisible, setModalVisible] = useState(false);
@@ -49,7 +41,6 @@ useEffect(() => {
     setModalVisible(false);
     setPdfUrl('');
   };
- 
 
   useEffect(() => {
     const initialize = async () => {
@@ -65,18 +56,6 @@ useEffect(() => {
         const rawRole = parsed.role.toLowerCase(); // 'student', 'faculty'
         const roleMapped = rawRole === "student" ? "students" : rawRole;
 
- 
-      // 👇 API call based on role and ID
-      const res = await axios.get(
-        `http://10.221.34.141:5000/api/notices/user/${normalizedRole}/${id}`
-      );
-      setNotices(res.data);
-
-      // 👇 Socket connection setup
-      socketRef.current = io("http://10.221.34.141:5000", {
-        query: { userId: id, role: normalizedRole },
-      });
- 
         setUserId(parsed.userId);
         setRole(roleMapped);
 
@@ -94,7 +73,6 @@ useEffect(() => {
         socketRef.current = io(BASE_URL, {
           query: { userId: parsed.userId, role: roleMapped },
         });
- 
 
         socketRef.current.on("recieve_notice", (data) => {
           setNotices((prev) => [data, ...prev]);
@@ -113,14 +91,6 @@ useEffect(() => {
 
     initialize();
 
- 
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <Text style={styles.noticeTitle}>{item.title}</Text>
-      <Text style={styles.noticeMessage}>{item.message}</Text>
-      <Text style={styles.noticeDate}>{new Date(item.date).toDateString()}</Text>
-    </View>
- 
     return () => {
       socketRef.current?.disconnect();
     };
@@ -168,7 +138,6 @@ useEffect(() => {
       </View>
     );
   };
- 
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>

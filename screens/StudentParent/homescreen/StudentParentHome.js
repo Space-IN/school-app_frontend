@@ -26,8 +26,9 @@ export default function StudentParentHome() {
   const [eventsToday, setEventsToday] = useState([]);
 
   const params = route.params || {};
-  const { studentName, className, section, userId } = params;
-  const displayName = studentName || userId || 'User';
+const { userId, userData } = params;
+const { studentName, className, section } = userData || {};
+const displayName = studentName || userId || 'User';
 
   const profileData = {
     class: className || '10th Grade',
@@ -77,21 +78,26 @@ export default function StudentParentHome() {
 
   // 🟡 Fetch subjects
   useEffect(() => {
-    const fetchSubjects = async () => {
-      if (!className || !section) return;
-      try {
-        const res = await axios.get(
+  const fetchSubjects = async () => {
+    if (!className || !section) {
+      console.warn('ClassName or section missing');
+      return;
+    }
 
-          `http://10.221.34.140:5000/api/schedule/subjects/${className}/${section}`
+    try {
+      console.log(`Fetching subjects for ${className} / ${section}`);
+      const res = await axios.get(`http://10.221.34.140:5000/api/schedule/subjects/${className}/${section}`);
+      console.log('Subjects fetched:', res.data);
 
-        );
-        setSubjects(res.data.subjects || []);
-      } catch (err) {
-        console.error('Failed to load subjects:', err.message);
-      }
-    };
-    fetchSubjects();
-  }, [className, section]);
+      setSubjects(res.data.subjects || []);
+    } catch (err) {
+      console.error('Failed to load subjects:', err.response?.data || err.message);
+    }
+  };
+
+  fetchSubjects();
+}, [className, section]);
+
 
   // 🟡 Fetch today's events
   useEffect(() => {

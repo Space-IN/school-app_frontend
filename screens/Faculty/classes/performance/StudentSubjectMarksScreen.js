@@ -63,7 +63,7 @@ const StudentSubjectMarksScreen = ({ route }) => {
   const fetchSubjects = async () => {
     try {
       const res = await axios.get(
-        `http://10.221.34.141:5000/api/schedule/class/${grade}/section/${section}/subjects`
+        `http://10.221.34.140:5000/api/schedule/class/${grade}/section/${section}/subjects`
       );
       if (res.data.subjects?.length) {
         setSubjects(res.data.subjects);
@@ -156,7 +156,7 @@ const StudentSubjectMarksScreen = ({ route }) => {
         };
 
         try {
-          await axios.post('http://10.221.34.141:5000/api/marks/submit', payload);
+          await axios.post('http://10.221.34.140:5000/api/marks/submit', payload);
           submitted = true;
         } catch (error) {
           if (error.response?.status === 403) {
