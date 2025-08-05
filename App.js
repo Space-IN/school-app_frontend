@@ -14,11 +14,14 @@ export default function App() {
   return (
     <>
       <SafeAreaProvider>
+
       <NavigationContainer>
         <AppNavigator />
       </NavigationContainer>
       <Toast />
+
       </SafeAreaProvider>
+
     </>
   );
 }

@@ -34,12 +34,18 @@ function MenuScreen({ navigation, route }) {
     { title: 'Parent Profile', screen: 'ParentProfileScreen', icon: 'person-circle-outline' },
     { title: 'Academic Calendar', screen: 'AcademicCalendarScreen', icon: 'calendar-number-outline' },
     { title: 'Settings', screen: 'SettingsScreen', icon: 'settings-outline' },
+
      {title: 'studentProfile', screen: 'StudentProfileScreen', icon: 'person-outline'},
  
   ];
  
    
  // 
+
+ 
+    
+  // 
+
  
 
   return (
