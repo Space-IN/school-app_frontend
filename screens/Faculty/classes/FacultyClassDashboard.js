@@ -103,8 +103,9 @@ export default function FacultyClassDashboard({ navigation, route }) {
     //{ title: 'Tests & Exams', icon: 'school', screen: 'FacultyTestsScreen' },
     { title: 'Performance', icon: 'bar-chart', screen: 'FacultyPerformanceScreen' },
     { title: 'My Schedule', icon: 'calendar', screen: 'FacultyScheduleScreen' },
-     { title: 'View Past Attendance', icon: 'time', screen: 'PastAttendanceScreen' },
-  { title: 'Monthly Summary', icon: 'stats-chart', screen: 'MonthlySummaryScreen' },
+    { title: 'View Past Attendance', icon: 'time', screen: 'PastAttendanceScreen' },
+    { title: 'Monthly Summary', icon: 'stats-chart', screen: 'MonthlySummaryScreen' },
+    { title: 'Lecture Recording', icon: 'mic', screen: 'LectureRecordingScreen' },
   ];
 
   const handleCardPress = (screen) => {

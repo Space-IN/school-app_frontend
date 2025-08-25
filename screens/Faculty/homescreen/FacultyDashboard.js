@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f9fafe',
     padding: 20,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    paddingTop: 0,
   },
   sectionTitle: {
     fontSize: 18,

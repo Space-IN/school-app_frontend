@@ -86,7 +86,7 @@ const displayName = studentName || userId || 'User';
 
     try {
       console.log(`Fetching subjects for ${className} / ${section}`);
-      const res = await axios.get(`http://10.221.34.140:5000/api/schedule/subjects/${className}/${section}`);
+      const res = await axios.get(`http://10.221.34.141:5000/api/schedule/subjects/${className}/${section}`);
       console.log('Subjects fetched:', res.data);
 
       setSubjects(res.data.subjects || []);
@@ -104,7 +104,7 @@ const displayName = studentName || userId || 'User';
     const fetchEvents = async () => {
       try {
 
-        const res = await axios.get('http://10.221.34.140:5000/api/events');
+        const res = await axios.get('http://10.221.34.141:5000/api/events');
 
         const allEvents = res.data || [];
         const today = new Date().toISOString().split('T')[0];

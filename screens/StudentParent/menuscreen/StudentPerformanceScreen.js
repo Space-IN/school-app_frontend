@@ -28,7 +28,7 @@ const StudentPerformanceScreen = ({ route }) => {
 
       try {
         console.log('✅ Fetching performance for userId:', userId);
-        const response = await axios.get(`http://10.221.34.140:5000/api/performance/student/${userId}`);
+        const response = await axios.get(`http://10.221.34.141:5000/api/performance/student/${userId}`);
         const exams = response.data.performances || [];
         setPerformanceData(exams);
         if (exams.length) {
