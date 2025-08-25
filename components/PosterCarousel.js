@@ -88,11 +88,12 @@ export default function PosterCarousel() {
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
-          scrollEventThrottle={16}
-          onScroll={(e) => {
-            const index = Math.round(e.nativeEvent.contentOffset.x / width);
-            setCurrentIndex(index);
-          }}
+          // scrollEventThrottle={16}
+          // onScroll={(e) => {
+          //   const index = Math.round(e.nativeEvent.contentOffset.x / width);
+          //   setCurrentIndex(index);
+          // }}
+          scrollEnabled={false}
         >
           {posters.map((poster, index) => {
             const isExpanded = expandedIndices[index];

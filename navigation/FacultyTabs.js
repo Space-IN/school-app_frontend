@@ -10,6 +10,7 @@ import FacultyClassDashboard from '../screens/Faculty/classes/FacultyClassDashbo
 import FacultyScheduleScreen from '../screens/Faculty/schedule/FacultyScheduleScreen';
 import FacultyProfileScreen from '../screens/Faculty/profile/FacultyProfileScreen';
 import ViewPerformanceTab from '../screens/Faculty/classes/performance/ViewPerformanceTab';
+import LectureRecordingScreen from '../screens/Faculty/classes/LectureRecordingScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -45,6 +46,12 @@ function ClassesStack({ route }) {
         name="ViewPerformanceTab"
         component={ViewPerformanceTab}
         options={{ title: 'View Performance' }}
+      />
+
+      <Stack.Screen
+        name="LectureRecordingScreen"
+        component={LectureRecordingScreen}
+        options={{ title: 'Lecture Recording' }}
       />
 
     </Stack.Navigator>
