@@ -26,6 +26,9 @@ import AdminPosterManager from '../screens/Admin/AdminPosterManager';
 import ClassScheduleScreen from '../screens/Admin/classScheduleManagement/ClassScheduleScreen';
 import ClassScheduleViewScreen from '../screens/Admin/classScheduleManagement/ClassScheduleViewScreen';
 import AddNoticeScreen from '../screens/Admin/AddNoticeScreen'; // ✅ shanks changes: added Add Notice
+import FacultyPerformance from "../screens/Admin/FacultyPerformance";
+import FacultyListScreen from "../screens/Admin/FacultyListScreen";  
+import FacultyScoreScreen from "../screens/Admin/FacultyScoreScreen";
 
 // Faculty Screens
 import FacultyTabs from './FacultyTabs';
@@ -119,8 +122,12 @@ export default function AppNavigator() {
       <Stack.Screen name="ClassScheduleScreen" component={ClassScheduleScreen} />
       <Stack.Screen name="ClassScheduleViewScreen" component={ClassScheduleViewScreen} />
       <Stack.Screen name="AddNoticeScreen" component={AddNoticeScreen} />
+      <Stack.Screen name="FacultyPerformance" component={FacultyPerformance} />
+      <Stack.Screen name="FacultyListScreen" component={FacultyListScreen} />
+      <Stack.Screen name="FacultyScore" component={FacultyScoreScreen} />
 
 
+    
       {/* Faculty */}
       <Stack.Screen name="FacultyTabs" component={FacultyTabs} />
       <Stack.Screen name="FacultyClassDashboard" component={FacultyClassDashboard} />

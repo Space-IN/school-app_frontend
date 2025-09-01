@@ -159,13 +159,16 @@ const displayName = studentName || userId || 'User';
               key={index}
               style={[styles.subjectTile, { backgroundColor: item.color || '#467fc5ff' }]}
               activeOpacity={1}
-              // onPress={() =>
-              //   navigation.navigate('SubjectDashboard', {
-              //     subjectName: item.name,
-              //     chapters: item.chapters || [],
-              //     announcements: item.announcements || [],
-              //   })
-              // }
+              onPress={() =>
+                navigation.navigate('SubjectDashboard', {
+                  subjectName: item.name,
+                  subjectMasterId: item._id,
+                  grade: className,  
+                  section: section,
+                  chapters: item.chapters || [],
+                  announcements: item.announcements || [],
+                })
+              }
             >
               <Ionicons name={item.icon || 'book'} size={30} color="#fff" />
               <Text style={styles.subjectText}>{item.name}</Text>
