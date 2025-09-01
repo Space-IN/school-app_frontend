@@ -40,14 +40,6 @@ function MenuScreen({ navigation, route }) {
   ];
  
    
- // 
-
- 
-    
-  // 
-
- 
-
   return (
     <View style={styles.container}>
       <FlatList
@@ -60,8 +52,8 @@ function MenuScreen({ navigation, route }) {
             style={styles.menuTile}
             onPress={() =>
               navigation.navigate(item.screen, {
-                userId,     // ✅ Always pass userId
-                userData,   // ✅ Optionally pass full userData
+                userId,     
+                userData,   
               })
             }
           >

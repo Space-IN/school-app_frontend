@@ -22,7 +22,7 @@ import PosterCarousel from '../../components/PosterCarousel';
 export default function AdminDashboard({ navigation }) {
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [events , setEvents] = useState([]);
+  const [events, setEvents] = useState([]);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -60,9 +60,7 @@ export default function AdminDashboard({ navigation }) {
     ]);
   };
 
-  
-
-
+  // ✅ Navigation handlers
   const handleAddStudent = () => navigation.navigate('AddStudentScreen');
   const handleAddFaculty = () => navigation.navigate('AddFacultyScreen');
   const handleViewStudents = () => navigation.navigate('AllStudentsScreen');
@@ -73,17 +71,14 @@ export default function AdminDashboard({ navigation }) {
   const handleAddEvent = () => navigation.navigate('AddEventScreen');
   const handleViewClassSchedule = () => navigation.navigate('ClassScheduleViewScreen');
   const handlePosterManagement = () => navigation.navigate('AdminPosterManager');
+  const handleAddNotice = () => navigation.navigate('AddNoticeScreen');
+  const handleFacultyPerformance = () => navigation.navigate('FacultyPerformance'); // 🆕 new handler
 
-  // ✅ NEW: Handle Add Notice navigation
-  const handleAddNotice = () => navigation.navigate('AddNoticeScreen'); // 🆕 Added handler
-
-const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0];
   const todayEvents = events.filter((event) => {
     const eventDate = new Date(event.date).toISOString().split('T')[0];
     return eventDate === today;
   });
-
-   
 
   if (loading) {
     return (
@@ -106,10 +101,9 @@ const today = new Date().toISOString().split('T')[0];
           <Text style={styles.subtitle}>Welcome to the Admin Dashboard</Text>
         </View>
 
-         
-         <PosterCarousel />
+        <PosterCarousel />
 
-          
+        {/* ---------------- Sections ---------------- */}
 
         <Text style={styles.sectionTitle}>➕ Add Users</Text>
         <View style={styles.row}>
@@ -167,7 +161,16 @@ const today = new Date().toISOString().split('T')[0];
           </TouchableOpacity>
         </View>
 
-        {/* ✅ NEW: Add Notice tab */}
+        {/* ✅ NEW: Faculty Performance */}
+        <Text style={styles.sectionTitle}>📊 Faculty Performance</Text>
+        <View style={styles.row}>
+          <TouchableOpacity style={styles.tileButton} onPress={handleFacultyPerformance}>
+            <Ionicons name="analytics-outline" size={30} color="#fff" />
+            <Text style={styles.tileText}>View Performance</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* ✅ Notices */}
         <Text style={styles.sectionTitle}>📢 Notices</Text>
         <View style={styles.row}>
           <TouchableOpacity style={styles.tileButton} onPress={handleAddNotice}>
@@ -188,7 +191,7 @@ const today = new Date().toISOString().split('T')[0];
   );
 }
 
-// ✅ Styles remain unchanged
+// ✅ Styles stay the same
 const styles = StyleSheet.create({
   container: {
     flex: 1,

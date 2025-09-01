@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useEffect, useState } from 'react';
-import { View,Text, TouchableOpacity, StyleSheet, BackHandler } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, BackHandler } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import  Ionicons  from '@expo/vector-icons/Ionicons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import BASE_URL from '../../../config/baseURL';
 
 export default function FacultyClassDashboard({ navigation, route }) {
@@ -93,19 +93,18 @@ export default function FacultyClassDashboard({ navigation, route }) {
   );
 
   useLayoutEffect(() => {
-    navigation.setOptions({ title: `${grade}'th  Class - section ${section}`});
+    navigation.setOptions({ title: `${grade}'th  Class - section ${section}` });
   }, [navigation, grade]);
 
   const sections = [
     { title: 'Students', icon: 'people', screen: 'FacultyStudentsScreen' },
     { title: 'Attendance', icon: 'clipboard', screen: 'FacultyAttendanceScreen' },
-   // { title: 'Assignments', icon: 'document-text', screen: 'FacultyAssignmentsScreen' },
-    //{ title: 'Tests & Exams', icon: 'school', screen: 'FacultyTestsScreen' },
     { title: 'Performance', icon: 'bar-chart', screen: 'FacultyPerformanceScreen' },
     { title: 'My Schedule', icon: 'calendar', screen: 'FacultyScheduleScreen' },
     { title: 'View Past Attendance', icon: 'time', screen: 'PastAttendanceScreen' },
     { title: 'Monthly Summary', icon: 'stats-chart', screen: 'MonthlySummaryScreen' },
     { title: 'Lecture Recording', icon: 'mic', screen: 'LectureRecordingScreen' },
+    { title: 'Chapters', icon: 'book', screen: 'FacultyChaptersScreen' },
   ];
 
   const handleCardPress = (screen) => {
@@ -160,14 +159,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    },
-
-    cardTitle: {
-  color: '#fff',
-  fontSize: 14,
-  fontWeight: '500',
-  textAlign: 'center',
-},
-
-  
+  },
+  cardTitle: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
 });
+
