@@ -34,21 +34,22 @@ const FacultyScoreScreen = ({ route }) => {
     fetchLectures();
   }, [facultyId, classId, section]);
 
-  const getRelevanceColor = (isRelevant = "") => {
-    const value = isRelevant.toLowerCase();
-    if (value === "highly_relevant") return "#4CAF50";
-    if (value === "moderately_relevant") return "#FF9800";
-    if (value === "not_relevant") return "#F44336";
-    return "#9E9E9E";
-  };
+  const getRelevanceColor = (isRelevant) => {
+  const value = isRelevant?.toLowerCase?.() ?? "";
+  if (value === "highly_relevant") return "#4CAF50";
+  if (value === "moderately_relevant") return "#FF9800";
+  if (value === "not_relevant") return "#F44336";
+  return "#9E9E9E"; 
+};
 
-  const getRelevanceIcon = (isRelevant = "") => {
-    const value = isRelevant.toLowerCase();
-    if (value === "highly_relevant") return "checkmark-circle";
-    if (value === "moderately_relevant") return "warning";
-    if (value === "not_relevant") return "close-circle";
-    return "help-circle";
-  };
+const getRelevanceIcon = (isRelevant) => {
+  const value = isRelevant?.toLowerCase?.() ?? "";
+  if (value === "highly_relevant") return "checkmark-circle";
+  if (value === "moderately_relevant") return "warning";
+  if (value === "not_relevant") return "close-circle";
+  return "help-circle"; 
+};
+
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
