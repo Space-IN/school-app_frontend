@@ -25,10 +25,11 @@ import AssignSubjectScreen from '../screens/Admin/subjectManagement/AssignSubjec
 import AdminPosterManager from '../screens/Admin/AdminPosterManager';
 import ClassScheduleScreen from '../screens/Admin/classScheduleManagement/ClassScheduleScreen';
 import ClassScheduleViewScreen from '../screens/Admin/classScheduleManagement/ClassScheduleViewScreen';
-import AddNoticeScreen from '../screens/Admin/AddNoticeScreen'; // ✅ shanks changes: added Add Notice
+import AddNoticeScreen from '../screens/Admin/AddNoticeScreen';
 import FacultyPerformance from "../screens/Admin/FacultyPerformance";
 import FacultyListScreen from "../screens/Admin/FacultyListScreen";  
 import FacultyScoreScreen from "../screens/Admin/FacultyScoreScreen";
+import FacultyProfileViewScreen from '../screens/Admin/FacultyProfileViewScreen';
 
 // Faculty Screens
 import FacultyTabs from './FacultyTabs';
@@ -40,17 +41,13 @@ import FacultyTestsScreen from '../screens/Faculty/classes/FacultyTestsScreen';
 import FacultyPerformanceScreen from '../screens/Faculty/classes/FacultyPerformanceScreen';
 import FacultyScheduleScreen from '../screens/Faculty/schedule/FacultyScheduleScreen';
 import FacultyProfileScreen from '../screens/Faculty/profile/FacultyProfileScreen';
- 
+
 import ManagePerformanceTab from '../screens/Faculty/classes/performance/ManagePerformanceTab';
 import ViewPerformanceTab from '../screens/Faculty/classes/performance/ViewPerformanceTab';
 import StudentSubjectMarksScreen from '../screens/Faculty/classes/performance/StudentSubjectMarksScreen';
 import ManagePerformanceTabs from '../screens/Faculty/classes/performance/ManagePerformanceTabs';
-
- 
-import PastAttendanceScreen from '../screens/Faculty/classes/PastAttendanceScreen'; // ✅ shanks changes: added Past Attendance Screen
- 
-
-import MonthlySummaryScreen from '../screens/Faculty/classes/MonthlySummaryScreen'; // ✅ shanks changes: added Monthly Summary Screen
+import PastAttendanceScreen from '../screens/Faculty/classes/PastAttendanceScreen'; 
+import MonthlySummaryScreen from '../screens/Faculty/classes/MonthlySummaryScreen'; 
 
 // Student/Parent Screens
 import StudentParentTabs from './StudentParentTabs';
@@ -78,7 +75,7 @@ export default function AppNavigator() {
   useEffect(() => {
     const alwaysStartAtRoleSelection = async () => {
       try {
-        await AsyncStorage.removeItem('userData'); // ✅ shanks changes: Always fresh login
+        await AsyncStorage.removeItem('userData'); 
         console.log('🧹 Cleared user session for fresh start');
       } catch (err) {
         console.error('❌ Error clearing AsyncStorage:', err);
@@ -99,10 +96,16 @@ export default function AppNavigator() {
   }
 
   return (
-    <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
+    <Stack.Navigator
+      initialRouteName={initialRoute}
+      screenOptions={{
+        headerShown: true,
+        headerBackTitleVisible: false,
+      }}
+    >
       {/* Common */}
-      <Stack.Screen name="RoleSelection" component={RoleSelection} />
-      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="RoleSelection" component={RoleSelection} options={{ headerShown: false }} />
+      <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
 
       {/* Admin */}
       <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
@@ -125,11 +128,10 @@ export default function AppNavigator() {
       <Stack.Screen name="FacultyPerformance" component={FacultyPerformance} />
       <Stack.Screen name="FacultyListScreen" component={FacultyListScreen} />
       <Stack.Screen name="FacultyScore" component={FacultyScoreScreen} />
+      <Stack.Screen name="FacultyProfileViewScreen" component={FacultyProfileViewScreen} />
 
-
-    
       {/* Faculty */}
-      <Stack.Screen name="FacultyTabs" component={FacultyTabs} />
+      <Stack.Screen name="FacultyTabs" component={FacultyTabs} options={{ headerShown: false }} />
       <Stack.Screen name="FacultyClassDashboard" component={FacultyClassDashboard} />
       <Stack.Screen name="FacultyStudentsScreen" component={FacultyStudentsScreen} />
       <Stack.Screen name="FacultyAttendanceScreen" component={FacultyAttendanceScreen} />
@@ -138,20 +140,14 @@ export default function AppNavigator() {
       <Stack.Screen name="FacultyPerformanceScreen" component={ManagePerformanceTabs} />
       <Stack.Screen name="FacultyScheduleScreen" component={FacultyScheduleScreen} />
       <Stack.Screen name="FacultyProfileScreen" component={FacultyProfileScreen} />
- 
       <Stack.Screen name="ManagePerformanceTab" component={ManagePerformanceTab} />
       <Stack.Screen name="ViewPerformanceTab" component={ViewPerformanceTab} />
       <Stack.Screen name="StudentSubjectMarksScreen" component={StudentSubjectMarksScreen} />
-
- 
-
       <Stack.Screen name="PastAttendanceScreen" component={PastAttendanceScreen} /> 
       <Stack.Screen name="MonthlySummaryScreen" component={MonthlySummaryScreen} />
- 
-      
 
       {/* Student/Parent */}
-      <Stack.Screen name="StudentParentTabs" component={StudentParentTabs} />
+      <Stack.Screen name="StudentParentTabs" component={StudentParentTabs} options={{ headerShown: false }} />
       <Stack.Screen name="SubjectDashboard" component={SubjectDashboard} />
       <Stack.Screen name="StudentProfileScreen" component={StudentProfileScreen} />
       <Stack.Screen name="AttendanceScreen" component={AttendanceStudent} />

@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     paddingBottom: 40,
-    backgroundColor: '#f0f4ff',
+    backgroundColor: '#bbdbfaff',
   },
   loaderContainer: {
     flex: 1,
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 25,
     textAlign: 'center',
-    color: '#2c3e50',
+    color: '#3691f8ff',
   },
   itemContainer: {
     backgroundColor: '#fff',
@@ -169,11 +169,11 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#2c3e50',
+    color: '#000000ff',
     marginBottom: 4,
   },
   value: {
     fontSize: 17,
-    color: '#4a4a4a',
+    color: '#000000ff',
   },
 });

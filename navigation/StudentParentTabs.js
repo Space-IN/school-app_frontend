@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
   View,
@@ -10,21 +10,28 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-// Screens
 import StudentParentHome from '../screens/StudentParent/homescreen/StudentParentHome';
 
 const Tab = createBottomTabNavigator();
 
 function MenuScreen({ navigation, route }) {
-  // ✅ Get both userId and userData directly from route.params
   const { userId, userData } = route?.params || {};
+  const flatListRef = useRef(null);
 
   useEffect(() => {
     console.log('📦 MenuScreen route params:', route?.params);
     if (!userId) {
       console.warn('⚠️ No userId found in MenuScreen params');
     }
-  }, []);
+
+    const unsubscribe = navigation.addListener('tabPress', () => {
+      if (flatListRef.current) {
+        flatListRef.current.scrollToOffset({ offset: 0, animated: true });
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   const menuItems = [
     { title: 'Attendance', screen: 'AttendanceScreen', icon: 'checkmark-done-circle' },
@@ -34,15 +41,13 @@ function MenuScreen({ navigation, route }) {
     { title: 'Parent Profile', screen: 'ParentProfileScreen', icon: 'person-circle-outline' },
     { title: 'Academic Calendar', screen: 'AcademicCalendarScreen', icon: 'calendar-number-outline' },
     { title: 'Settings', screen: 'SettingsScreen', icon: 'settings-outline' },
-
-     {title: 'studentProfile', screen: 'StudentProfileScreen', icon: 'person-outline'},
- 
+    { title: 'studentProfile', screen: 'StudentProfileScreen', icon: 'person-outline' },
   ];
- 
-   
+
   return (
     <View style={styles.container}>
       <FlatList
+        ref={flatListRef}
         data={menuItems}
         keyExtractor={(item) => item.title}
         numColumns={2}
@@ -52,8 +57,8 @@ function MenuScreen({ navigation, route }) {
             style={styles.menuTile}
             onPress={() =>
               navigation.navigate(item.screen, {
-                userId,     
-                userData,   
+                userId,
+                userData,
               })
             }
           >
@@ -84,13 +89,13 @@ export default function StudentParentTabs({ route }) {
           let iconName;
           if (route.name === 'Home') iconName = 'home-outline';
           else if (route.name === 'Menu') iconName = 'grid-outline';
-
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#4f46e5',
         tabBarInactiveTintColor: 'gray',
         tabBarStyle: { height: 60, paddingBottom: 5 },
         headerShown: true,
+        headerBackTitleVisible: false,
       })}
     >
       <Tab.Screen
@@ -118,7 +123,7 @@ const tileWidth = (width - 48) / 2;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#bbdbfaff',
   },
   grid: {
     padding: 10,

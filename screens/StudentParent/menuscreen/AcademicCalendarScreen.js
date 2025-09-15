@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import axios from 'axios';
+import BASE_URL from '../../../config/baseURL';
 
 LocaleConfig.locales['en'] = {
   monthNames: [
@@ -45,7 +46,7 @@ export default function AcademicCalendarScreen() {
   const fetchEvents = async () => {
     try {
 
-      const res = await axios.get('http://10.221.34.141:5000/api/events');
+      const res = await axios.get(`${BASE_URL}/api/events`);
 
       setEvents(res.data || []);
       markEventDates(res.data);
@@ -190,9 +191,9 @@ export default function AcademicCalendarScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 60,
+    paddingTop:5,
     paddingHorizontal: 16,
-    backgroundColor: '#f4f6fa',
+    backgroundColor: '#bbdbfaff',
   },
   heading: {
     fontSize: 24,

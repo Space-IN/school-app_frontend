@@ -8,6 +8,10 @@ import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
+import BASE_URL from '../../../../config/baseURL';
+
+
+
 
 const StudentSubjectMarksScreen = ({ route }) => {
   const { students, grade, section } = route.params;
@@ -63,7 +67,7 @@ const StudentSubjectMarksScreen = ({ route }) => {
   const fetchSubjects = async () => {
     try {
       const res = await axios.get(
-        `http://10.221.34.141:5000/api/schedule/class/${grade}/section/${section}/subjects`
+        `${BASE_URL}/api/schedule/class/${grade}/section/${section}/subjects`
       );
       if (res.data.subjects?.length) {
         setSubjects(res.data.subjects);
@@ -156,7 +160,7 @@ const StudentSubjectMarksScreen = ({ route }) => {
         };
 
         try {
-          await axios.post('http://10.221.34.141:5000/api/marks/submit', payload);
+          await axios.post(`${BASE_URL}/api/marks/submit`, payload);
           submitted = true;
         } catch (error) {
           if (error.response?.status === 403) {

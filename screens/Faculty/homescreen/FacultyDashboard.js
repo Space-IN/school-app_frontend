@@ -1,4 +1,5 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+//screens\Faculty\homescreen\FacultyDashboard.js
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -7,8 +8,6 @@ import {
   ScrollView,
   FlatList,
   TouchableOpacity,
-  Platform,
-  StatusBar,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ProfileHeader from '../../../components/ProfileHeader';
@@ -16,13 +15,17 @@ import axios from 'axios';
 import BASE_URL from '../../../config/baseURL';
 import { Ionicons } from '@expo/vector-icons';
 import PosterCarousel from '../../../components/PosterCarousel';
+import { useScrollToTop } from '@react-navigation/native';   // 👈 import this
 
 export default function FacultyDashboard({ navigation }) {
   const [facultyInfo, setFacultyInfo] = useState(null);
   const [subjects, setSubjects] = useState([]);
   const [schedule, setSchedule] = useState([]);
   const [events, setEvents] = useState([]);
-   
+
+  // 👇 Add scroll ref
+  const scrollRef = useRef(null);
+  useScrollToTop(scrollRef); // 👈 this enables "tap tab again → scroll to top"
 
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -41,9 +44,14 @@ export default function FacultyDashboard({ navigation }) {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <TouchableOpacity onPress={handleLogout} style={{ marginRight: 16, flexDirection: 'row', alignItems: 'center' }}>
+        <TouchableOpacity
+          onPress={handleLogout}
+          style={{ marginRight: 16, flexDirection: 'row', alignItems: 'center' }}
+        >
           <Ionicons name="log-out-outline" size={20} color="#d9534f" />
-          <Text style={{ color: '#d9534f', marginLeft: 4, fontWeight: '600' }}>Logout</Text>
+          <Text style={{ color: '#d9534f', marginLeft: 4, fontWeight: '600' }}>
+            Logout
+          </Text>
         </TouchableOpacity>
       ),
     });
@@ -68,19 +76,20 @@ export default function FacultyDashboard({ navigation }) {
 
   const fetchAssignedSubjects = async (facultyId) => {
     try {
-      const response = await axios.get(`${BASE_URL}/api/subject/subjects/faculty/${facultyId}`);
+      const response = await axios.get(
+        `${BASE_URL}/api/subject/subjects/faculty/${facultyId}`
+      );
       const rawSubjects = response.data || [];
 
-const flattenedSubjects = rawSubjects.flatMap(subject =>
-  subject.classSectionAssignments.map(assign => ({
-    subjectName: subject.subjectName,
-    classAssigned: assign.classAssigned,
-    section: assign.section,
-  }))
-);
+      const flattenedSubjects = rawSubjects.flatMap((subject) =>
+        subject.classSectionAssignments.map((assign) => ({
+          subjectName: subject.subjectName,
+          classAssigned: assign.classAssigned,
+          section: assign.section,
+        }))
+      );
 
-setSubjects(flattenedSubjects);
-
+      setSubjects(flattenedSubjects);
     } catch (err) {
       console.error(`❌ Error fetching subjects:`, err.message);
     }
@@ -91,32 +100,24 @@ setSubjects(flattenedSubjects);
       const res = await axios.get(`${BASE_URL}/api/schedule/faculty/${facultyId}`);
       const fullSchedule = res.data.schedule || [];
 
-      const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+      const todayName = new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+      });
 
-      const todayScheduleRaw = fullSchedule.filter(dayObj => dayObj.day === todayName);
+      const todayScheduleRaw = fullSchedule.filter(
+        (dayObj) => dayObj.day === todayName
+      );
 
-      const todaySchedule = todayScheduleRaw.map(dayObj => ({
+      const todaySchedule = todayScheduleRaw.map((dayObj) => ({
         ...dayObj,
-        periods: dayObj.periods.map(period => ({
+        periods: dayObj.periods.map((period) => ({
           ...period,
           classAssigned: dayObj.classAssigned,
           section: dayObj.section,
-        }))
+        })),
       }));
 
       setSchedule(todaySchedule);
-
-      const gradeSet = new Set();
-      todaySchedule.forEach(day => {
-        day.periods.forEach(p => {
-          const classAssigned = p.classAssigned;
-          if (classAssigned) {
-            const grade = classAssigned.trim().split(' ')[1]?.[0];
-            if (grade) gradeSet.add(`Class ${grade}`);
-          }
-        });
-      });
-      // setGrades([...gradeSet]);
     } catch (err) {
       console.error('❌ Error fetching schedule:', err.message);
     }
@@ -134,15 +135,14 @@ setSubjects(flattenedSubjects);
     fetchEvents();
   }, []);
 
- 
-
   const renderSubjectItem = ({ item }) => (
-  <View style={styles.subjectCard}>
-    <Text style={styles.subjectName}>{item.subjectName}</Text>
-    <Text style={styles.subjectDetails}>Class {item.classAssigned} - Section {item.section}</Text>
-  </View>
-);
-
+    <View style={styles.subjectCard}>
+      <Text style={styles.subjectName}>{item.subjectName}</Text>
+      <Text style={styles.subjectDetails}>
+        Class {item.classAssigned} - Section {item.section}
+      </Text>
+    </View>
+  );
 
   const renderScheduleTimeline = () => {
     return (
@@ -158,7 +158,8 @@ setSubjects(flattenedSubjects);
                     #{period.periodNumber} - {period.timeSlot}
                   </Text>
                   <Text style={styles.timelineClass}>
-                    {period.classAssigned} {period.section} - {period.subjectMasterId?.name || 'Subject N/A'}
+                    {period.classAssigned} {period.section} -{' '}
+                    {period.subjectMasterId?.name || 'Subject N/A'}
                   </Text>
                 </View>
               </View>
@@ -184,18 +185,25 @@ setSubjects(flattenedSubjects);
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 60 }}>
+    <ScrollView
+      ref={scrollRef} // 👈 connect the ref
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 60 }}
+    >
+      <ProfileHeader
+        nameOrId={facultyInfo.name || facultyInfo.userId}
+        onPress={() => navigation.navigate('FacultyProfileScreen')}
+      />
 
-      <ProfileHeader nameOrId={facultyInfo.name || facultyInfo.userId}
-      onPress={()=> navigation.navigate('FacultyProfileScreen')} />
-
-     
-       
-       <PosterCarousel />
+      <View style={{ marginVertical: 12, marginHorizontal: -20 }}>
+        <PosterCarousel />
+      </View>
 
       <Text style={styles.sectionTitle}>My Subjects</Text>
       {subjects.length === 0 ? (
-        <Text style={{ color: '#666', marginBottom: 20 }}>No subjects assigned yet.</Text>
+        <Text style={{ color: '#666', marginBottom: 20 }}>
+          No subjects assigned yet.
+        </Text>
       ) : (
         <FlatList
           data={subjects}
@@ -222,8 +230,6 @@ setSubjects(flattenedSubjects);
           <Text style={styles.noEvent}>No events for today.</Text>
         )}
       </View>
-
-      
     </ScrollView>
   );
 }
@@ -231,7 +237,7 @@ setSubjects(flattenedSubjects);
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafe',
+    backgroundColor: '#bbdbfaff',
     padding: 20,
     paddingTop: 0,
   },
@@ -241,7 +247,6 @@ const styles = StyleSheet.create({
     marginVertical: 12,
     color: '#1e3a8a',
   },
- 
   subjectCard: {
     backgroundColor: '#e3e9ff',
     padding: 14,

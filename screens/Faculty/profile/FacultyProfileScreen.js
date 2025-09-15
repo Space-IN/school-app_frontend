@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,12 +9,17 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useScrollToTop } from '@react-navigation/native';
+import BASE_URL from '../../../config/baseURL';
 
 export default function FacultyProfileScreen() {
   const [facultyData, setFacultyData] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
+
+  
+  const scrollRef = useRef(null);
+  useScrollToTop(scrollRef);
 
   useEffect(() => {
     const fetchFacultyData = async () => {
@@ -23,9 +28,7 @@ export default function FacultyProfileScreen() {
         const parsed = stored ? JSON.parse(stored) : null;
         if (!parsed?.userId) return;
 
-
-        const res = await axios.get(`http://10.221.34.141:5000/api/faculty/${parsed.userId}`);
-
+        const res = await axios.get(`${BASE_URL}/api/faculty/${parsed.userId}`);
         setFacultyData(res.data);
       } catch (err) {
         console.error('❌ Error fetching faculty data:', err);
@@ -65,7 +68,7 @@ export default function FacultyProfileScreen() {
   ];
 
   const handleGoToNotices = () => {
-    navigation.navigate('NoticeBoardScreen', { userId: facultyData.userId , role : 'faculty' });
+    navigation.navigate('NoticeBoardScreen', { userId: facultyData.userId, role: 'faculty' });
   };
 
   const handleGoToCalendar = () => {
@@ -73,7 +76,11 @@ export default function FacultyProfileScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      ref={scrollRef} 
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
       <Text style={styles.title}>Faculty Profile</Text>
 
       <View style={styles.buttonContainer}>
@@ -97,8 +104,8 @@ export default function FacultyProfileScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 25,
-    backgroundColor: '#f0f4ff',
+    padding: 30,
+    backgroundColor: '#bbdbfaff',
     flexGrow: 1,
   },
   title: {
@@ -134,7 +141,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   button: {
-    backgroundColor: '#4b4bfa',
+    backgroundColor: '#4a90e2',
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 8,
@@ -142,7 +149,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: {
-    color: '#fff',
+    color: '#fffdfdff',
     fontWeight: '600',
     fontSize: 15,
   },

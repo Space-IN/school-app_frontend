@@ -24,9 +24,9 @@ export default function AddEventScreen({ navigation }) {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
 
   const months = [
-    'January', 'February', 'March', 'April',
-    'May', 'June', 'July', 'August',
-    'September', 'October', 'November', 'December'
+    'Jan', 'Feb', 'Mar', 'Apr',
+    'May', 'Jun', 'Jul', 'Aug',
+    'Sep', 'Oct', 'Nov', 'Dec'
   ];
 
   const fetchEvents = async () => {
@@ -172,8 +172,8 @@ export default function AddEventScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    backgroundColor: '#f0f4ff',
+    padding: 5,
+    backgroundColor: '#bbdbfaff',
     flex: 1,
   },
   label: {

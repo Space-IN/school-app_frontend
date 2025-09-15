@@ -1,3 +1,4 @@
+// school-app_frontend/screens/RoleSelection.js
 import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
@@ -9,14 +10,16 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const imageFiles = [
+  require('../assets/schoolbuilding.png'),
   require('../assets/class.png'),
   require('../assets/library.png'),
-  require('../assets/event.png'),
+  require('../assets/sports.png'),
   require('../assets/computerlab.png'),
-  require('../assets/sciencelab.png'),
-  require('../assets/boarding.png'),
+  require('../assets/Science.png'),
+  // require('../assets/boarding.png'),
 ];
 
 export default function RoleSelection({ navigation }) {
@@ -29,7 +32,6 @@ export default function RoleSelection({ navigation }) {
     navigation.navigate('Login', { role });
   };
 
-  // 🔁 Auto-scroll every 4 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       const nextIndex = (currentIndexRef.current + 1) % imageFiles.length;
@@ -37,7 +39,6 @@ export default function RoleSelection({ navigation }) {
       currentIndexRef.current = nextIndex;
       setCurrentIndex(nextIndex);
     }, 4000);
-
     return () => clearInterval(interval);
   }, []);
 
@@ -54,7 +55,13 @@ export default function RoleSelection({ navigation }) {
       resizeMode="cover"
     >
       <View style={styles.overlay}>
-        {/* 🔁 Image Slider */}
+        {/* 🏫 Logo + School Name */}
+        <Image source={require('../assets/school.icon.png')} style={styles.logo} resizeMode="contain" />
+        <Text style={styles.schoolName}>
+          VISHWACHETANA VIDYANIKETANA SCHOOL - DAVANGERE
+        </Text>
+
+        {/* 🔁 Image Slider (Poster Section) */}
         <View style={styles.sliderWrapper}>
           <ScrollView
             ref={scrollRef}
@@ -63,7 +70,6 @@ export default function RoleSelection({ navigation }) {
             showsHorizontalScrollIndicator={false}
             onScroll={onScroll}
             scrollEventThrottle={16}
-            contentContainerStyle={{ paddingHorizontal: 0 }}
           >
             {imageFiles.map((img, index) => (
               <View key={index} style={styles.sliderItem}>
@@ -71,7 +77,6 @@ export default function RoleSelection({ navigation }) {
               </View>
             ))}
           </ScrollView>
-
           <View style={styles.dotsContainer}>
             {imageFiles.map((_, index) => (
               <View
@@ -85,30 +90,47 @@ export default function RoleSelection({ navigation }) {
           </View>
         </View>
 
-        {/* 🧾 Welcome and Role Texts */}
+        {/* 🧾 Welcome Texts */}
         <View style={styles.textBlock}>
-          <Text style={styles.welcomeText}>Welcome to our School App</Text>
-          <Text style={styles.roleText}>Register Based on Your School Role</Text>
+          {/* <Text style={styles.welcomeText}>🎓 Welcome to Our School App</Text> */}
+          <Text style={styles.roleText}>Choose Your Role to Continue</Text>
         </View>
 
-        {/* 🧍 Role Buttons */}
-        <TouchableOpacity style={styles.button} onPress={() => handleSelectRole('Admin')}>
-          <Text style={styles.buttonText}>Admin</Text>
-        </TouchableOpacity>
+        {/* 🧍 Glassmorphic Role Buttons */}
+        <View style={styles.roleCard}>
+          <TouchableOpacity onPress={() => handleSelectRole('Admin')}>
+            <LinearGradient
+              colors={['#9c1006', '#c71f0e']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.button}
+            >
+              <Text style={styles.buttonText}>Admin</Text>
+            </LinearGradient>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.button, styles.mediumButton]}
-          onPress={() => handleSelectRole('Faculty')}
-        >
-          <Text style={styles.buttonText}>Faculty</Text>
-        </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleSelectRole('Faculty')}>
+            <LinearGradient
+              colors={['#a61208', '#d62812']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.button}
+            >
+              <Text style={styles.buttonText}>Faculty</Text>
+            </LinearGradient>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.button, styles.smallButton, { marginBottom: 10 }]}
-          onPress={() => handleSelectRole('Student/Parent')}
-        >
-          <Text style={styles.buttonText}>Student / Parent</Text>
-        </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleSelectRole('Student/Parent')}>
+            <LinearGradient
+              colors={['#b3150a', '#e6391a']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[styles.button, { marginBottom: 10 }]}
+            >
+              <Text style={styles.buttonText}>Student / Parent</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
       </View>
     </ImageBackground>
   );
@@ -122,27 +144,38 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.88)',
-    justifyContent: 'flex-start',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
     alignItems: 'center',
-    paddingTop: 60,
-    paddingBottom: 20,
+    justifyContent: 'flex-start',
+    paddingTop: 40,
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    marginBottom: 12,
+  },
+  schoolName: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#9c1006',
+    textAlign: 'center',
+    marginBottom: 20,
+    textTransform: 'uppercase',
+    paddingHorizontal: 20,
   },
   sliderWrapper: {
     width: '100%',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 20,
   },
   sliderItem: {
-    width: Dimensions.get('window').width - 40,
-    marginHorizontal: 20,
-    borderRadius: 12,
-    overflow: 'hidden',
+    width: Dimensions.get('window').width,
+    alignItems: 'center',
   },
   sliderImage: {
-    width: '100%',
+    width: '90%',
     height: Dimensions.get('window').width * 0.5,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   dotsContainer: {
     flexDirection: 'row',
@@ -157,38 +190,41 @@ const styles = StyleSheet.create({
   },
   textBlock: {
     alignItems: 'center',
-    marginVertical: 20,
+    marginBottom: 20,
   },
   welcomeText: {
-    fontSize: 28,
-    fontWeight: '600',
+    fontSize: 26,
+    fontWeight: '700',
     color: '#1e3a8a',
     textAlign: 'center',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   roleText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '500',
-    color: '#1e3a8a',
+    color: '#374151',
     textAlign: 'center',
   },
+  roleCard: {
+    width: '85%',
+    backgroundColor: 'rgba(255, 255, 255, 0.65)',
+    padding: 20,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 6,
+    elevation: 5,
+  },
   button: {
-    backgroundColor: '#4682B4',
     paddingVertical: 14,
-    paddingHorizontal: 30,
-    borderRadius: 10,
-    marginBottom: 20,
-    width: '80%',
+    borderRadius: 12,
+    marginBottom: 16,
     alignItems: 'center',
-  },
-  mediumButton: {
-    backgroundColor: '#4169E1',
-  },
-  smallButton: {
-    backgroundColor: '#1E90FF',
   },
   buttonText: {
     color: '#fff',
     fontSize: 18,
+    fontWeight: '600',
   },
 });

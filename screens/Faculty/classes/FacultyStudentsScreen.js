@@ -51,7 +51,7 @@ export default function FacultyStudentsScreen({ route }) {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
       <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
       <View style={styles.header}>
         <Text style={styles.headerTitle}>
@@ -60,7 +60,7 @@ export default function FacultyStudentsScreen({ route }) {
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" style={{ marginTop: 30 }} />
+        <ActivityIndicator size="large" style={{ marginTop: 10 }} />
       ) : (
         <FlatList
           data={students}
@@ -76,10 +76,10 @@ export default function FacultyStudentsScreen({ route }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f7fa',
+    backgroundColor: '#bbdbfaff',
   },
   header: {
-    paddingVertical: 20,
+    paddingVertical: 10,
     backgroundColor: '#4a90e2',
     alignItems: 'center',
     borderBottomLeftRadius: 15,
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   listContent: {
-    padding: 15,
+    padding: 5,
   },
   card: {
     backgroundColor: '#ffffff',

@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     paddingVertical: 30,
-    backgroundColor: '#f0f4ff',
+    backgroundColor: '#bbdbfaff',
   },
   form: {
     width: width > 400 ? 350 : '90%',

@@ -403,10 +403,10 @@ export default function FacultyChaptersScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#f9f9f9" },
+  container: { flex: 1, padding: 16, backgroundColor: "#bbdbfaff" },
   header: { fontSize: 18, fontWeight: "bold", marginBottom: 16, color: "#333" },
   uploadButton: {
-    backgroundColor: "#4b4bfa",
+    backgroundColor: "#4a90e2",
     padding: 14,
     borderRadius: 8,
     marginBottom: 16,
@@ -478,9 +478,9 @@ const styles = StyleSheet.create({
   leftActions: { flexDirection: "row", gap: 10 },
   cancelButton: {
     backgroundColor: "#6c757d",
-    paddingVertical: 10,
+    paddingVertical: 15,
     paddingHorizontal: 18,
-    borderRadius: 8,
+    borderRadius: 5,
   },
   cancelButtonText: { fontSize: 14, fontWeight: "600", color: "#fff" },
 

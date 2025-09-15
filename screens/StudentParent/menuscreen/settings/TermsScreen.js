@@ -15,7 +15,7 @@ export default function TermsScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#bbdbfaff',
   },
   title: {
     fontSize: 22,

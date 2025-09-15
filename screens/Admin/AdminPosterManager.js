@@ -194,7 +194,7 @@ export default function AdminPosterManager() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: '#f9fafe',
+    backgroundColor: '#bbdbfaff',
   },
   heading: {
     fontSize: 22,
@@ -263,22 +263,22 @@ const styles = StyleSheet.create({
   posterTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    color: '#000000ff',
   },
   posterDate: {
     fontSize: 12,
-    color: '#64748b',
+    color: '#000000ff',
     marginTop: 4,
   },
   deleteBtn: {
     marginTop: 10,
-    backgroundColor: '#ef4444',
+    backgroundColor: '#68c2ffff',
     padding: 8,
     borderRadius: 8,
     alignItems: 'center',
   },
   deleteText: {
-    color: '#fff',
+    color: '#ca1e1eff',
     fontWeight: '600',
   },
 });

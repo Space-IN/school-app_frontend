@@ -24,6 +24,8 @@ export default function ClassScheduleXLSXUpload() {
   const [uploading, setUploading] = useState(false);
   const [allSchedules, setAllSchedules] = useState([]);
   const [expandedSchedules, setExpandedSchedules] = useState({});
+  const [showFormat, setShowFormat] = useState(false);
+
 
   const CLASS_OPTIONS = Array.from({ length: 10 }, (_, i) => `${i + 1}`);
   const SECTION_OPTIONS = ['A', 'B', 'C', 'D'];
@@ -34,6 +36,8 @@ export default function ClassScheduleXLSXUpload() {
       [key]: !prev[key],
     }));
   };
+
+
 
   const fetchAll = async () => {
     try {
@@ -238,6 +242,85 @@ export default function ClassScheduleXLSXUpload() {
             </Text>
           </TouchableOpacity>
 
+
+
+          <TouchableOpacity
+  style={[styles.button, { backgroundColor: '#f59e0b' }]}
+  onPress={() => setShowFormat((prev) => !prev)}
+>
+  <Text style={styles.buttonText}>
+    {showFormat ? "❌ Hide Format" : "👀 View Format"}
+  </Text>
+</TouchableOpacity>
+
+{showFormat && (
+  <View style={styles.formatBox}>
+    <Text style={{ fontWeight: 'bold', marginBottom: 8 }}>
+      📑 Required Excel Format: 
+    </Text>
+
+    <Text style={{ fontWeight: 'bold', marginBottom: 8 }}>
+      📑 NOTE :
+    </Text>
+
+ 
+     <Text>The following format should be followed while creating the  schedule if not schedule will not be accepted by the App.</Text>
+
+    {/* Table Header */}
+    <View style={styles.tableRow}>
+      <Text style={[styles.tableCell, styles.tableHeader]}>day</Text>
+      <Text style={[styles.tableCell, styles.tableHeader]}>periodNumber</Text>
+      <Text style={[styles.tableCell, styles.tableHeader]}>timeSlot</Text>
+      <Text style={[styles.tableCell, styles.tableHeader]}>subjectName</Text>
+      <Text style={[styles.tableCell, styles.tableHeader]}>facultyId</Text>
+    </View>
+
+    {/* Sample Rows */}
+    <View style={styles.tableRow}>
+      <Text style={styles.tableCell}>Monday</Text>
+      <Text style={styles.tableCell}>1</Text>
+      <Text style={styles.tableCell}>09:00–09:45</Text>
+      <Text style={styles.tableCell}>Mathematics</Text>
+      <Text style={styles.tableCell}>FAC123</Text>
+    </View>
+
+    <View style={styles.tableRow}>
+      <Text style={styles.tableCell}>Monday</Text>
+      <Text style={styles.tableCell}>2</Text>
+      <Text style={styles.tableCell}>09:45–10:30</Text>
+      <Text style={styles.tableCell}>English</Text>
+      <Text style={styles.tableCell}>FAC456</Text>
+    </View>
+
+    <View style={styles.tableRow}>
+      <Text style={styles.tableCell}>Tuesday</Text>
+      <Text style={styles.tableCell}>1</Text>
+      <Text style={styles.tableCell}>09:00–09:45</Text>
+      <Text style={styles.tableCell}>Science</Text>
+      <Text style={styles.tableCell}>FAC789</Text>
+
+
+      
+    </View>
+
+
+    
+  </View>
+)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           <Text style={styles.title}>📚 Existing Class Schedules</Text>
 
           {allSchedules.length === 0 ? (
@@ -298,7 +381,7 @@ export default function ClassScheduleXLSXUpload() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    // paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     backgroundColor: '#fff',
     padding: 16,
   },
@@ -360,4 +443,29 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     color: '#4b5563',
   },
+formatBox: {
+  marginTop: 12,
+  padding: 12,
+  borderWidth: 1,
+  borderColor: '#d1d5db',
+  borderRadius: 8,
+  backgroundColor: '#fefce8',
+},
+tableRow: {
+  flexDirection: "row",
+  borderBottomWidth: 1,
+  borderColor: "#e5e7eb",
+},
+tableCell: {
+  flex: 1,
+  padding: 6,
+  fontSize: 13,
+  color: "#374151",
+},
+tableHeader: {
+  fontWeight: "bold",
+  backgroundColor: "#f3f4f6",
+  color: "#111827",
+},
+
 });

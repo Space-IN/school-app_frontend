@@ -178,13 +178,13 @@ export default function SubjectDashboard() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", paddingHorizontal: 12, paddingTop: 20 },
+  container: { flex: 1, backgroundColor: "#bbdbfaff", paddingHorizontal: 12, paddingTop: 20 },
   header: {
     fontSize: 24,
     fontWeight: "600",
     marginBottom: 16,
     textAlign: "center",
-    color: "#0a5275",
+    color: "#0b6bd8ff",
   },
   tabContainer: {
     flexDirection: "row",
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   tabButton: { flex: 1, padding: 12, alignItems: "center" },
-  activeTab: { backgroundColor: "#0a5275" },
+  activeTab: { backgroundColor: "#4a90e2" },
   activeText: { color: "white", fontWeight: "bold" },
   inactiveText: { color: "#333", fontWeight: "bold" },
 
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     borderBottomWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#000000ff",
     backgroundColor: "#f9f9f9",
     paddingVertical: 8,
     borderRadius: 6,

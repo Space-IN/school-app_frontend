@@ -134,7 +134,7 @@ export default function FacultyClassDashboard({ navigation, route }) {
           onPress={() => handleCardPress(sec.screen)}
           style={styles.card}
         >
-          <Ionicons name={sec.icon} size={32} color="#fff" style={{ marginBottom: 8 }} />
+          <Ionicons name={sec.icon} size={32} color="#070000ff" style={{ marginBottom: 8 }} />
           <Text style={styles.cardTitle}>{sec.title}</Text>
         </TouchableOpacity>
       ))}
@@ -146,13 +146,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f9fafe',
+    backgroundColor: '#bbdbfaff',
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
   card: {
-    backgroundColor: '#4b4bfa',
+    backgroundColor: '#fafafaff',
     width: '47%',
     paddingVertical: 24,
     borderRadius: 12,
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cardTitle: {
-    color: '#fff',
+    color: '#000000ff',
     fontSize: 14,
     fontWeight: '500',
     textAlign: 'center',

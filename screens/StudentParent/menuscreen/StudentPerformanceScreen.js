@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
+import BASE_URL from '../../../config/baseURL';
 
 const StudentPerformanceScreen = ({ route }) => {
   const userId = route?.params?.userId || route?.params?.userData?.userId;
@@ -28,7 +29,7 @@ const StudentPerformanceScreen = ({ route }) => {
 
       try {
         console.log('✅ Fetching performance for userId:', userId);
-        const response = await axios.get(`http://10.221.34.141:5000/api/performance/student/${userId}`);
+        const response = await axios.get(`${BASE_URL}/api/performance/student/${userId}`);
         const exams = response.data.performances || [];
         setPerformanceData(exams);
         if (exams.length) {
@@ -107,14 +108,14 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#9ab4beff',
-    padding:13,
+    backgroundColor: '#bbdbfaff',
+    // padding:13,
   },
   container: {
     flex: 1,
     paddingHorizontal: width * 0.05, 
     paddingVertical: 16,
-    backgroundColor: '#9ab4beff',
+    backgroundColor: '#bbdbfaff',
     padding: 40,
   },
   noDataText: {
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
   },
   table: {
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: '#65a9fcff',
     borderRadius: 10,
     overflow: 'hidden',
   },
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
   tableRow: {
     flexDirection: 'row',
     borderTopWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: '#65a9fcff',
   },
   cell: {
     flex: 1,

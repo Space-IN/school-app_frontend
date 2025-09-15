@@ -6,7 +6,7 @@ import ManagePerformanceTab from './performance/ManagePerformanceTab';
 import ViewPerformanceTab from './performance/ViewPerformanceTab';
 
 const FacultyPerformanceScreen = ({ route, navigation }) => {
-  const { grade, section, studentId } = route.params; // ✅ Extract studentId
+  const { grade, section, studentId } = route.params; 
   const layout = useWindowDimensions();
 
   const [index, setIndex] = useState(0);
@@ -20,7 +20,7 @@ const FacultyPerformanceScreen = ({ route, navigation }) => {
       <ManagePerformanceTab
         grade={grade}
         section={section}
-        studentId={studentId} // ✅ Pass studentId
+        studentId={studentId} 
         navigation={navigation}
       />
     ),
@@ -28,7 +28,7 @@ const FacultyPerformanceScreen = ({ route, navigation }) => {
       <ViewPerformanceTab
         grade={grade}
         section={section}
-        studentId={studentId} // ✅ Pass studentId
+        studentId={studentId} 
         navigation={navigation}
       />
     ),
@@ -43,9 +43,9 @@ const FacultyPerformanceScreen = ({ route, navigation }) => {
       renderTabBar={(props) => (
         <TabBar
           {...props}
-          indicatorStyle={{ backgroundColor: '#6200ee' }}
+          indicatorStyle={{ backgroundColor: '#000000ff' }}
           style={{ backgroundColor: '#fff' }}
-          activeColor="#6200ee"
+          activeColor="#000000ff"
           inactiveColor="#777"
         />
       )}

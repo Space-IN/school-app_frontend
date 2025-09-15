@@ -139,7 +139,7 @@ const NoticeBoardScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
       <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
 
       <View style={styles.header}>
@@ -196,10 +196,10 @@ export default NoticeBoardScreen;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f7fa',
+    backgroundColor: '#bbdbfaff',
   },
   header: {
-    paddingVertical: 20,
+    paddingVertical: 5,
     backgroundColor: '#4a90e2',
     alignItems: 'center',
     borderBottomLeftRadius: 15,

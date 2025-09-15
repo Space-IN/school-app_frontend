@@ -20,12 +20,17 @@ function ClassesStack({ route }) {
   const { grades, userId, openGrade, redirectedFromHome } = route.params || {};
 
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        headerBackTitleVisible: false,
+      }}
+    >
       <Stack.Screen
         name="FacultyClassesScreen"
         component={FacultyClassesScreen}
         initialParams={{ grades, userId, openGrade, redirectedFromHome }}
-        options={{ title: 'My Assigned Classes' }}
+        options={{ title: 'Classes' }}
       />
       <Stack.Screen
         name="FacultyClassDashboard"
@@ -42,27 +47,21 @@ function ClassesStack({ route }) {
         component={require('../screens/Faculty/classes/performance/StudentSubjectMarksScreen').default}
         options={{ title: 'Student Marks' }}
       />
-
       <Stack.Screen
         name="ViewPerformanceTab"
         component={ViewPerformanceTab}
         options={{ title: 'View Performance' }}
       />
-
       <Stack.Screen
         name="LectureRecordingScreen"
         component={LectureRecordingScreen}
         options={{ title: 'Lecture Recording' }}
       />
-
       <Stack.Screen 
         name="FacultyChaptersScreen" 
         component={FacultyChaptersScreen} 
         options={{ title: 'Chapters' }}
-  />
-
-      
-
+      />
     </Stack.Navigator>
   );
 }
@@ -83,7 +82,8 @@ export default function FacultyTabs({ route }) {
       screenOptions={({ route }) => ({
         tabBarActiveTintColor: '#4b4bfa',
         tabBarInactiveTintColor: '#888',
-        headerShown: route.name === 'FacultyHomeScreen',
+        headerShown: true,
+        headerBackTitleVisible: false,
         tabBarIcon: ({ color, size }) => {
           const icons = {
             FacultyHomeScreen: 'home',

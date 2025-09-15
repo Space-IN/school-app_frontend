@@ -14,6 +14,7 @@ import {
 import axios from 'axios';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import BASE_URL from '../../config/baseURL';
 
 const AddFacultyScreen = () => {
   const [formData, setFormData] = useState({
@@ -62,7 +63,7 @@ const AddFacultyScreen = () => {
       };
 
 
-      const response = await axios.post('http://10.221.34.141:5000/api/faculty/add', payload);
+      const response = await axios.post(`${BASE_URL}/api/faculty/add`, payload);
 
       Alert.alert('Success', response.data.message);
 
@@ -188,7 +189,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     paddingVertical: 30,
-    backgroundColor: '#f0f4ff',
+    backgroundColor: '#bbdbfaff',
   },
   formContainer: {
     width: width > 400 ? 350 : '90%',
