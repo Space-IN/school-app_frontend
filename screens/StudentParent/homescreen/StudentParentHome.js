@@ -1,5 +1,5 @@
 // screens/StudentParent/homescreen/StudentParentHome.js
-import React, { useLayoutEffect, useRef, useState, useEffect, } from 'react';
+import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,10 +10,11 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
 import ProfileHeader from '../../../components/ProfileHeader';
 import axios from 'axios';
 import PosterCarousel from '../../../components/PosterCarousel';
+import BASE_URL from '../../../config/baseURL';
 
 export default function StudentParentHome() {
   const route = useRoute();
@@ -26,21 +27,9 @@ export default function StudentParentHome() {
   const [eventsToday, setEventsToday] = useState([]);
 
   const params = route.params || {};
-const { userId, userData } = params;
-const { studentName, className, section } = userData || {};
-const displayName = studentName || userId || 'User';
-
-  const profileData = {
-    class: className || '10th Grade',
-    medium: 'English',
-    rollNumber: '23',
-    dateOfBirth: '2008-06-15',
-    currentAddress: '123 Main Street, Cityname',
-    permanentAddress: '456 Village Road, Hometown',
-    bloodGroup: 'O+',
-    weight: '52 kg',
-    height: '160 cm',
-  };
+  const { userId, userData } = params;
+  const { studentName, className, section } = userData || {};
+  const displayName = studentName || userId || 'User';
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -76,36 +65,46 @@ const displayName = studentName || userId || 'User';
     });
   }, [navigation]);
 
+  // 🟡 Scroll-to-top on tab press
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('tabPress', (e) => {
+      // prevent default only if already focused
+      if (navigation.isFocused()) {
+        scrollRef.current?.scrollTo({ y: 0, animated: true });
+      }
+    });
+    return unsubscribe;
+  }, [navigation]);
+
   // 🟡 Fetch subjects
   useEffect(() => {
-  const fetchSubjects = async () => {
-    if (!className || !section) {
-      console.warn('ClassName or section missing');
-      return;
-    }
+    const fetchSubjects = async () => {
+      if (!className || !section) {
+        console.warn('ClassName or section missing');
+        return;
+      }
 
-    try {
-      console.log(`Fetching subjects for ${className} / ${section}`);
-      const res = await axios.get(`http://10.221.34.141:5000/api/schedule/subjects/${className}/${section}`);
-      console.log('Subjects fetched:', res.data);
+      try {
+        console.log(`Fetching subjects for ${className} / ${section}`);
+        const res = await axios.get(
+          `${BASE_URL}/api/schedule/subjects/${className}/${section}`
+        );
+        console.log('Subjects fetched:', res.data);
 
-      setSubjects(res.data.subjects || []);
-    } catch (err) {
-      console.error('Failed to load subjects:', err.response?.data || err.message);
-    }
-  };
+        setSubjects(res.data.subjects || []);
+      } catch (err) {
+        console.error('Failed to load subjects:', err.response?.data || err.message);
+      }
+    };
 
-  fetchSubjects();
-}, [className, section]);
-
+    fetchSubjects();
+  }, [className, section]);
 
   // 🟡 Fetch today's events
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-
-        const res = await axios.get('http://10.221.34.141:5000/api/events');
-
+        const res = await axios.get(`${BASE_URL}/api/events`);
         const allEvents = res.data || [];
         const today = new Date().toISOString().split('T')[0];
 
@@ -123,30 +122,19 @@ const displayName = studentName || userId || 'User';
   }, []);
 
   return (
-    <ScrollView style={styles.container}>
-
-     <TouchableOpacity
-  activeOpacity={0.8}
-  onPress={() => {
-    console.log('✅ Tapped ProfileHeader');
-    navigation.navigate('StudentProfileScreen', { profile: profileData });
-  }}
-  style={{ flex: 1 }}
->
-  <View>
-    <ProfileHeader
-      nameOrId={displayName}
-      className={className}
-      section={section}
-    />
-  </View>
-</TouchableOpacity>
-
-
-      {/* <Button
-  title="Go to Profile"
-  onPress={() => navigation.getParent()?.navigate('StudentProfileScreen', { profile: profileData })}
-/> */}
+    <ScrollView ref={scrollRef} style={styles.container}>
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => {
+          console.log('✅ Tapped ProfileHeader');
+          navigation.navigate('StudentProfileScreen', { profile: userData  });
+        }}
+        style={{ flex: 1 }}
+      >
+        <View>
+          <ProfileHeader nameOrId={displayName} className={className} section={section} />
+        </View>
+      </TouchableOpacity>
 
       <PosterCarousel />
 
@@ -157,20 +145,20 @@ const displayName = studentName || userId || 'User';
           subjects.map((item, index) => (
             <TouchableOpacity
               key={index}
-              style={[styles.subjectTile, { backgroundColor: item.color || '#467fc5ff' }]}
+              style={[styles.subjectTile, { backgroundColor: item.color || '#ffffffff' }]}
               activeOpacity={1}
               onPress={() =>
                 navigation.navigate('SubjectDashboard', {
                   subjectName: item.name,
                   subjectMasterId: item._id,
-                  grade: className,  
+                  grade: className,
                   section: section,
                   chapters: item.chapters || [],
                   announcements: item.announcements || [],
                 })
               }
             >
-              <Ionicons name={item.icon || 'book'} size={30} color="#fff" />
+              <Ionicons name={item.icon || 'book'} size={30} color="#4f46e5" />
               <Text style={styles.subjectText}>{item.name}</Text>
             </TouchableOpacity>
           ))
@@ -197,7 +185,7 @@ const displayName = studentName || userId || 'User';
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#bbdbfaff' },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -222,7 +210,7 @@ const styles = StyleSheet.create({
   },
   subjectText: {
     marginTop: 8,
-    color: '#fff',
+    color: '#000000ff',
     fontSize: 15,
     fontWeight: '600',
     textAlign: 'center',
@@ -239,7 +227,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#1d4ed8',
+    color: '#000000ff',
   },
   eventBox: {
     marginBottom: 10,

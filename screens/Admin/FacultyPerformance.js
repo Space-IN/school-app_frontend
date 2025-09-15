@@ -29,7 +29,7 @@ export default function FacultyPerformanceScreen({ navigation }) {
   const onSelectSection = (section) => {
   setShowSectionModal(false);
 
-  // Extract just the number from "Grade 10" → "10"
+  
   const classId = selectedGrade.replace("Grade ", "");
 
   navigation.navigate("FacultyListScreen", {
@@ -85,8 +85,8 @@ export default function FacultyPerformanceScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9ff',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    backgroundColor: '#bbdbfaff',
+    // paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   heading: {
     fontSize: 22,

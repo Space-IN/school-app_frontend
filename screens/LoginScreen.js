@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   StyleSheet,
   Alert,
   Image,
@@ -14,9 +13,12 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { LinearGradient } from 'expo-linear-gradient';
+import BASE_URL from "../config/baseURL";
 
 export default function LoginScreen({ route, navigation }) {
   const { role } = route.params;
@@ -34,9 +36,7 @@ export default function LoginScreen({ route, navigation }) {
     setLoading(true);
 
     try {
-
-      const response = await axios.post('http://10.221.34.141:5000/api/auth/login', {
-
+      const response = await axios.post(`${BASE_URL}/api/auth/login`, {
         userId: normalizedId,
         password,
         role,
@@ -146,6 +146,13 @@ export default function LoginScreen({ route, navigation }) {
       style={styles.background}
       resizeMode="cover"
     >
+      {/* ✅ Top-right logo */}
+      <Image
+        source={require('../assets/logo.png')}
+        style={styles.topRightLogo}
+        resizeMode="contain"
+      />
+
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -175,9 +182,18 @@ export default function LoginScreen({ route, navigation }) {
               />
 
               {loading ? (
-                <ActivityIndicator size="large" color="#1e3a8a" style={{ marginTop: 10 }} />
+                <ActivityIndicator size="large" color="#9c1006" style={{ marginTop: 10 }} />
               ) : (
-                <Button title="Login" onPress={loginUser} />
+                <TouchableOpacity onPress={loginUser} style={{ width: '100%' }}>
+                  <LinearGradient
+                    colors={['#9c1006', '#b71c1c']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.loginButton}
+                  >
+                    <Text style={styles.loginButtonText}>Login</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
               )}
             </View>
           </ScrollView>
@@ -217,11 +233,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
     fontWeight: 'bold',
-    color: '#1e3a8a',
+    color: '#9c1006',
   },
   input: {
     width: '100%',
-    height: 56, // 👈 Increased size here
+    height: 56,
     borderWidth: 1,
     borderColor: '#ccc',
     marginBottom: 15,
@@ -229,5 +245,29 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#fff',
     fontSize: 16,
+  },
+  topRightLogo: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    width: 70,
+    height: 50,
+  },
+  loginButton: {
+    paddingVertical: 14,
+    borderRadius: 10,
+    marginTop: 10,
+    alignItems: 'center',
+    width: '100%',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  loginButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
   },
 });

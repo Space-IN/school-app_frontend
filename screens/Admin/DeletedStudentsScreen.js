@@ -109,8 +109,8 @@ export default function DeletedStudentsScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef2f2',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    backgroundColor: '#bbdbfaff',
+    // paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   heading: {
     fontSize: 20,

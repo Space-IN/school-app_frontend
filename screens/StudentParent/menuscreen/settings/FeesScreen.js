@@ -5,7 +5,7 @@ export default function FeesScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Fees Details</Text>
-      <Text style={styles.subtitle}>No fee data available currently.(❁´◡`❁)(❁´◡`❁)(❁´◡`❁)(❁´◡`❁)(❁´◡`❁)(❁´◡`❁)(❁´◡`❁)(❁´◡`❁)</Text>
+      <Text style={styles.subtitle}>No fee data available currently.</Text>
     </View>
   );
 }
@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#eef2ff',
+    backgroundColor: '#bbdbfaff',
   },
   title: {
     fontSize: 22,

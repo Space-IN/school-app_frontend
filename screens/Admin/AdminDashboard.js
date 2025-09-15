@@ -1,5 +1,4 @@
 // ✅ AdminDashboard.js
-
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -25,6 +24,8 @@ export default function AdminDashboard({ navigation }) {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
+    navigation.setOptions({ headerShown: false }); // ✅ hide default header
+
     const loadUserData = async () => {
       try {
         const stored = await AsyncStorage.getItem('userData');
@@ -72,7 +73,7 @@ export default function AdminDashboard({ navigation }) {
   const handleViewClassSchedule = () => navigation.navigate('ClassScheduleViewScreen');
   const handlePosterManagement = () => navigation.navigate('AdminPosterManager');
   const handleAddNotice = () => navigation.navigate('AddNoticeScreen');
-  const handleFacultyPerformance = () => navigation.navigate('FacultyPerformance'); // 🆕 new handler
+  const handleFacultyPerformance = () => navigation.navigate('FacultyPerformance');
 
   const today = new Date().toISOString().split('T')[0];
   const todayEvents = events.filter((event) => {
@@ -90,10 +91,14 @@ export default function AdminDashboard({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Ionicons name="log-out-outline" size={18} color="#d9534f" />
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
+      {/* ✅ Custom Header Row */}
+      <View style={styles.headerRow}>
+        <Text style={styles.headerTitle}>Admin Dashboard</Text>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Ionicons name="log-out-outline" size={18} color="#fdfdfdff" />
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+      </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.profileCard}>
@@ -108,11 +113,11 @@ export default function AdminDashboard({ navigation }) {
         <Text style={styles.sectionTitle}>➕ Add Users</Text>
         <View style={styles.row}>
           <TouchableOpacity style={styles.tileButton} onPress={handleAddStudent}>
-            <Ionicons name="person-add" size={30} color="#fff" />
+            <Ionicons name="person-add" size={30} color="#000000ff" />
             <Text style={styles.tileText}>Add Student</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.tileButton} onPress={handleAddFaculty}>
-            <Ionicons name="person-add-outline" size={30} color="#fff" />
+            <Ionicons name="person-add-outline" size={30} color="#000000ff" />
             <Text style={styles.tileText}>Add Faculty</Text>
           </TouchableOpacity>
         </View>
@@ -120,11 +125,11 @@ export default function AdminDashboard({ navigation }) {
         <Text style={styles.sectionTitle}>📋 View Users</Text>
         <View style={styles.row}>
           <TouchableOpacity style={styles.tileButton} onPress={handleViewStudents}>
-            <Ionicons name="school-outline" size={30} color="#fff" />
+            <Ionicons name="school-outline" size={30} color="#000000ff" />
             <Text style={styles.tileText}>View Students</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.tileButton} onPress={handleViewFaculty}>
-            <Ionicons name="people-outline" size={30} color="#fff" />
+            <Ionicons name="people-outline" size={30} color="#000000ff" />
             <Text style={styles.tileText}>View Faculty</Text>
           </TouchableOpacity>
         </View>
@@ -132,7 +137,7 @@ export default function AdminDashboard({ navigation }) {
         <Text style={styles.sectionTitle}>📅 Event Management</Text>
         <View style={styles.row}>
           <TouchableOpacity style={styles.tileButton} onPress={handleAddEvent}>
-            <Ionicons name="calendar-outline" size={30} color="#fff" />
+            <Ionicons name="calendar-outline" size={30} color="#000000ff" />
             <Text style={styles.tileText}>Add Event</Text>
           </TouchableOpacity>
         </View>
@@ -140,11 +145,11 @@ export default function AdminDashboard({ navigation }) {
         <Text style={styles.sectionTitle}>📚 Subject Management</Text>
         <View style={styles.row}>
           <TouchableOpacity style={styles.tileButton} onPress={handleAddSubjectMaster}>
-            <Ionicons name="book-outline" size={30} color="#fff" />
+            <Ionicons name="book-outline" size={30} color="#000000ff" />
             <Text style={styles.tileText}>Add Subject Master</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.tileButton} onPress={handleAssignSubject}>
-            <Ionicons name="create-outline" size={30} color="#fff" />
+            <Ionicons name="create-outline" size={30} color="#000000ff" />
             <Text style={styles.tileText}>Assign Subject</Text>
           </TouchableOpacity>
         </View>
@@ -152,29 +157,27 @@ export default function AdminDashboard({ navigation }) {
         <Text style={styles.sectionTitle}>🗓️ Class Schedule</Text>
         <View style={styles.row}>
           <TouchableOpacity style={styles.tileButton} onPress={handleClassSchedule}>
-            <Ionicons name="calendar-outline" size={30} color="#fff" />
+            <Ionicons name="calendar-outline" size={30} color="#000000ff" />
             <Text style={styles.tileText}>Class Schedule</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.tileButton} onPress={handleViewClassSchedule}>
-            <Ionicons name="eye-outline" size={30} color="#fff" />
+            <Ionicons name="eye-outline" size={30} color="#000000ff" />
             <Text style={styles.tileText}>View Schedule</Text>
           </TouchableOpacity>
         </View>
 
-        {/* ✅ NEW: Faculty Performance */}
         <Text style={styles.sectionTitle}>📊 Faculty Performance</Text>
         <View style={styles.row}>
           <TouchableOpacity style={styles.tileButton} onPress={handleFacultyPerformance}>
-            <Ionicons name="analytics-outline" size={30} color="#fff" />
+            <Ionicons name="analytics-outline" size={30} color="#000000ff" />
             <Text style={styles.tileText}>View Performance</Text>
           </TouchableOpacity>
         </View>
 
-        {/* ✅ Notices */}
         <Text style={styles.sectionTitle}>📢 Notices</Text>
         <View style={styles.row}>
           <TouchableOpacity style={styles.tileButton} onPress={handleAddNotice}>
-            <Ionicons name="megaphone-outline" size={30} color="#fff" />
+            <Ionicons name="megaphone-outline" size={30} color="#000000ff" />
             <Text style={styles.tileText}>Add Notice</Text>
           </TouchableOpacity>
         </View>
@@ -182,7 +185,7 @@ export default function AdminDashboard({ navigation }) {
         <Text style={styles.sectionTitle}>🖼️ Manage Posters</Text>
         <View style={styles.row}>
           <TouchableOpacity style={styles.tileButton} onPress={handlePosterManagement}>
-            <Ionicons name="images-outline" size={30} color="#fff" />
+            <Ionicons name="images-outline" size={30} color="#000000ff" />
             <Text style={styles.tileText}>Manage Posters</Text>
           </TouchableOpacity>
         </View>
@@ -191,12 +194,26 @@ export default function AdminDashboard({ navigation }) {
   );
 }
 
-// ✅ Styles stay the same
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f4ff',
+    backgroundColor: '#bbdbfaff',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#000',
   },
   scrollContent: {
     paddingBottom: 30,
@@ -211,20 +228,18 @@ const styles = StyleSheet.create({
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-end',
-    margin: 16,
     paddingVertical: 6,
     paddingHorizontal: 10,
-    backgroundColor: '#ffe5e5',
+    backgroundColor: '#e43c3cff',
     borderRadius: 8,
   },
   logoutText: {
     marginLeft: 6,
-    color: '#d9534f',
+    color: '#ffffffff',
     fontWeight: '600',
   },
   profileCard: {
-    backgroundColor: '#e0ecff',
+    backgroundColor: '#237ec9ff',
     borderRadius: 12,
     padding: 16,
     marginTop: 10,
@@ -232,11 +247,11 @@ const styles = StyleSheet.create({
   greeting: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1e3a8a',
+    color: '#ffffffff',
   },
   subtitle: {
     fontSize: 14,
-    color: '#444',
+    color: '#ffffffff',
     marginTop: 4,
   },
   sectionTitle: {
@@ -253,7 +268,7 @@ const styles = StyleSheet.create({
   },
   tileButton: {
     flex: 1,
-    backgroundColor: '#1e3a8a',
+    backgroundColor: '#ffffffff',
     paddingVertical: 20,
     marginHorizontal: 6,
     borderRadius: 12,
@@ -264,7 +279,7 @@ const styles = StyleSheet.create({
   tileText: {
     marginTop: 10,
     fontSize: 14,
-    color: '#fff',
+    color: '#000000ff',
     fontWeight: '600',
     textAlign: 'center',
   },

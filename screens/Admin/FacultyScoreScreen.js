@@ -5,22 +5,21 @@ import {
   FlatList,
   StyleSheet,
   ActivityIndicator,
-  TouchableOpacity,
-  ScrollView,
+  SafeAreaView,
 } from "react-native";
 import axios from "axios";
 import { Ionicons } from "@expo/vector-icons";
 import BASE_URL from "../../config/baseURL";
 
-const FacultyScoreScreen = ({ route, navigation }) => {
+const FacultyScoreScreen = ({ route }) => {
   const { facultyId, classId, section, subjectName } = route.params;
   const [lectures, setLectures] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expandedTranscript, setExpandedTranscript] = useState(null);
 
   useEffect(() => {
     const fetchLectures = async () => {
       try {
-        // Use the new endpoint with class and section filter
         const res = await axios.get(
           `${BASE_URL}/api/lecture-recording/faculty/${facultyId}/class/${classId}/section/${section}`
         );
@@ -35,135 +34,180 @@ const FacultyScoreScreen = ({ route, navigation }) => {
     fetchLectures();
   }, [facultyId, classId, section]);
 
-  const getRelevanceColor = (isRelevant) => {
-    switch (isRelevant) {
-      case 'highly_related':
-        return '#4CAF50'; // Green
-      case 'moderately_related':
-        return '#FF9800'; // Orange
-      case 'not_relevant':
-        return '#F44336'; // Red
-      default:
-        return '#9E9E9E'; // Gray
-    }
+  const getRelevanceColor = (isRelevant = "") => {
+    const value = isRelevant.toLowerCase();
+    if (value === "highly_relevant") return "#4CAF50";
+    if (value === "moderately_relevant") return "#FF9800";
+    if (value === "not_relevant") return "#F44336";
+    return "#9E9E9E";
   };
 
-  const getRelevanceIcon = (isRelevant) => {
-    switch (isRelevant) {
-      case 'highly_related':
-        return 'checkmark-circle';
-      case 'moderately_related':
-        return 'warning';
-      case 'not_relevant':
-        return 'close-circle';
-      default:
-        return 'help-circle';
-    }
+  const getRelevanceIcon = (isRelevant = "") => {
+    const value = isRelevant.toLowerCase();
+    if (value === "highly_relevant") return "checkmark-circle";
+    if (value === "moderately_relevant") return "warning";
+    if (value === "not_relevant") return "close-circle";
+    return "help-circle";
   };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
   };
 
   const formatDuration = (start, end) => {
-    if (!start || !end) return 'N/A';
+    if (!start || !end) return "N/A";
     const duration = Math.round((new Date(end) - new Date(start)) / 1000);
     const minutes = Math.floor(duration / 60);
     const seconds = duration % 60;
     return `${minutes}m ${seconds}s`;
   };
 
+  const renderTranscriptWithHighlights = (transcript, evidences) => {
+    if (!evidences || Object.keys(evidences).length === 0) {
+      return <Text style={styles.transcriptText}>{transcript}</Text>;
+    }
+
+    let highlightedText = transcript;
+    const parts = [];
+    const evidenceKeys = Object.keys(evidences);
+    let lastIndex = 0;
+
+    evidenceKeys.forEach((sentence) => {
+      const idx = highlightedText.indexOf(sentence, lastIndex);
+      if (idx !== -1) {
+        if (idx > lastIndex) {
+          parts.push(
+            <Text key={`before-${idx}`} style={styles.transcriptText}>
+              {highlightedText.substring(lastIndex, idx)}
+            </Text>
+          );
+        }
+        parts.push(
+          <Text key={`evidence-${idx}`} style={styles.highlightedText}>
+            {sentence}
+          </Text>
+        );
+        lastIndex = idx + sentence.length;
+      }
+    });
+
+    if (lastIndex < highlightedText.length) {
+      parts.push(
+        <Text key={`after-${lastIndex}`} style={styles.transcriptText}>
+          {highlightedText.substring(lastIndex)}
+        </Text>
+      );
+    }
+
+    return <Text>{parts}</Text>;
+  };
+
   if (loading) {
     return (
-      <View style={styles.center}>
+      <SafeAreaView style={styles.center}>
         <ActivityIndicator size="large" color="#007bff" />
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color="#007bff" />
-        </TouchableOpacity>
-        <View style={styles.headerText}>
-          <Text style={styles.title}>Lecture Recordings</Text>
-          <Text style={styles.subtitle}>
-            {facultyId} • Class {classId}-{section} • {subjectName}
-          </Text>
-        </View>
-      </View>
-
+    <SafeAreaView style={styles.container}>
       <FlatList
         data={lectures}
         keyExtractor={(item) => item._id}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.lectureCard}>
-            <View style={styles.lectureHeader}>
-              <Text style={styles.topicName}>{item.topicName}</Text>
-              <View style={[styles.statusBadge, { backgroundColor: getRelevanceColor(item.isRelevant) }]}>
-                <Ionicons 
-                  name={getRelevanceIcon(item.isRelevant)} 
-                  size={16} 
-                  color="white" 
-                />
-                <Text style={styles.statusText}>
-                  {item.score ? `${item.score}%` : 'N/A'}
+        renderItem={({ item }) => {
+          const isExpanded = expandedTranscript === item._id;
+          const evidences = item.sensitivity?.evidences || {};
+          const sensitivityScore = item.sensitivity?.sensitivity_score;
+
+          return (
+            <View style={styles.lectureCard}>
+              <View style={styles.lectureHeader}>
+                <Text style={styles.topicName}>{item.topicName}</Text>
+                <View
+                  style={[
+                    styles.statusBadge,
+                    { backgroundColor: getRelevanceColor(item.isRelevant) },
+                  ]}
+                >
+                  <Ionicons
+                    name={getRelevanceIcon(item.isRelevant)}
+                    size={16}
+                    color="white"
+                  />
+                  <Text style={styles.statusText}>
+                    {item.score ? `${item.score}%` : "N/A"}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.lectureInfo}>
+                <View style={styles.infoRow}>
+                  <Ionicons name="time-outline" size={16} color="#666" />
+                  <Text style={styles.infoText}>
+                    {formatDate(item.createdAt)}
+                  </Text>
+                </View>
+
+                <View style={styles.infoRow}>
+                  <Ionicons name="hourglass-outline" size={16} color="#666" />
+                  <Text style={styles.infoText}>
+                    Duration: {formatDuration(item.startTime, item.endTime)}
+                  </Text>
+                </View>
+
+                <View style={styles.infoRow}>
+                  <Ionicons name="document-text-outline" size={16} color="#666" />
+                  <Text style={styles.infoText}>Status: {item.status}</Text>
+                </View>
+
+                <View style={styles.infoRow}>
+                  <Ionicons name="analytics-outline" size={16} color="#666" />
+                  <Text style={styles.infoText}>
+                    Relevance: {item.isRelevant || "Not checked"}
+                  </Text>
+                </View>
+
+                {sensitivityScore && (
+                  <View style={styles.infoRow}>
+                    <Ionicons name="alert-circle-outline" size={16} color="#666" />
+                    <Text style={styles.infoText}>
+                      Sensitivity Score: {sensitivityScore.toFixed(2)}
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              {item.transcriptionFile && (
+                <Text
+                  style={styles.toggleButton}
+                  onPress={() =>
+                    setExpandedTranscript(isExpanded ? null : item._id)
+                  }
+                >
+                  {isExpanded ? "Hide Transcript" : "View Transcript"}
+                </Text>
+              )}
+
+              {isExpanded && (
+                <View style={styles.transcriptContainer}>
+                  <Text style={styles.transcriptLabel}>Transcript:</Text>
+                  {renderTranscriptWithHighlights(
+                    item.transcriptionFile,
+                    evidences
+                  )}
+                </View>
+              )}
+
+              <View style={styles.modelInfo}>
+                <Text style={styles.modelText}>
+                  Model: {item.modelVersion || "N/A"}
                 </Text>
               </View>
             </View>
-
-            <View style={styles.lectureInfo}>
-              <View style={styles.infoRow}>
-                <Ionicons name="time-outline" size={16} color="#666" />
-                <Text style={styles.infoText}>
-                  {formatDate(item.createdAt)}
-                </Text>
-              </View>
-              
-              <View style={styles.infoRow}>
-                <Ionicons name="hourglass-outline" size={16} color="#666" />
-                <Text style={styles.infoText}>
-                  Duration: {formatDuration(item.startTime, item.endTime)}
-                </Text>
-              </View>
-
-              <View style={styles.infoRow}>
-                <Ionicons name="document-text-outline" size={16} color="#666" />
-                <Text style={styles.infoText}>
-                  Status: {item.status}
-                </Text>
-              </View>
-
-              <View style={styles.infoRow}>
-                <Ionicons name="analytics-outline" size={16} color="#666" />
-                <Text style={styles.infoText}>
-                  Relevance: {item.isRelevant || 'Not checked'}
-                </Text>
-              </View>
-            </View>
-
-            {item.transcriptionFile && (
-              <View style={styles.transcriptContainer}>
-                <Text style={styles.transcriptLabel}>Transcript:</Text>
-                <Text style={styles.transcriptText} numberOfLines={3}>
-                  {item.transcriptionFile}
-                </Text>
-              </View>
-            )}
-
-            <View style={styles.modelInfo}>
-              <Text style={styles.modelText}>
-                Model: {item.modelVersion || 'N/A'}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        )}
+          );
+        }}
         ListEmptyComponent={
           <View style={styles.center}>
             <Ionicons name="document-outline" size={64} color="#ccc" />
@@ -177,40 +221,12 @@ const FacultyScoreScreen = ({ route, navigation }) => {
         }
         showsVerticalScrollIndicator={false}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: "#f9f9f9" 
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  backButton: {
-    padding: 8,
-    marginRight: 12,
-  },
-  headerText: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  subtitle: {
-    fontSize: 14,
-    color: "#666",
-    marginTop: 2,
-  },
+  container: { flex: 1, backgroundColor: "#bbdbfaff", paddingHorizontal: 16 },
   lectureCard: {
     backgroundColor: "#fff",
     margin: 12,
@@ -223,87 +239,54 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   lectureHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 12,
   },
-  topicName: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
-    flex: 1,
-    marginRight: 12,
-  },
+  topicName: { fontSize: 18, fontWeight: "600", color: "#333", flex: 1 },
   statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 16,
   },
-  statusText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
-    marginLeft: 4,
-  },
-  lectureInfo: {
-    marginBottom: 12,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  infoText: {
+  statusText: { color: "white", fontSize: 12, fontWeight: "600", marginLeft: 4 },
+  lectureInfo: { marginBottom: 12 },
+  infoRow: { flexDirection: "row", alignItems: "center", marginBottom: 6 },
+  infoText: { fontSize: 14, color: "#666", marginLeft: 8 },
+  toggleButton: {
     fontSize: 14,
-    color: "#666",
-    marginLeft: 8,
+    fontWeight: "600",
+    color: "#007bff",
+    marginBottom: 8,
   },
   transcriptContainer: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
     padding: 12,
     borderRadius: 8,
     marginBottom: 8,
   },
   transcriptLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginBottom: 4,
   },
-  transcriptText: {
+  transcriptText: { fontSize: 13, color: "#555", lineHeight: 18 },
+  highlightedText: {
     fontSize: 13,
-    color: "#555",
+    color: "#000",
     lineHeight: 18,
+    backgroundColor: "yellow",
+    fontWeight: "600",
   },
-  modelInfo: {
-    alignItems: 'flex-end',
-  },
-  modelText: {
-    fontSize: 12,
-    color: "#999",
-    fontStyle: 'italic',
-  },
-  center: { 
-    flex: 1, 
-    justifyContent: "center", 
-    alignItems: "center",
-    padding: 40,
-  },
-  emptyText: { 
-    fontSize: 18, 
-    color: "#888",
-    textAlign: 'center',
-    marginTop: 16,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: "#aaa",
-    textAlign: 'center',
-    marginTop: 8,
-  },
+  modelInfo: { alignItems: "flex-end" },
+  modelText: { fontSize: 12, color: "#999", fontStyle: "italic" },
+  center: { flex: 1, justifyContent: "center", alignItems: "center", padding: 40 },
+  emptyText: { fontSize: 18, color: "#888", textAlign: "center", marginTop: 16 },
+  emptySubtext: { fontSize: 14, color: "#aaa", textAlign: "center", marginTop: 8 },
 });
 
 export default FacultyScoreScreen;

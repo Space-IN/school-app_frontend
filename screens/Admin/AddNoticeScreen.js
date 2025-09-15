@@ -15,9 +15,14 @@ import {
 import axios from "axios";
 import { io } from "socket.io-client";
 import * as DocumentPicker from 'expo-document-picker';
+import BASE_URL from "../../config/baseURL";
 
 
-const BASE_URL = "http://10.221.34.141:5000";
+
+
+
+
+
 
 const AddNoticeScreen = () => {
   const [title, setTitle] = useState("");
@@ -135,7 +140,7 @@ const [previewUrl, setPreviewUrl] = useState('');
         onPress: async () => {
           try {
             await axios.delete(`${BASE_URL}/api/notices/delete/${id}`);
-            fetchNotices(); // refresh list
+            fetchNotices(); 
             Alert.alert("Deleted", "Notice deleted successfully");
           } catch (error) {
             console.error("Error deleting notice:", error);
@@ -164,7 +169,7 @@ const pickFile = async () => {
         mimeType: file.mimeType,
       });
     } else {
-      setSelectedFile(null); // User canceled
+      setSelectedFile(null); 
     }
   } catch (err) {
     console.error("Error picking file:", err);
@@ -288,9 +293,6 @@ setPreviewUrl(`${BASE_URL}/api/notices/preview/${filename}`);
 )}
 
 
-
-
-
           <TouchableOpacity
             onPress={() => handleDeleteNotice(notice._id)}
             style={styles.deleteButton}
@@ -349,11 +351,6 @@ setPreviewUrl(`${BASE_URL}/api/notices/preview/${filename}`);
   </View>
 </Modal>
 
-
-
-
-
-
     </ScrollView>
   );
 };
@@ -361,7 +358,11 @@ setPreviewUrl(`${BASE_URL}/api/notices/preview/${filename}`);
 export default AddNoticeScreen;
 
 const styles = StyleSheet.create({
-  container: { padding: 30 },
+  container: { 
+    padding: 30,
+    backgroundColor: "#bbdbfaff", 
+    flexGrow: 1, 
+  },
   heading: { fontSize: 24, marginBottom: 15, fontWeight: "bold" },
   input: {
     borderWidth: 1,
@@ -369,6 +370,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     marginBottom: 15,
+    backgroundColor: "#fff", 
   },
   label: { fontWeight: "bold", marginBottom: 5 },
   radio: {
@@ -386,7 +388,6 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: "#fff", fontWeight: "bold" },
 
-  // new
   noticeCard: {
     backgroundColor: "#f0f8ff",
     padding: 15,
@@ -406,7 +407,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   deleteText: { color: "#d00", fontWeight: "bold" },
-
  
   noticeDate: {
     fontSize: 16,
@@ -415,4 +415,4 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
   },
 });
- 
+

@@ -98,8 +98,8 @@ export default function ParentProfileScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f0f4ff',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    backgroundColor: '#bbdbfaff',
+    // paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   container: {
     padding: 20,

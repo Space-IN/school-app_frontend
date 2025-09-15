@@ -1,13 +1,17 @@
 // FacultyClassesScreen.js
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Text } from 'react-native';
 import axios from 'axios';
 import BASE_URL from '../../../config/baseURL';
+import { useScrollToTop } from '@react-navigation/native';
 
 export default function FacultyClassesScreen({ navigation, route }) {
   const { userId } = route.params || {};
   const [assignedClasses, setAssignedClasses] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const listRef = useRef(null);
+  useScrollToTop(listRef);
 
   useEffect(() => {
     fetchAssignedClasses();
@@ -46,13 +50,17 @@ export default function FacultyClassesScreen({ navigation, route }) {
   };
 
   if (loading) {
-    return <View style={styles.container}><ActivityIndicator size="large" color="#4b4bfa" /></View>;
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#4b4bfa" />
+      </View>
+    );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>My Assigned Classes</Text>
       <FlatList
+        ref={listRef}
         data={assignedClasses}
         keyExtractor={(item, i) => `${item.classAssigned}-${item.section}-${i}`}
         renderItem={({ item }) => (
@@ -66,8 +74,18 @@ export default function FacultyClassesScreen({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  heading: { fontSize: 20, fontWeight: 'bold', marginBottom: 20 },
-  card: { padding: 20, backgroundColor: '#4b4bfa', borderRadius: 10, marginBottom: 10, alignItems: 'center' },
-  cardText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  container: { flex: 1, padding: 20, backgroundColor: '#bbdbfaff' },
+  card: {
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    marginBottom: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  cardText: { color: '#000', fontSize: 16, fontWeight: '600' },
 });

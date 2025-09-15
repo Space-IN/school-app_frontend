@@ -1,4 +1,4 @@
-// screens/Admin/FacultyListScreen.js
+// screens/Admin/FacultyListScreen.js 
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  SafeAreaView,
 } from "react-native";
 import axios from "axios";
 import { Ionicons } from "@expo/vector-icons";
@@ -21,16 +22,28 @@ const FacultyListScreen = ({ route, navigation }) => {
     const fetchFaculty = async () => {
       try {
         const res = await axios.get(
-          `${BASE_URL}/api/subject/subjects/class/${classId}/section/${section}`
+          `${BASE_URL}/api/schedule/class/${classId}/section/${section}/subjects-with-faculty`
         );
-        // Keep both facultyId and subjectName
-        const facultyData = res.data.map((item) => ({
-          id: item.facultyId,
-          subject: item.subjectName || item.subjectMasterId?.name || "N/A",
-        }));
-        setFaculty(facultyData);
+
+        console.log("API Response 👉", res.data);
+
+        // ✅ Corrected: access res.data.subjects
+        const facultyList =
+          res.data && Array.isArray(res.data.subjects)
+            ? res.data.subjects.map((item) => ({
+                id: item.facultyId || "N/A",
+                name: item.facultyName || "Unknown Faculty",
+                subject:
+                  item.subjectName ||
+                  item.subjectMasterId?.name ||
+                  "N/A",
+              }))
+            : [];
+
+        setFaculty(facultyList);
       } catch (error) {
-        console.error("Error fetching faculty:", error);
+        console.error("❌ Error fetching faculty:", error);
+        setFaculty([]);
       } finally {
         setLoading(false);
       }
@@ -40,17 +53,20 @@ const FacultyListScreen = ({ route, navigation }) => {
 
   if (loading) {
     return (
-      <View style={styles.center}>
+      <SafeAreaView style={styles.center}>
         <ActivityIndicator size="large" color="#007bff" />
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
-        Faculty for Class {classId} - {section}
-      </Text>
+    <SafeAreaView style={styles.container}>
+      {/* Highlighted Class & Section */}
+      <View style={styles.headerBox}>
+        <Text style={styles.headerText}>Class {classId}</Text>
+        <Text style={styles.headerText}>Section {section}</Text>
+      </View>
+
       <FlatList
         data={faculty}
         keyExtractor={(item, index) => item.id + index}
@@ -60,39 +76,64 @@ const FacultyListScreen = ({ route, navigation }) => {
             onPress={() =>
               navigation.navigate("FacultyScore", {
                 facultyId: item.id,
-                classId: classId,        // ✅ Pass class
-                section: section,        // ✅ Pass section
-                subjectName: item.subject // ✅ Pass subject for display
+                classId: classId,
+                section: section,
+                subjectName: item.subject,
               })
             }
           >
-            <Ionicons name="person-circle-outline" size={36} color="#007bff" />
+            <Ionicons
+              name="person-circle-outline"
+              size={36}
+              color="#007bff"
+            />
             <View style={styles.cardText}>
-              <Text style={styles.facultyId}>Faculty ID: {item.id}</Text>
-              <Text style={styles.subject}>Subject: {item.subject}</Text>
+              {/* Faculty Name as main heading */}
+              <Text style={styles.facultyName}>{item.name}</Text>
+              {/* Faculty ID + Subject as subheading */}
+              <Text style={styles.subText}>
+                ID: {item.id} | Subject: {item.subject}
+              </Text>
             </View>
-            <Ionicons name="chevron-forward-outline" size={24} color="#888" />
+            <Ionicons
+              name="chevron-forward-outline"
+              size={24}
+              color="#888"
+            />
           </TouchableOpacity>
         )}
         ListEmptyComponent={
           <View style={styles.center}>
-            <Text style={styles.emptyText}>No faculty found for this class.</Text>
+            <Text style={styles.emptyText}>
+              No faculty found for this class.
+            </Text>
           </View>
         }
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#f9f9f9" },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 16,
-    color: "#333",
-    textAlign: "center",
+  container: { flex: 1, padding: 16, backgroundColor: "#bbdbfaff" },
+
+  headerBox: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+    marginTop: 10,
+    backgroundColor: "#e6f0ff",
+    paddingVertical: 12,
+    borderRadius: 12,
   },
+  headerText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#007bff",
+    marginHorizontal: 10,
+  },
+
   card: {
     flexDirection: "row",
     alignItems: "center",
@@ -110,12 +151,12 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 12,
   },
-  facultyId: {
+  facultyName: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
     color: "#333",
   },
-  subject: {
+  subText: {
     fontSize: 14,
     color: "#666",
     marginTop: 2,

@@ -133,8 +133,8 @@ export default function TimeTableScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#eef3fb',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    backgroundColor: '#bbdbfaff',
+    // paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   container: {
     paddingHorizontal: 16,
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#2563eb',
-    backgroundColor: '#dbeafe',
+    backgroundColor: '#9ec8ffff',
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 8,

@@ -6,7 +6,7 @@ import ViewPerformanceTab from './ViewPerformanceTab';
 const Tab = createMaterialTopTabNavigator();
 
 export default function ManagePerformanceTabs({ route }) {
-  const { grade, section, student } = route.params; // Now expects student object if coming from ManagePerformanceTab
+  const { grade, section, student } = route.params; 
   const studentId = student?.userId || null;
 
   return (

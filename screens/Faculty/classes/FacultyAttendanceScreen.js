@@ -114,7 +114,7 @@ export default function FacultyAttendanceScreen({ route }) {
     );
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
       <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
 
       {/* 🟦 Header */}
@@ -176,10 +176,10 @@ export default function FacultyAttendanceScreen({ route }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f7fa',
+    backgroundColor: '#bbdbfaff',
   },
   header: {
-    paddingVertical: 20,
+    paddingVertical: 5,
     backgroundColor: '#4a90e2',
     alignItems: 'center',
     borderBottomLeftRadius: 15,

@@ -65,7 +65,7 @@ const ManagePerformanceTab = ({ grade, section, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    backgroundColor: '#f4f6f8',
+    backgroundColor: '#bbdbfaff',
     flex: 1,
   },
   card: {
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 16,
     bottom: 16,
-    backgroundColor: '#bda4dfff',
+    backgroundColor: '#4a90e2',
   },
 });
 

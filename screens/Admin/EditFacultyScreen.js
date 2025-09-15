@@ -143,7 +143,7 @@ export default function EditFacultyScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     padding: 35,
-    backgroundColor: '#f0f4ff',
+    backgroundColor: '#bbdbfaff',
     flexGrow: 1,
   },
   heading: {

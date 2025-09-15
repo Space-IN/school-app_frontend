@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,11 +12,16 @@ import {
 import axios from 'axios';
 import BASE_URL from '../../../config/baseURL';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useScrollToTop } from '@react-navigation/native';
 
 export default function FacultySchedulesScreen() {
   const [schedule, setSchedule] = useState([]);
   const [facultyName, setFacultyName] = useState('');
   const [loading, setLoading] = useState(true);
+
+  // 🔥 Ref for ScrollView
+  const scrollRef = useRef(null);
+  useScrollToTop(scrollRef);
 
   useEffect(() => {
     fetchFacultySchedule();
@@ -68,7 +73,11 @@ export default function FacultySchedulesScreen() {
       </View>
 
       {/* Body */}
-      <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        ref={scrollRef} 
+        style={styles.body}
+        showsVerticalScrollIndicator={false}
+      >
         {loading ? (
           <ActivityIndicator size="large" color="#4b4bfa" style={{ marginTop: 30 }} />
         ) : Object.keys(groupedSchedule).length === 0 ? (
@@ -111,12 +120,12 @@ export default function FacultySchedulesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f6f9ff',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    backgroundColor: '#bbdbfaff',
+    // paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   header: {
     padding: 16,
-    backgroundColor: '#4b4bfa',
+    backgroundColor: '#4a90e2',
     alignItems: 'center',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
@@ -151,7 +160,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     paddingVertical: 10,
     paddingHorizontal: 12,
-    color: '#1e40af',
+    color: '#000000ff',
     borderBottomWidth: 1,
     borderColor: '#cbd5e1',
   },
@@ -177,7 +186,7 @@ const styles = StyleSheet.create({
   headerCell: {
     backgroundColor: '#f3f4f6',
     fontWeight: 'bold',
-    color: '#1e3a8a',
+    color: '#000000ff',
   },
   col1: { width: 50 },
   col2: { width: 100 },

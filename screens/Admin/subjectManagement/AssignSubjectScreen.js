@@ -86,6 +86,7 @@ const AssignSubjectScreen = () => {
   };
 
   return (
+  <View style={{ flex: 1, backgroundColor: '#bbdbfaff' }}>
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.label}>Select Subject</Text>
       <RNPickerSelect
@@ -150,14 +151,16 @@ const AssignSubjectScreen = () => {
         <Button title="✅ Submit" onPress={handleSubmit} />
       </View>
     </ScrollView>
-  );
+  </View>
+);
+
 };
 
 const styles = StyleSheet.create({
   container: {
     padding: 35,
     paddingBottom: 60,
-    backgroundColor: '#f4f6ff',
+    backgroundColor: '#bbdbfaff',
   },
   label: {
     fontWeight: '600',

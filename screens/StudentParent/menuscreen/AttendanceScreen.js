@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import BASE_URL from '../../../config/baseURL';
 
 const AttendanceScreen = () => {
   const [groupedAttendance, setGroupedAttendance] = useState([]);
@@ -27,7 +28,7 @@ const AttendanceScreen = () => {
           return;
         }
 
-        const res = await fetch(`http://10.221.34.141:5000/api/attendance/student/${studentUserId}`);
+        const res = await fetch(`${BASE_URL}/api/attendance/student/${studentUserId}`);
         const data = await res.json();
 
         console.log('📦 Attendance response:', data);
@@ -119,12 +120,12 @@ const AttendanceScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f6f9ff',
-    padding: 10,
+    backgroundColor: '#bbdbfaff',
+    
   },
   header: {
     padding: 16,
-    backgroundColor: '#4b4bfa',
+    backgroundColor: '#4a90e2',
     alignItems: 'center',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,

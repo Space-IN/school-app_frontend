@@ -121,7 +121,7 @@ const ViewPerformanceTab = ({ grade, section }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#bbdbfaff',
     flex: 1,
   },
   pickerWrapper: {
