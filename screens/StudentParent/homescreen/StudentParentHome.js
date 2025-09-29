@@ -15,6 +15,7 @@ import ProfileHeader from '../../../components/ProfileHeader';
 import axios from 'axios';
 import PosterCarousel from '../../../components/PosterCarousel';
 import BASE_URL from '../../../config/baseURL';
+import { useAuth } from '../../../context/authContext';
 
 export default function StudentParentHome() {
   const route = useRoute();
@@ -30,6 +31,7 @@ export default function StudentParentHome() {
   const { userId, userData } = params;
   const { studentName, className, section } = userData || {};
   const displayName = studentName || userId || 'User';
+  const { logout } = useAuth()
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -43,10 +45,7 @@ export default function StudentParentHome() {
                 text: 'Logout',
                 style: 'destructive',
                 onPress: () => {
-                  navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'RoleSelection' }],
-                  });
+                  logout()
                 },
               },
             ]);

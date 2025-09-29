@@ -12,10 +12,12 @@ import {
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import BASE_URL from "../../../config/baseURL";
+import { useAuth } from "../../../context/authContext";
 
 export default function SubjectDashboard() {
   const route = useRoute();
   const { subjectName, subjectMasterId, grade, section } = route.params || {};
+  const { logout } = useAuth()
 
   const [activeTab, setActiveTab] = useState("Chapters");
   const [chapters, setChapters] = useState([]);

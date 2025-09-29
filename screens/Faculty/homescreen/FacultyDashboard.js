@@ -16,12 +16,14 @@ import BASE_URL from '../../../config/baseURL';
 import { Ionicons } from '@expo/vector-icons';
 import PosterCarousel from '../../../components/PosterCarousel';
 import { useScrollToTop } from '@react-navigation/native';   // 👈 import this
+import { useAuth } from "../../../context/authContext"
 
 export default function FacultyDashboard({ navigation }) {
   const [facultyInfo, setFacultyInfo] = useState(null);
   const [subjects, setSubjects] = useState([]);
   const [schedule, setSchedule] = useState([]);
   const [events, setEvents] = useState([]);
+  const { logout } = useAuth()
 
   // 👇 Add scroll ref
   const scrollRef = useRef(null);
@@ -34,8 +36,7 @@ export default function FacultyDashboard({ navigation }) {
         text: 'Logout',
         style: 'destructive',
         onPress: async () => {
-          await AsyncStorage.removeItem('userData');
-          navigation.reset({ index: 0, routes: [{ name: 'RoleSelection' }] });
+          logout()
         },
       },
     ]);

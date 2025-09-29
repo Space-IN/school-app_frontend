@@ -17,11 +17,13 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { BASE_URL } from '../../config/baseURL';
 import PosterCarousel from '../../components/PosterCarousel';
+import { useAuth } from '../../context/authContext';
 
 export default function AdminDashboard({ navigation }) {
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState([]);
+  const { logout } = useAuth() 
 
   useEffect(() => {
     navigation.setOptions({ headerShown: false }); // ✅ hide default header
@@ -34,11 +36,11 @@ export default function AdminDashboard({ navigation }) {
         if (parsed?.role === 'Admin' && parsed?.userId) {
           setUserId(parsed.userId);
         } else {
-          navigation.reset({ index: 0, routes: [{ name: 'RoleSelection' }] });
+          navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
         }
       } catch (err) {
         console.error('❌ Error loading userData:', err);
-        navigation.reset({ index: 0, routes: [{ name: 'RoleSelection' }] });
+        navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
       } finally {
         setLoading(false);
       }
@@ -54,8 +56,7 @@ export default function AdminDashboard({ navigation }) {
         text: 'Logout',
         style: 'destructive',
         onPress: async () => {
-          await AsyncStorage.removeItem('userData');
-          navigation.reset({ index: 0, routes: [{ name: 'RoleSelection' }] });
+          logout()
         },
       },
     ]);

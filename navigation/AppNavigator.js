@@ -1,8 +1,13 @@
-//AppNavigation.js
-import React, { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
+
+import { useAuth } from '../context/authContext';
+
+
 
 // Common Screens
 import RoleSelection from '../screens/RoleSelection';
@@ -70,30 +75,25 @@ import StudentPerformanceScreen from '../screens/StudentParent/menuscreen/Studen
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
-  const [initialRoute, setInitialRoute] = useState(null);
+  const { user, loading } = useAuth()
 
-  useEffect(() => {
-    const alwaysStartAtRoleSelection = async () => {
-      try {
-        await AsyncStorage.removeItem('userData'); 
-        console.log('🧹 Cleared user session for fresh start');
-      } catch (err) {
-        console.error('❌ Error clearing AsyncStorage:', err);
-      } finally {
-        setInitialRoute('RoleSelection');
-      }
-    };
-
-    alwaysStartAtRoleSelection();
-  }, []);
-
-  if (!initialRoute) {
+  if(loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" color="#1e3a8a" />
       </View>
-    );
+    )
   }
+
+  let initialRoute
+  if(user?.role === "Student") {
+    initialRoute = "StudentParentTabs"
+  } else if(user?.role === "Faculty") {
+    initialRoute = "FacultyTabs"
+  } else if(user?.role === "Admin") {
+    initialRoute = "AdminDashboard"
+  }
+
 
   return (
     <Stack.Navigator
@@ -103,9 +103,6 @@ export default function AppNavigator() {
         headerBackTitleVisible: false,
       }}
     >
-      {/* Common */}
-      <Stack.Screen name="RoleSelection" component={RoleSelection} options={{ headerShown: false }} />
-      <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
 
       {/* Admin */}
       <Stack.Screen name="AdminDashboard" component={AdminDashboard} />

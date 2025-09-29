@@ -75,8 +75,6 @@ export default function FacultyTabs({ route }) {
     }
   }, [route.params]);
 
-  if (!userData) return null;
-
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
