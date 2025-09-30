@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import StudentParentHome from '../screens/StudentParent/homescreen/StudentParentHome';
+import StudentParentHome from '../../screens/StudentParent/homescreen/StudentParentHome';
 
 const Tab = createBottomTabNavigator();
 

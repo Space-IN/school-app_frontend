@@ -4,14 +4,14 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 
-import FacultyDashboard from '../screens/Faculty/homescreen/FacultyDashboard';
-import FacultyClassesScreen from '../screens/Faculty/classes/FacultyClassesScreen';
-import FacultyClassDashboard from '../screens/Faculty/classes/FacultyClassDashboard';
-import FacultyScheduleScreen from '../screens/Faculty/schedule/FacultyScheduleScreen';
-import FacultyProfileScreen from '../screens/Faculty/profile/FacultyProfileScreen';
-import ViewPerformanceTab from '../screens/Faculty/classes/performance/ViewPerformanceTab';
-import LectureRecordingScreen from '../screens/Faculty/classes/LectureRecordingScreen';
-import FacultyChaptersScreen from '../screens/Faculty/classes/FacultyChaptersScreen';
+import FacultyDashboard from '../../screens/Faculty/homescreen/FacultyDashboard';
+import FacultyClassesScreen from '../../screens/Faculty/classes/FacultyClassesScreen';
+import FacultyClassDashboard from '../../screens/Faculty/classes/FacultyClassDashboard';
+import FacultyScheduleScreen from '../../screens/Faculty/schedule/FacultyScheduleScreen';
+import FacultyProfileScreen from '../../screens/Faculty/profile/FacultyProfileScreen';
+import ViewPerformanceTab from '../../screens/Faculty/classes/performance/ViewPerformanceTab';
+import LectureRecordingScreen from '../../screens/Faculty/classes/LectureRecordingScreen';
+import FacultyChaptersScreen from '../../screens/Faculty/classes/FacultyChaptersScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -39,12 +39,12 @@ function ClassesStack({ route }) {
       />
       <Stack.Screen
         name="FacultyPerformanceScreen"
-        component={require('../screens/Faculty/classes/FacultyPerformanceScreen').default}
+        component={require('../../screens/Faculty/classes/FacultyPerformanceScreen').default}
         options={{ title: 'Performance' }}
       />
       <Stack.Screen
         name="StudentSubjectMarksScreen"
-        component={require('../screens/Faculty/classes/performance/StudentSubjectMarksScreen').default}
+        component={require('../../screens/Faculty/classes/performance/StudentSubjectMarksScreen').default}
         options={{ title: 'Student Marks' }}
       />
       <Stack.Screen
