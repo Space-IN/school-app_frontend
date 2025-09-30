@@ -1,7 +1,7 @@
 import { View, ActivityIndicator } from "react-native";
 import { useAuth } from "../context/authContext";
-import AuthNavigator from "../navigation/authNavigator";
-import AppNavigator from "../navigation/AppNavigator";
+import AuthNavigator from "./authNavigator";
+import AppNavigator from "./appNavigator";
 
 
 const ProtectedRoute = () => {

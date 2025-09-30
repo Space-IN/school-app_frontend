@@ -7,7 +7,7 @@
 //   Image,
 //   StyleSheet,
 //   useWindowDimensions,
-//   TouchableOpacity,
+//   TouchableOpacity,s
 //   TouchableWithoutFeedback,
 //   ActivityIndicator,
 // } from 'react-native';

@@ -4,7 +4,7 @@ import Toast from 'react-native-toast-message';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'react-native';
 import { AuthProvider } from './context/authContext';
-import ProtectedRoute from './components/protectedRoute';
+import ProtectedRoute from './navigation/protectedRoute';
 
 // Optional: Ignore specific warning logs
 LogBox.ignoreLogs(['ViewPropTypes']);

@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAuth } from "../context/authContext";
+import { useAuth } from "../../context/authContext";
 import Toast from "react-native-toast-message";
 
 
@@ -30,12 +30,12 @@ export default function LoginScreen() {
     return (
         <SafeAreaView style={{ flex: 1 }}>
             <ImageBackground
-                source={require('../assets/school.webp')}
+                source={require('../../assets/school.webp')}
                 style={styles.background}
                 resizeMode="cover"
             >
                 <Image
-                    source={require('../assets/logo.png')}
+                    source={require('../../assets/logo.png')}
                     style={styles.logo}
                     resizeMode="contain"
                 />
