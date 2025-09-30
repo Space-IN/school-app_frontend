@@ -1,21 +1,21 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 
-import StudentParentTabs from './StudentParentTabs';
-import SubjectDashboard from '../../screens/StudentParent/homescreen/SubjectDashboard';
-import StudentProfileScreen from '../../screens/StudentParent/homescreen/StudentProfileScreen';
-import AttendanceStudent from '../../screens/StudentParent/menuscreen/AttendanceScreen';
-import TimetableScreen from '../../screens/StudentParent/menuscreen/TimetableScreen';
-import NoticeBoardScreen from '../../screens/StudentParent/menuscreen/NoticeBoardScreen';
-import ParentProfileScreen from '../../screens/StudentParent/menuscreen/ParentProfileScreen';
-import AcademicCalendarScreen from '../../screens/StudentParent/menuscreen/AcademicCalendarScreen';
-import SettingsScreen from '../../screens/StudentParent/menuscreen/settings/SettingsScreen';
-import ExamDetailScreen from '../../screens/StudentParent/menuscreen/ExamDetailScreen';
-import FeesScreen from '../../screens/StudentParent/menuscreen/settings/FeesScreen';
-import ChangePasswordScreen from '../../screens/StudentParent/menuscreen/settings/ChangePasswordScreen';
-import PrivacyPolicyScreen from '../../screens/StudentParent/menuscreen/settings/PrivacyPolicyScreen';
-import TermsScreen from '../../screens/StudentParent/menuscreen/settings/TermsScreen';
-import AboutScreen from '../../screens/StudentParent/menuscreen/settings/AboutScreen';
-import StudentPerformanceScreen from '../../screens/StudentParent/menuscreen/StudentPerformanceScreen';
+import StudentParentTabs from './StudentParentTabs'
+import SubjectDashboard from '../../screens/StudentParent/homescreen/SubjectDashboard'
+import StudentProfileScreen from '../../screens/StudentParent/homescreen/StudentProfileScreen'
+import AttendanceStudent from '../../screens/StudentParent/menuscreen/AttendanceScreen'
+import TimetableScreen from '../../screens/StudentParent/menuscreen/TimetableScreen'
+import NoticeBoardScreen from '../../screens/StudentParent/menuscreen/NoticeBoardScreen'
+import ParentProfileScreen from '../../screens/StudentParent/menuscreen/ParentProfileScreen'
+import AcademicCalendarScreen from '../../screens/StudentParent/menuscreen/AcademicCalendarScreen'
+import SettingsScreen from '../../screens/StudentParent/menuscreen/settings/SettingsScreen'
+import ExamDetailScreen from '../../screens/StudentParent/menuscreen/ExamDetailScreen'
+import FeesScreen from '../../screens/StudentParent/menuscreen/settings/FeesScreen'
+import ChangePasswordScreen from '../../screens/StudentParent/menuscreen/settings/ChangePasswordScreen'
+import PrivacyPolicyScreen from '../../screens/StudentParent/menuscreen/settings/PrivacyPolicyScreen'
+import TermsScreen from '../../screens/StudentParent/menuscreen/settings/TermsScreen'
+import AboutScreen from '../../screens/StudentParent/menuscreen/settings/AboutScreen'
+import StudentPerformanceScreen from '../../screens/StudentParent/menuscreen/StudentPerformanceScreen'
 
 
 

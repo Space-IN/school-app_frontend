@@ -14,7 +14,7 @@ import StudentParentHome from '../../screens/StudentParent/homescreen/StudentPar
 
 const Tab = createBottomTabNavigator();
 
-function MenuScreen({ navigation, route }) {
+export default function MenuScreen({ navigation, route }) {
   const { userId, userData } = route?.params || {};
   const flatListRef = useRef(null);
 
@@ -73,7 +73,7 @@ function MenuScreen({ navigation, route }) {
   );
 }
 
-export default function StudentParentTabs({ route }) {
+function StudentParentTabs({ route }) {
   const params = route?.params || {};
   const userId = params?.userId;
   const userData = params?.userData || params;

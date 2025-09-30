@@ -2,7 +2,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { LogBox } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { StatusBar } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { AuthProvider } from './context/authContext';
 import ProtectedRoute from './navigation/protectedRoute';
 
@@ -16,7 +16,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <StatusBar barStyle="light-content" backgroundColor="#9c1006" />
+        <StatusBar style="light" backgroundColor="#9c1006" />
 
         <NavigationContainer>
           <ProtectedRoute />

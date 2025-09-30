@@ -21,9 +21,6 @@ export default function StudentParentHome() {
   const route = useRoute();
   const navigation = useNavigation();
   const scrollRef = useRef(null);
-  const { width: screenWidth } = useWindowDimensions();
-
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [subjects, setSubjects] = useState([]);
   const [eventsToday, setEventsToday] = useState([]);
 
