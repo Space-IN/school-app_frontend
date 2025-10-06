@@ -13,11 +13,12 @@ export default function StudentTab() {
     return (
         <Tab.Navigator
             screenOptions={{
-                tabBarActiveTintColor: "#9c1006ff",
-                tabBarInactiveTintColor: "gray",
-                tabBarStyle: { height: 65, paddingTop: 5, },
+                tabBarActiveTintColor: "white",
+                tabBarInactiveTintColor: "rgba(255,255,255,0.6)",
+                tabBarStyle: { height: 65, paddingTop: 5, backgroundColor: "#c01e12ff" },
                 headerShown: false,
                 headerBackTitleVisible: false,
+                
             }}
         >
             <Tab.Screen
@@ -38,6 +39,17 @@ export default function StudentTab() {
                     tabBarLabel: "Menu",
                     tabBarIcon: ({ color, size }) => (
                         <Ionicons name="menu-sharp" size={size} color={color} />
+                    )
+                }}
+            />
+
+            <Tab.Screen
+                name="Chat"
+                component={MenuScreen}
+                options={{
+                    tabBarLabel: "Chat",
+                    tabBarIcon: ({ color, size }) => (
+                        <Entypo name="chat" size={size} color={color} />
                     )
                 }}
             />

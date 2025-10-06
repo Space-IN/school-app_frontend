@@ -6,10 +6,12 @@ import FacultyStudentsScreen from '../../screens/Faculty/classes/FacultyStudents
 import FacultyAttendanceScreen from '../../screens/Faculty/classes/FacultyAttendanceScreen';
 import FacultyAssignmentsScreen from '../../screens/Faculty/classes/FacultyAssignmentsScreen';
 import FacultyTestsScreen from '../../screens/Faculty/classes/FacultyTestsScreen';
-import FacultyPerformanceScreen from '../../screens/Faculty/classes/FacultyPerformanceScreen';
+import ManagePerformanceTabs from "../../screens/Faculty/classes/performance/ManagePerformanceTabs";
 import FacultyScheduleScreen from '../../screens/Faculty/schedule/FacultyScheduleScreen';
 import FacultyProfileScreen from '../../screens/Faculty/profile/FacultyProfileScreen';
-
+import ManagePerformanceTab from "../../screens/Faculty/classes/performance/ManagePerformanceTab";
+import ViewPerformanceTab from "../../screens/Faculty/classes/performance/ViewPerformanceTab";
+import StudentSubjectMarksScreen from "../../screens/Faculty/classes/performance/StudentSubjectMarksScreen";
 
 
 const Stack = createNativeStackNavigator()
@@ -36,8 +38,6 @@ export default function FacultyNavigator() {
             <Stack.Screen name="ManagePerformanceTab" component={ManagePerformanceTab} />
             <Stack.Screen name="ViewPerformanceTab" component={ViewPerformanceTab} />
             <Stack.Screen name="StudentSubjectMarksScreen" component={StudentSubjectMarksScreen} />
-            <Stack.Screen name="PastAttendanceScreen" component={PastAttendanceScreen} /> 
-            <Stack.Screen name="MonthlySummaryScreen" component={MonthlySummaryScreen} />
         </Stack.Navigator>
     )
 }

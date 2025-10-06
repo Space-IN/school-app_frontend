@@ -6,7 +6,8 @@ import * as SecureStore from "expo-secure-store"
 export const loginUser = async (userId, password) => {
     
     try {
-        const response = await axios.post(`http://10.221.34.139:5000/api/auth/login`, {
+        console.log("userid: ", userId, "password: ", password)
+        const response = await axios.post(`http://10.221.34.142:5000/api/auth/login`, {
             userId,
             password
         })
