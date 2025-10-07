@@ -7,7 +7,10 @@ const announcements = [
   { id: "3", title: "Holiday on Monday", description: "on account of gandhi jayanthi, schools will be closed" },
   { id: "4", title: "Library Timings Updated", description: "new library timings for class 6" },
   { id: "5", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
-  { id: "5", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
+  { id: "6", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
+  { id: "7", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
+  { id: "8", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
+  { id: "9", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
 ]
 
 
@@ -38,6 +41,7 @@ export default function StudentAnnoucements() {
                         keyExtractor={(item) => item.id}
                         style={styles.list}
                         showsVerticalScrollIndicator={false}
+                        nestedScrollEnabled={true}
                     />
                 )}
             </View>

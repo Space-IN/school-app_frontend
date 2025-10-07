@@ -251,8 +251,11 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import UserBanner from "../../../components/student/userBanner";
 import PerformanceGrid from "../../../components/student/performaceGrid";
 import StudentAnnoucements from "../../../components/student/announcements";
+import TodaySchedule from "../../../components/student/todaySchedule";
+import { useAuth } from "../../../context/authContext";
 
 export default function StudentParentHome() {
+  const { user } = useAuth()
 
   return (
     <ScrollView style={{ flex: 1, padding: 2, backgroundColor: "#F9FAFB" }}>
@@ -266,6 +269,10 @@ export default function StudentParentHome() {
 
       <View style={styles.announcementsContainer}>
         <StudentAnnoucements  />
+      </View>
+
+      <View style={styles.announcementsContainer}>
+        <TodaySchedule userId={user.userId} />
       </View>
     </ScrollView>
   )
@@ -282,7 +289,8 @@ const styles = StyleSheet.create({
   },
   announcementsContainer: {
     // backgroundColor: "white",
-    height: 230,
-    padding: 2
+    height: "auto",
+    padding: 2,
+    marginBottom: 2
   }
 })
