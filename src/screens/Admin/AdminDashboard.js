@@ -15,7 +15,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
-import { BASE_URL } from '../../config/baseURL';
+import { BASE_URL } from '@env';
 import PosterCarousel from '../../components/PosterCarousel';
 import { useAuth } from '../../context/authContext';
 

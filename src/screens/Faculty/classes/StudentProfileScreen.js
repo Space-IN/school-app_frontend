@@ -1,4 +1,4 @@
-// src/screens/Faculty/profile/FacultyProfileScreen.js
+// src/screens/Faculty/classes/StudentProfileScreen.js
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -9,57 +9,49 @@ import {
   StatusBar,
   ActivityIndicator,
   Alert,
-  TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
-import { useAuth } from "../../../context/authContext";
-import { useNavigation } from '@react-navigation/native';
 import { BASE_URL } from '@env';
 
-export default function FacultyProfileScreen() {
-  const { user } = useAuth();
-  const [faculty, setFaculty] = useState(null);
+const StudentProfileScreen = ({ route }) => {
+  const { studentData } = route.params || {};
+  const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigation = useNavigation();
 
-  const fetchFacultyDetails = async () => {
+  const fetchStudentDetails = async () => {
     try {
-      const facultyId = user?.userId;
-      
-      if (!facultyId) {
-        Alert.alert('Error', 'Faculty information not available');
+      if (!studentData || !studentData.userId) {
+        Alert.alert('Error', 'Student information not available');
         return;
       }
 
-      console.log('Fetching faculty details for:', facultyId);
+      console.log('Fetching student details for:', studentData.userId);
       
-      // Try multiple possible endpoints
-      let response;
-      try {
-        response = await axios.get(`${BASE_URL}/api/faculty/${facultyId}`);
-        console.log('Faculty API response:', response.data);
-      } catch (firstErr) {
-        console.log('First endpoint failed, trying alternative...');
-        response = await axios.get(`${BASE_URL}/api/faculty/profile/${facultyId}`);
-      }
+      // Fetch complete student data from API
+      const response = await axios.get(`${BASE_URL}/api/admin/students/${studentData.userId}`);
+      console.log('Student API response:', response.data);
       
-      setFaculty(response.data);
+      setStudent(response.data);
     } catch (error) {
-      console.error('❌ Error fetching faculty details:', error);
+      console.error('❌ Error fetching student details:', error);
       console.error('Error details:', error.response?.data);
       
-      Alert.alert('Error', 'Failed to load faculty profile');
+      // If API fails, use the passed studentData as fallback
+      if (studentData) {
+        setStudent(studentData);
+        Alert.alert('Info', 'Using limited student information');
+      } else {
+        Alert.alert('Error', 'Failed to load student profile');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (user?.userId) {
-      fetchFacultyDetails();
-    }
-  }, [user?.userId]);
+    fetchStudentDetails();
+  }, []);
 
   // Format date for display
   const formatDate = (dateString) => {
@@ -76,45 +68,31 @@ export default function FacultyProfileScreen() {
     }
   };
 
-  const handleGoToNotices = () => {
-    navigation.navigate('NoticeBoardScreen', { 
-      userId: user?.userId, 
-      role: 'faculty' 
-    });
-  };
-
-  const handleGoToCalendar = () => {
-    navigation.navigate('AcademicCalendarScreen');
-  };
-
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>👨‍🏫 Faculty Profile</Text>
+          <Text style={styles.headerTitle}>👤 Student Profile</Text>
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#4b4bfa" />
-          <Text style={styles.loadingText}>Loading faculty profile...</Text>
+          <Text style={styles.loadingText}>Loading student profile...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
-  if (!faculty) {
+  if (!student) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>👨‍🏫 Faculty Profile</Text>
+          <Text style={styles.headerTitle}>👤 Student Profile</Text>
         </View>
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle-outline" size={50} color="#d9534f" />
-          <Text style={styles.errorText}>Faculty profile not found</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={fetchFacultyDetails}>
-            <Text style={styles.retryButtonText}>Retry</Text>
-          </TouchableOpacity>
+          <Text style={styles.errorText}>Student profile not found</Text>
         </View>
       </SafeAreaView>
     );
@@ -123,31 +101,19 @@ export default function FacultyProfileScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
-      {/* <View style={styles.header}>
-        <Text style={styles.headerTitle}>👨‍🏫 Faculty Profile</Text>
-      </View> */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>👤 Student Profile</Text>
+      </View>
       
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.profileCard}>
-          {/* Faculty Basic Info */}
+          {/* Student Basic Info */}
           <View style={styles.avatarSection}>
             <View style={styles.avatar}>
               <Ionicons name="person" size={40} color="#4b4bfa" />
             </View>
-            <Text style={styles.name}>{faculty.name || 'N/A'}</Text>
-            <Text style={styles.userId}>ID: {faculty.userId || 'N/A'}</Text>
-          </View>
-
-          {/* Quick Actions */}
-          <View style={styles.actionsSection}>
-            <TouchableOpacity style={styles.actionButton} onPress={handleGoToNotices}>
-              <Ionicons name="megaphone-outline" size={24} color="#4a90e2" />
-              <Text style={styles.actionText}>Notice Board</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton} onPress={handleGoToCalendar}>
-              <Ionicons name="calendar-outline" size={24} color="#4a90e2" />
-              <Text style={styles.actionText}>Academic Calendar</Text>
-            </TouchableOpacity>
+            <Text style={styles.name}>{student.name || 'N/A'}</Text>
+            <Text style={styles.userId}>ID: {student.userId || 'N/A'}</Text>
           </View>
 
           {/* Personal Information */}
@@ -156,29 +122,42 @@ export default function FacultyProfileScreen() {
               <Ionicons name="person-outline" size={18} color="#4a90e2" /> Personal Information
             </Text>
             
-            <DetailRow label="Email" value={faculty.email} />
-            <DetailRow label="Date of Birth" value={formatDate(faculty.dateOfBirth)} />
-            <DetailRow label="Gender" value={faculty.gender} />
-            <DetailRow label="Phone" value={faculty.phone} />
-            <DetailRow label="Address" value={faculty.address} />
+            <DetailRow label="Date of Birth" value={formatDate(student.dob)} />
+            <DetailRow label="Gender" value={student.gender} />
+            <DetailRow label="Blood Group" value={student.bloodGroup} />
+            <DetailRow label="Address" value={student.address} />
           </View>
 
-          {/* Professional Information */}
+          {/* Academic Information */}
           <View style={styles.detailsSection}>
             <Text style={styles.sectionTitle}>
-              <Ionicons name="briefcase-outline" size={18} color="#4a90e2" /> Professional Information
+              <Ionicons name="school-outline" size={18} color="#4a90e2" /> Academic Information
             </Text>
             
-            <DetailRow label="Faculty ID" value={faculty.userId} />
-            <DetailRow label="Department" value={faculty.department} />
-            <DetailRow label="Designation" value={faculty.designation} />
-            <DetailRow label="Join Date" value={formatDate(faculty.joinDate)} />
+            <DetailRow label="Class" value={student.className} />
+            <DetailRow label="Section" value={student.section} />
+            <DetailRow label="Admission Date" value={formatDate(student.admissionDate)} />
+          </View>
+
+          {/* Parent Information */}
+          <View style={styles.detailsSection}>
+            <Text style={styles.sectionTitle}>
+              <Ionicons name="people-outline" size={18} color="#4a90e2" /> Parent Information
+            </Text>
+            
+            <DetailRow label="Father's Name" value={student.fatherName} />
+            <DetailRow label="Father's Occupation" value={student.fatherOccupation} />
+            <DetailRow label="Father's Contact" value={student.fatherContact} />
+            <DetailRow label="Mother's Name" value={student.motherName} />
+            <DetailRow label="Mother's Occupation" value={student.motherOccupation} />
+            <DetailRow label="Mother's Contact" value={student.motherContact} />
+            <DetailRow label="Parent Email" value={student.parentEmail} />
           </View>
         </View>
       </ScrollView>
     </SafeAreaView>
   );
-}
+};
 
 // Reusable Detail Row Component
 const DetailRow = ({ label, value }) => (
@@ -236,18 +215,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#d9534f',
     textAlign: 'center',
-    marginBottom: 16,
-  },
-  retryButton: {
-    backgroundColor: '#4a90e2',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    fontSize: 16,
   },
   profileCard: {
     backgroundColor: '#ffffff',
@@ -261,7 +228,7 @@ const styles = StyleSheet.create({
   },
   avatarSection: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 25,
     paddingBottom: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
@@ -287,29 +254,6 @@ const styles = StyleSheet.create({
   userId: {
     fontSize: 16,
     color: '#666',
-    textAlign: 'center',
-  },
-  actionsSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 25,
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  actionButton: {
-    alignItems: 'center',
-    padding: 12,
-    backgroundColor: '#f8f9ff',
-    borderRadius: 12,
-    minWidth: 100,
-    elevation: 2,
-  },
-  actionText: {
-    marginTop: 6,
-    fontSize: 12,
-    color: '#4a90e2',
-    fontWeight: '600',
     textAlign: 'center',
   },
   detailsSection: {
@@ -347,4 +291,4 @@ const styles = StyleSheet.create({
   },
 });
 
-// export default FacultyProfileScreen;
+export default StudentProfileScreen;
