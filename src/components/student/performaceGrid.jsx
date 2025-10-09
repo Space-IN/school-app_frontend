@@ -5,8 +5,8 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 
 
 export default function PerformanceGrid() {
-    const attendance = 87
-    const cgpa = 8.5
+    const attendance = 12
+    const cgpa = 2.5
 
     const getColor = (value, min, max) => {
         const clamped = Math.max(min, Math.min(value, max))
@@ -21,7 +21,7 @@ export default function PerformanceGrid() {
         <ScrollView contentContainerStyle={styles.container}>
             <View style={styles.row}>
                 <View style={[styles.card, { backgroundColor: getColor(attendance, 0, 10) }]}>
-                    <Text style={styles.cardTitle}>Attendance</Text>
+                    <Text style={styles.cardTitle}>ATTENDANCE</Text>
                     <View style={styles.divider} />
                     <View style={styles.metricContainer}>
                       <FontAwesome name="calendar-o" size={22} color="white" />
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     color: "#f5f5f5",
     fontSize: 12,
-    fontWeight: "700",
+    fontWeight: "900",
     marginBottom: 2,
     padding: 3
   },

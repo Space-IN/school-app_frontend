@@ -12,6 +12,7 @@ import FacultyProfileScreen from '../../screens/Faculty/profile/FacultyProfileSc
 import ManagePerformanceTab from "../../screens/Faculty/classes/performance/ManagePerformanceTab";
 import ViewPerformanceTab from "../../screens/Faculty/classes/performance/ViewPerformanceTab";
 import StudentSubjectMarksScreen from "../../screens/Faculty/classes/performance/StudentSubjectMarksScreen";
+import FacultyDashboard from "../../screens/Faculty/homescreen/FacultyDashboard";
 
 
 const Stack = createNativeStackNavigator()
@@ -26,7 +27,7 @@ export default function FacultyNavigator() {
                 headerBackTitleVisible: false,
             }}
         >
-            <Stack.Screen name="FacultyTabs" component={FacultyTabs} options={{ headerShown: false }} />
+            <Stack.Screen name="FacultyTabs" component={FacultyDashboard} options={{ headerShown: false }} />
             <Stack.Screen name="FacultyClassDashboard" component={FacultyClassDashboard} />
             <Stack.Screen name="FacultyStudentsScreen" component={FacultyStudentsScreen} />
             <Stack.Screen name="FacultyAttendanceScreen" component={FacultyAttendanceScreen} />

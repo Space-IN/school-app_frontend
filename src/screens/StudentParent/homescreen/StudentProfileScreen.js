@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,10 +8,10 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { useRoute } from '@react-navigation/native';
 import BASE_URL from '../../../config/baseURL';
+import StudentHeader from '../../../components/student/header';
+import { useAuth } from '../../../context/authContext';
 
 const iconMap = {
   name: 'person',
@@ -43,28 +43,15 @@ const allowedKeys = [
 ];
 
 const StudentProfileScreen = () => {
-  const route = useRoute();
+  const { user } = useAuth()
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async () => {
     try {
-      const passedStudent = route.params?.student || route.params?.studentData;
-
-      if (passedStudent) {
-        setProfile(passedStudent);
-      } else {
-        const stored = await AsyncStorage.getItem('userData');
-        const parsed = stored ? JSON.parse(stored) : null;
-
-        if (!parsed || parsed.role !== 'Student') {
-          Alert.alert('Error', 'Invalid student login');
-          return;
-        }
-
-        const userId = parsed.userId;
-        const response = await axios.get(`${BASE_URL}/api/admin/students/${userId}`);
-        setProfile(response.data);
+      if(user) {
+        const response = await axios.get(`${BASE_URL}/api/admin/students/${user.userId}`);
+        setProfile(response.data)
       }
     } catch (err) {
       console.error('❌ Error loading profile:', err);
@@ -97,6 +84,7 @@ const StudentProfileScreen = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <StudentHeader />
       <Text style={styles.header}>Student Profile</Text>
 
       {allowedKeys.map((key) => {

@@ -5,7 +5,7 @@ import { BASE_URL } from "@env"
 
 export const fetchSchedule = async (userId) => {
     try {
-        const res = await axios.get(`http://10.221.34.139:5000/api/schedule/student/stu040`)
+        const res = await axios.get(`${BASE_URL}/api/schedule/student/${userId}`)
         const scheduleData = res.data
         return scheduleData
     } catch(err) {

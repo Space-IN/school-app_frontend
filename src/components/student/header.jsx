@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons'
 
 
 
-export default function StudentHeader({ navigation, route, options, back }) {
+export default function StudentHeader({ navigation, back }) {
 
     return (
         <View style={styles.container}>

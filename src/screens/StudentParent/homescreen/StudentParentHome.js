@@ -272,7 +272,7 @@ export default function StudentParentHome() {
       </View>
 
       <View style={styles.announcementsContainer}>
-        <TodaySchedule userId={user.userId} />
+        <TodaySchedule userId={user?.userId} />
       </View>
     </ScrollView>
   )
