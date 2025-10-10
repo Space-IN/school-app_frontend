@@ -1,5 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import StudentParentHome from "../../screens/StudentParent/homescreen/StudentParentHome"
+import StudentHome from "../../screens/StudentParent/homescreen/studentHomeScreen"
 import StudentHeader from "../../components/student/header"
 
 const Stack = createNativeStackNavigator()
@@ -13,7 +13,7 @@ export default function StudentHomeNavigator() {
                 header: (props) => <StudentHeader {...props} />,
             }}
         >
-            <Stack.Screen name="StudentHome" component={StudentParentHome} />
+            <Stack.Screen name="StudentHome" component={StudentHome} />
         </Stack.Navigator>
     )
 }

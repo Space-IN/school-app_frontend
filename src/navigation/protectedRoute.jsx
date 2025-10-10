@@ -5,7 +5,7 @@ import AppNavigator from "./appNavigator";
 
 
 const ProtectedRoute = () => {
-    const { user, loading } = useAuth()
+    const { isAuthenticated, loading } = useAuth()
 
     if(loading) {
         return (
@@ -15,7 +15,7 @@ const ProtectedRoute = () => {
         )
     }
 
-    return user ? <AppNavigator /> : <AuthNavigator />
+    return isAuthenticated ? <AppNavigator /> : <AuthNavigator />
 }
 
 export default ProtectedRoute

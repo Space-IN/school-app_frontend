@@ -252,15 +252,18 @@ import UserBanner from "../../../components/student/userBanner";
 import PerformanceGrid from "../../../components/student/performaceGrid";
 import StudentAnnoucements from "../../../components/student/announcements";
 import TodaySchedule from "../../../components/student/todaySchedule";
-import { useAuth } from "../../../context/authContext";
+import { useStudent } from "../../../context/student/studentContext";
 
-export default function StudentParentHome() {
-  const { user } = useAuth()
+
+
+
+export default function StudentHome() {
+  const { studentData } = useStudent()
 
   return (
-    <ScrollView style={{ flex: 1, padding: 2, backgroundColor: "#F9FAFB" }}>
+    <ScrollView style={{ flex: 1, padding: 10, backgroundColor: "#F9FAFB" }}>
       <View style={styles.userBannerContainer}>
-        <UserBanner />
+        <UserBanner studentData={studentData} />
       </View>
       
       <View style={styles.userPerformanceGrid}>
@@ -271,8 +274,8 @@ export default function StudentParentHome() {
         <StudentAnnoucements  />
       </View>
 
-      <View style={styles.announcementsContainer}>
-        <TodaySchedule userId={user?.userId} />
+      <View style={styles.scheduleContainer}>
+        <TodaySchedule studentId={studentData?.userId} />
       </View>
     </ScrollView>
   )
@@ -285,12 +288,16 @@ const styles = StyleSheet.create({
   },
   userPerformanceGrid: {
     width: "100%",
-    marginTop: 50,
+    marginTop: 15,
   },
   announcementsContainer: {
-    // backgroundColor: "white",
     height: "auto",
     padding: 2,
-    marginBottom: 2
-  }
+    marginTop: 15
+  },
+  scheduleContainer: {
+    height: "auto",
+    padding: 1,
+    marginTop: 15
+  },
 })

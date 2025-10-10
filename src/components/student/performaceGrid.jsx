@@ -65,11 +65,12 @@ export default function PerformanceGrid() {
 const styles = StyleSheet.create({
   container: {
     padding: 12,
+    width: "100%"
   },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 12,
+    marginBottom: 5,
     flexWrap: "wrap",
   },
   card: {

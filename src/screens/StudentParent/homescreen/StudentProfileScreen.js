@@ -15,19 +15,19 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import axios from "axios";
 import { LinearGradient } from "expo-linear-gradient";
 import { BASE_URL } from "@env"
-import { useAuth } from "../../../context/authContext";
+import { useStudent } from "../../../context/student/studentContext";
 import StudentHeader from "../../../components/student/header";
 
 
 const StudentProfileScreen = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { user, logout } = useAuth();
+  const { studentData } = useStudent()
 
   const fetchProfile = async () => {
     try {
-      if (user) {
-        const userId = user?.userId;
+      if (studentData) {
+        const userId = studentData.userId;
         const response = await axios.get(
           `${BASE_URL}/api/admin/students/${userId}`
         );

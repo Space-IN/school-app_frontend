@@ -2,15 +2,15 @@ import { FlatList, StyleSheet, Text, View, Dimensions } from "react-native"
 import Foundation from '@expo/vector-icons/Foundation'
 
 const announcements = [
-  { id: "1", title: "Exam Schedule Released", description: "on the date 13-02-2025 the exam will be held" },
-  { id: "2", title: "Sports Day Next Week", description: "as mentioned before, sports meeting will be conducted" },
-  { id: "3", title: "Holiday on Monday", description: "on account of gandhi jayanthi, schools will be closed" },
-  { id: "4", title: "Library Timings Updated", description: "new library timings for class 6" },
-  { id: "5", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
-  { id: "6", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
-  { id: "7", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
-  { id: "8", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
-  { id: "9", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
+//   { id: "1", title: "Exam Schedule Released", description: "on the date 13-02-2025 the exam will be held" },
+//   { id: "2", title: "Sports Day Next Week", description: "as mentioned before, sports meeting will be conducted" },
+//   { id: "3", title: "Holiday on Monday", description: "on account of gandhi jayanthi, schools will be closed" },
+//   { id: "4", title: "Library Timings Updated", description: "new library timings for class 6" },
+//   { id: "5", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
+//   { id: "6", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
+//   { id: "7", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
+//   { id: "8", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
+//   { id: "9", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
 ]
 
 
@@ -53,7 +53,7 @@ export default function StudentAnnoucements() {
 const styles = StyleSheet.create({
     container: {
         borderRadius: 12,
-        width: "90%",
+        width: "95%",
         alignSelf: "center",
         backgroundColor: "#475569",
         overflow: "hidden"
@@ -75,7 +75,6 @@ const styles = StyleSheet.create({
         color: "white"
     },
     announcementsContainer: {
-        // padding: 5,
     },
     noData: {
         fontSize: 14,

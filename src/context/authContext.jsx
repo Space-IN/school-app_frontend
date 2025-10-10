@@ -7,15 +7,19 @@ export const AuthContext = createContext()
 
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null)
+    const [isAuthenticated, setIsAuthenticated] = useState(false)
+    const [token, setToken] = useState(null)
+    const [decodedToken, setDecodedToken] = useState(null)
     const [loading, setLoading] = useState(false)
 
     const login = async (userId, password) => {
         setLoading(true)
         try {
             const token = await loginUser(userId, password)
+            setToken(token)
             const decodedToken = jwtDecode(token)
-            setUser({ userId: decodedToken.userId, role: decodedToken.role })
+            setDecodedToken(decodedToken)
+            setIsAuthenticated(true)
         } catch(err) {
             throw err
         } finally {
@@ -24,7 +28,9 @@ export const AuthProvider = ({ children }) => {
     }
 
     const logout = async () => {
-        setUser(null)
+        setIsAuthenticated(false)
+        setToken(null)
+        setDecodedToken(null)
         await SecureStore.deleteItemAsync("token")
     }
 
@@ -34,8 +40,10 @@ export const AuthProvider = ({ children }) => {
             try {
                 const storedToken = await SecureStore.getItemAsync("token")
                 if(storedToken) {
+                    setToken(storedToken)
                     const decodedToken = jwtDecode(storedToken)
-                    setUser({ userId: decodedToken.userId, role: decodedToken.role })
+                    setDecodedToken(decodedToken)
+                    setIsAuthenticated(true)
                 }
             } catch(err) {
                 console.log("error loading user: ", err)
@@ -47,7 +55,7 @@ export const AuthProvider = ({ children }) => {
     }, [])
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout }}>
+        <AuthContext.Provider value={{ isAuthenticated, token, decodedToken, loading, login, logout }}>
             {children}
         </AuthContext.Provider>
     )

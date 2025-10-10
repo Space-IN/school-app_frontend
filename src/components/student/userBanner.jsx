@@ -1,22 +1,20 @@
-import { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Pressable, Animated } from "react-native";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useAuth } from "../../context/authContext";
+import { useEffect, useState } from "react"
+import { View, Text, StyleSheet, Pressable, Animated } from "react-native"
+import FontAwesome from "@expo/vector-icons/FontAwesome"
+import { useNavigation } from "@react-navigation/native"
 
 const getGreeting = () => {
-  const hour = new Date().getHours();
-  if (hour >= 5 && hour < 12) return "Good Morning";
-  else if (hour >= 12 && hour < 17) return "Good Afternoon";
-  else return "Good Evening";
+  const hour = new Date().getHours()
+  if (hour >= 5 && hour < 12) return "Good Morning"
+  else if (hour >= 12 && hour < 17) return "Good Afternoon"
+  else return "Good Evening"
 };
 
-export default function UserBanner() {
-  const [greeting, setGreeting] = useState(getGreeting());
-  const scaleAnim = new Animated.Value(1);
-  const { user } = useAuth()
+export default function UserBanner({ studentData }) {
+  const [greeting, setGreeting] = useState(getGreeting())
+  const scaleAnim = new Animated.Value(1)
+  const navigation = useNavigation()
 
-  const userName = "Pavan Kumar H";
-  const className = "10 A";
 
   useEffect(() => {
     const interval = setInterval(() => setGreeting(getGreeting()), 60 * 60 * 1000);
@@ -27,8 +25,8 @@ export default function UserBanner() {
     Animated.sequence([
       Animated.timing(scaleAnim, { toValue: 0.95, duration: 100, useNativeDriver: true }),
       Animated.timing(scaleAnim, { toValue: 1, duration: 100, useNativeDriver: true }),
-    ]).start();
-  };
+    ]).start(() => navigation.navigate("Profile"))
+  }
 
   return (
     <Pressable onPress={handlePress}>
@@ -40,11 +38,11 @@ export default function UserBanner() {
         <View style={styles.infoContainer}>
             <View style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "flex-start" }}>
                 <Text style={styles.greeting}>{greeting},</Text>
-                <Text style={styles.userName}>{userName}</Text>
+                <Text style={styles.userName}>{studentData?.name}</Text>
                 <View style={styles.divider} />
             </View>
           <Text style={styles.userDetails}>
-            ID: {user?.userId} | Class: {className}
+            ID: {studentData?.userId} | Class: "{studentData?.className} | Section: "{studentData?.section}"
           </Text>
         </View>
       </Animated.View>
@@ -57,7 +55,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#475569",
-    width: "90%",
+    width: "95%",
     alignSelf: "center",
     borderRadius: 12,
     padding: 15,
@@ -88,7 +86,7 @@ const styles = StyleSheet.create({
     fontSize: 23,
     fontWeight: "700",
     color: "white",
-    marginTop: -5,
+    marginTop: -2,
   },
   userDetails: {
     fontSize: 14,
@@ -102,5 +100,6 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: "rgba(255, 255, 255, 0.3)",
     marginBottom: 8,
+    marginTop: 3,
   },
 });

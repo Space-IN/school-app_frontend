@@ -3,10 +3,12 @@ import { useAuth } from '../context/authContext'
 import AdminNavigator from './admin/adminNavigator'
 import FacultyNavigator from './faculty/facultyNavigator'
 import StudentTab from './student/studentTab'
+import { StudentProvider } from '../context/student/studentContext'
+import LoginScreen from '../screens/auth/login'
 
 
 export default function AppNavigator() {
-  const { user, loading } = useAuth()
+  const { decodedToken, loading } = useAuth()
 
   if(loading) {
     return (
@@ -16,12 +18,22 @@ export default function AppNavigator() {
     )
   }
 
-  switch(user.role) {
+  if(!decodedToken) {
+    return <LoginScreen />
+  }
+
+  switch(decodedToken?.role) {
     case "Student":
-      return <StudentTab />
+      return (
+        <StudentProvider>
+          <StudentTab />
+        </StudentProvider>
+      )
     case "Faculty":
       return <FacultyNavigator />
     case "Admin":
       return <AdminNavigator />
+    default:
+      return <LoginScreen />
   }
 }
