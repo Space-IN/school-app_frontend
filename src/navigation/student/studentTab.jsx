@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import StudentHomeNavigator from "./studentHomeNavigator"
-import StudentProfileScreen from "../../screens/StudentParent/homescreen/StudentProfileScreen"
+import StudentProfileScreen from "../../screens/StudentParent/homescreen/studentProfileScreen"
 import MenuScreen from "./StudentParentTabs"
 import { Ionicons } from "@expo/vector-icons"
 import Entypo from '@expo/vector-icons/Entypo'
