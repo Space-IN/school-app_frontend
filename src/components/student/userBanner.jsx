@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { View, Text, StyleSheet, Pressable, Animated } from "react-native"
+import { View, Text, StyleSheet, Pressable, Animated, ActivityIndicator } from "react-native"
 import FontAwesome from "@expo/vector-icons/FontAwesome"
 import { useNavigation } from "@react-navigation/native"
 
@@ -10,7 +10,7 @@ const getGreeting = () => {
   else return "Good Evening"
 };
 
-export default function UserBanner({ studentData }) {
+export default function UserBanner({ studentData, loading }) {
   const [greeting, setGreeting] = useState(getGreeting())
   const scaleAnim = new Animated.Value(1)
   const navigation = useNavigation()
@@ -35,16 +35,20 @@ export default function UserBanner({ studentData }) {
           <FontAwesome name="user-circle-o" size={65} color="white" />
         </View>
 
-        <View style={styles.infoContainer}>
-            <View style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "flex-start" }}>
-                <Text style={styles.greeting}>{greeting},</Text>
-                <Text style={styles.userName}>{studentData?.name}</Text>
-                <View style={styles.divider} />
-            </View>
-          <Text style={styles.userDetails}>
-            ID: {studentData?.userId} | Class: "{studentData?.className} | Section: "{studentData?.section}"
-          </Text>
-        </View>
+        {loading ? (
+          <ActivityIndicator size="small" color="#9c1006" />
+        ) : (
+          <View style={styles.infoContainer}>
+              <View style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "flex-start" }}>
+                  <Text style={styles.greeting}>{greeting},</Text>
+                  <Text style={styles.userName}>{studentData?.name?.toUpperCase() || <ActivityIndicator size="small" color="#9c1006" />}</Text>
+                  <View style={styles.divider} />
+              </View>
+            <Text style={styles.userDetails}>
+              ID: {studentData?.userId} | Class: "{studentData?.className}" | Section: "{studentData?.section}"
+            </Text>
+          </View>
+        )}
       </Animated.View>
     </Pressable>
   );
@@ -55,18 +59,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#475569",
-    width: "95%",
+    width: "97%",
     alignSelf: "center",
     borderRadius: 12,
     padding: 15,
-    marginTop: 12,
-    borderWidth: 1,
-    // borderColor: "#f0f0f0",
     height: 120
   },
   avatarContainer: {
     width: "25%",
-    // backgroundColor: "white",
     height: "100%",
     marginRight: 15,
     display: "flex",
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     marginTop: -2,
   },
   userDetails: {
-    fontSize: 14,
+    fontSize: 12,
     color: "white",
     marginTop: 2,
     fontWeight: "500",

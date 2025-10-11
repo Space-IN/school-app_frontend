@@ -1,62 +1,64 @@
-import { View, Text, StyleSheet, ScrollView } from "react-native"
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from "react-native"
 import FontAwesome from '@expo/vector-icons/FontAwesome'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6'
+import { useStudent } from "../../context/student/studentContext"
 
 
 
 export default function PerformanceGrid() {
-    const attendance = 12
-    const cgpa = 2.5
-
-    const getColor = (value, min, max) => {
-        const clamped = Math.max(min, Math.min(value, max))
-
-        const norm = (clamped-min) / (max-min)
-        if(norm<=0.35) return "#be3b3bff"
-        if(norm<=0.65) return "#f59e0b"
-        return "#10b981"
-    }
+    const { studentData, studentLoading } = useStudent()
+    const assignmentsNum = "-"
+    const remarks = "-"
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
             <View style={styles.row}>
-                <View style={[styles.card, { backgroundColor: getColor(attendance, 0, 10) }]}>
+                <View style={[styles.card, { backgroundColor: !studentData?.attendancePercentage ? "#909691" : studentData?.attendancePercentage>75 ? "#10b981" : studentData?.attendancePercentage>45 ? "#f59e0b" : "#be3b3bff" }]}>
                     <Text style={styles.cardTitle}>ATTENDANCE</Text>
                     <View style={styles.divider} />
                     <View style={styles.metricContainer}>
                       <FontAwesome name="calendar-o" size={22} color="white" />
-                      <Text style={[styles.metricText, { marginLeft: 5 }]}>{attendance}%</Text>
+                      {studentLoading ? (
+                        <ActivityIndicator size="small" color="#9c1006" />
+                      ) : (
+                        <Text style={[styles.metricText, { marginLeft: 5 }]}>{!studentData?.attendancePercentage ? "-" : `${studentData?.attendancePercentage}%`}</Text>
+                      )}
                     </View>
                 </View>
 
-                <View style={[styles.card, { backgroundColor: getColor(cgpa, 0, 10) }]}>
+                <View style={[styles.card, { backgroundColor: !studentData?.cgpa ? "#909691" : studentData?.cgpa>8 ? "#10b981" : studentData?.cgpa>5 ? "#f59e0b"  : "#be3b3bff" }]}>
                     <Text style={styles.cardTitle}>CGPA</Text>
                     <View style={styles.divider} />
                     <View style={styles.metricContainer}>
                       <FontAwesome name="graduation-cap" size={22} color="white" />
-                      <Text style={styles.metricText}>{cgpa}</Text>
+                      {studentLoading ? (
+                        <ActivityIndicator size="small" color="#9c1006" />
+                      ) : (
+                        <Text style={[styles.metricText, { marginLeft: 5 }]}>{!studentData?.cgpa ? "-" : `${studentData?.cgpa}`}</Text>
+                      )}
                     </View>
                 </View>
             </View>
-            {/* <View style={styles.row}>
-              <View style={[styles.card, { backgroundColor: getColor(cgpa, 0, 10) }]}>
-                  <Text style={styles.cardTitle}>Assignments</Text>
+            
+            <View style={styles.row2}>
+              <View style={[styles.card, { backgroundColor: assignmentsNum>0 ? "#f59e0b" : assignmentsNum<0 ? "#be3b3bff" : assignmentsNum==="-" ? "#909691" : "#10b981" }]}>
+                  <Text style={styles.cardTitle}>ASSIGNMENTS</Text>
                   <View style={styles.divider} />
                   <View style={styles.metricContainer}>
-                    <MaterialIcons name="assignment" size={26} color="white" />
-                    <Text style={styles.metricText}>{cgpa}</Text>
+                    <FontAwesome name="book" size={22} color="white" />
+                    <Text style={styles.metricText}>{assignmentsNum<0 ? `${Math.abs(assignmentsNum)} UNSUBMITTED` : assignmentsNum>0 ? `${assignmentsNum} PENDING` : assignmentsNum==="-" ? "NO ASSIGNMENTS" : "SUBMITTED"}</Text>
                   </View>
               </View>
 
-              <View style={[styles.card, { backgroundColor: getColor(cgpa, 0, 10) }]}>
-                  <Text style={styles.cardTitle}>Assignments</Text>
+              <View style={[styles.card, { backgroundColor: remarks==="-" ? "#909691" : "#f59e0b" }]}>
+                  <Text style={styles.cardTitle}>REMARKS</Text>
                   <View style={styles.divider} />
                   <View style={styles.metricContainer}>
-                    <MaterialIcons name="assignment" size={26} color="white" />
-                    <Text style={styles.metricText}>{cgpa}</Text>
+                    <FontAwesome6 name="chalkboard-user" size={22} color="white" />
+                    <Text style={styles.metricText}>{remarks==="-" ? "NO REMARKS" : `${remarks} REMARKS`}</Text>
                   </View>
               </View>
-            </View> */}
+            </View>
         </ScrollView>
     )
 }
@@ -70,12 +72,18 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 5,
+    marginTop: 2,
     flexWrap: "wrap",
+  },
+  row2: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    marginTop: -6,
   },
   card: {
     flex: 1,
-    backgroundColor: "#2C2C2C",
+    backgroundColor: "#909691",
     borderRadius: 12,
     marginHorizontal: 6,
     height: 110,
@@ -103,7 +111,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   metricContainer: {
-    padding: 3,
     display: "flex",
     justifyContent: "center",
     flexDirection: "column",

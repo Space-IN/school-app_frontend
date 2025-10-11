@@ -258,7 +258,7 @@ import { useStudent } from "../../../context/student/studentContext";
 
 
 export default function StudentHome() {
-  const { studentData } = useStudent()
+  const { studentData, studentLoading } = useStudent()
 
   return (
     <ScrollView style={{ flex: 1, padding: 10, backgroundColor: "#F9FAFB" }}>
@@ -275,7 +275,7 @@ export default function StudentHome() {
       </View>
 
       <View style={styles.scheduleContainer}>
-        <TodaySchedule studentId={studentData?.userId} />
+        <TodaySchedule studentId={studentData?.userId} loading={studentLoading} />
       </View>
     </ScrollView>
   )
@@ -285,10 +285,10 @@ const styles = StyleSheet.create({
   userBannerContainer: {
     width: "100%",
     height: 120,
+    marginTop: 3
   },
   userPerformanceGrid: {
     width: "100%",
-    marginTop: 15,
   },
   announcementsContainer: {
     height: "auto",

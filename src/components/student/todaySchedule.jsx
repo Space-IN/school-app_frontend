@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState, } from "react"
-import { fetchStudentSchedule } from "../../controllers/userDataController"
-import { ActivityIndicator, View, FlatList, StyleSheet, Dimensions, Text } from "react-native"
-import FontAwesome from '@expo/vector-icons/FontAwesome'
+import { fetchStudentSchedule } from "../../controllers/studentDataController"
+import { ActivityIndicator, View, FlatList, StyleSheet, Text } from "react-native"
 
 
 
@@ -30,7 +29,6 @@ export default function TodaySchedule({ studentId }) {
         setLoading(true)
         setError(null)
         try {
-            console.log("student id form ts: ", studentId)
             const scheduleData = await fetchStudentSchedule(studentId)
             const todayData = scheduleData.weeklySchedule?.find(day => day.day === today)
             setTodaySchedule(todayData)
