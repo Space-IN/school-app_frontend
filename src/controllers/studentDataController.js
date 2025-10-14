@@ -36,3 +36,24 @@ export const fetchOverallCPGA = async (studentId) => {
         throw err.response?.data || { message: "something went wrong while fetching student's overall cgpa." }
     }
 }
+
+export const fetchAnnouncements = async () => {
+    try {
+        const res = await axios.get(`${BASE_URL}/api/notices/`)
+        return res.data
+    } catch(err) {
+        console.error("failed to fetch student's announcements: ", err.response?.data)
+        throw err.response?.data || { message: "something went wrong while fetching announcements." }
+    }
+}
+
+
+export const fetchEvents = async (studentId) => {
+    try {
+        const res = await axios.get(`${BASE_URL}/api/events/student/${studentId}/`)
+        return res.data
+    } catch(err) {
+        console.error("failed to fetch student's events: ", err.response?.data)
+        throw err.response?.data || { message: "something went wrong while fetching events." }
+    }
+}

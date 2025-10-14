@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, } from "react"
 import { fetchStudentSchedule } from "../../controllers/studentDataController"
 import { ActivityIndicator, View, FlatList, StyleSheet, Text } from "react-native"
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 
 
 
@@ -61,7 +62,13 @@ export default function TodaySchedule({ studentId }) {
 
   return (
     <View style={styles.container}>
-        <Text style={styles.sectionTitle}>Today's Schedule</Text>
+        <View style={{ padding: 10, paddingLeft: 20 }}>
+            <View style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 10, width: "50%" }}>
+                <FontAwesome5 name="calendar-day" size={19} color="#2E2E2E" />
+                <Text style={styles.sectionTitle}>Today's Schedule</Text>
+            </View>
+        </View>
+        <View style={styles.divider} />
 
         {loading ? (
             <View style={styles.loadingBox}>
@@ -75,13 +82,15 @@ export default function TodaySchedule({ studentId }) {
         ) : !todaySchedule || todaySchedule.periods.length === 0 ? (
             <Text style={styles.noDataText}>No classes scheduled for today.</Text>
         ) : (
-            <View style={styles.timelineContainer}>
-                <FlatList
-                    data={todaySchedule.periods}
-                    renderItem={renderItem}
-                    keyExtractor={(item) => item._id}
-                    scrollEnabled={false}
-                />
+            <View style={{ padding: 20 }}>
+                <View style={styles.timelineContainer}>
+                    <FlatList
+                        data={todaySchedule.periods}
+                        renderItem={renderItem}
+                        keyExtractor={(item) => item._id}
+                        scrollEnabled={false}
+                    />
+                </View>
             </View>
         )}
     </View>
@@ -91,23 +100,25 @@ export default function TodaySchedule({ studentId }) {
 const styles = StyleSheet.create({
     container: {
         width: "95%",
-        alignSelf: "center"
+        alignSelf: "center",
+        backgroundColor: "#d4c7c7ff",
+        marginBottom: 20,
+        height: "auto",
+        borderRadius:12
     },
     sectionTitle: {
         fontSize: 17.5,
         fontWeight: "900",
         marginVertical: 5,
-        color: "#9c1006",
+        color: "#2E2E2E",
     },
     timelineContainer: {
-        marginTop: 10,
         paddingLeft: 10,
         borderLeftWidth: 2,
         borderColor: "#9c1006",
-        paddingBottom: 30,
     },
     timelineItem: {
-        marginBottom: 14,
+        marginBottom: 25,
         flexDirection: "row",
         alignItems: "flex-start",
     },
@@ -118,6 +129,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#9c1006",
         marginRight: 10,
         marginTop: 4,
+        marginLeft: 3
     },
     timelineContent: { marginLeft: 5 },
     timelineTime: {
@@ -134,7 +146,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: "500",
         color: "#64748b",
-        fontStyle: "italic",
     },
     loadingBox: {
         alignItems: "center",
@@ -156,5 +167,10 @@ const styles = StyleSheet.create({
         fontSize: 14,
         marginLeft: 12,
         marginTop: 8,
+    },
+    divider: {
+        width: "100%",
+        height: 0.5,
+        backgroundColor: "#2E2E2E",
     },
 })

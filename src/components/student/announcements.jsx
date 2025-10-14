@@ -1,26 +1,47 @@
 import { FlatList, StyleSheet, Text, View, Dimensions } from "react-native"
 import Foundation from '@expo/vector-icons/Foundation'
-
-const announcements = [
-//   { id: "1", title: "Exam Schedule Released", description: "on the date 13-02-2025 the exam will be held" },
-//   { id: "2", title: "Sports Day Next Week", description: "as mentioned before, sports meeting will be conducted" },
-//   { id: "3", title: "Holiday on Monday", description: "on account of gandhi jayanthi, schools will be closed" },
-//   { id: "4", title: "Library Timings Updated", description: "new library timings for class 6" },
-//   { id: "5", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
-//   { id: "6", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
-//   { id: "7", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
-//   { id: "8", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
-//   { id: "9", title: "Parent-Teacher Meeting", description: "parent teacher meeting to be held on december 5th" },
-]
+import { useEffect, useState } from "react"
+import { fetchAnnouncements } from "../../controllers/studentDataController"
+import { ActivityIndicator } from "react-native"
 
 
-export default function StudentAnnoucements() {
+export default function StudentAnnouncements() {
+    const [announcements, setAnnouncements] = useState([])
+    const [loading, setLoading] = useState(false)
+    const [err, setErr] = useState(null)
+
     const renderItem = ({ item }) => (
         <View style={styles.card}>
+            <Text style={styles.date}>
+                {new Date(item.date).toLocaleString("en-IN", {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                })}
+            </Text>
             <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.description}>{item.description}</Text>
+            <Text style={styles.description}>{item.message}</Text>
         </View>
     )
+
+
+    useEffect(() => {
+        const loadAnnouncements = async () => {
+            setLoading(true)
+            try {
+                const response = await fetchAnnouncements()
+                if(response) setAnnouncements(response)
+            } catch(err) {
+                setErr(err.message || "an error occured while fetching announcements.")
+            } finally {
+                setLoading(false)
+            }
+        }
+        loadAnnouncements()
+    }, [])
     
     return (
         <View style={styles.container}>
@@ -30,7 +51,16 @@ export default function StudentAnnoucements() {
             </View>
 
             <View style={styles.announcementsContainer}>
-                {announcements.length === 0 ? (
+                {loading ? (
+                    <View style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 10 }}>
+                        <ActivityIndicator size="small" color="#9c1006ff" />
+                        <Text style={styles.loadingText}>Loading announcements...</Text>
+                    </View>
+                ) : err ? (
+                    <View style={styles.card}>
+                        <Text style={styles.noData}>{err}</Text>
+                    </View>
+                ) : announcements.length === 0 ? (
                     <View style={styles.card}>
                         <Text style={styles.noData}>No new announcements</Text>
                     </View>
@@ -67,10 +97,10 @@ const styles = StyleSheet.create({
         backgroundColor: "#2a3546ff",
         padding: 10,
         paddingLeft: 20,
+        gap: 10,
     },
     heading: {
         fontWeight: "700",
-        marginLeft: 13,
         fontSize: 18,
         color: "white"
     },
@@ -88,17 +118,28 @@ const styles = StyleSheet.create({
     },
     card: {
         width: "100%",
-        padding: 10,
+        padding: 11,
         borderBottomWidth: 0.5,
         borderBottomColor: "#ddd",
     },
     title: {
         color: "white",
-        fontSize: 15,
-        fontWeight: "500"
+        fontSize: 18,
+        fontWeight: "500",
+        marginTop: 10
     },
     description: {
         color: "#DCDCDC",
-        fontSize: 12
+        fontSize: 14
+    },
+    loadingText: {
+        color: "#a9b6c9ff",
+        fontSize: 14,
+        marginTop: 8,
+    },
+    date: {
+        color: "white",
+        fontSize: 12,
+        fontWeight: "500"        
     }
 })
