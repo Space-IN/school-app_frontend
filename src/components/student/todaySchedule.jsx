@@ -30,6 +30,7 @@ export default function TodaySchedule({ userId }) {
             setLoading(true)
             try {
                 const scheduleData = await fetchSchedule(userId)
+                console.log("complete schedule data: ", scheduleData?.weeklySchedule[0])
                 setTodaySchedule(scheduleData.weeklySchedule?.find(day => day.day === today))
                 console.log("today's schedule: ", todaySchedule)
             } catch(err) {

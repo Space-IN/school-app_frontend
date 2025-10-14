@@ -1,3 +1,4 @@
+//src\components\student\userBanner.jsx
 import { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Pressable, Animated } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
