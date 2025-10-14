@@ -34,7 +34,7 @@ export default function FacultyEditAttendanceScreen({ route }) {
   const [submitting, setSubmitting] = useState(false);
 
   const navigation = useNavigation();
-  const { user } = useAuth();
+  const { decodedToken } = useAuth();
   const insets = useSafeAreaInsets();
 
   React.useLayoutEffect(() => {
@@ -168,7 +168,7 @@ export default function FacultyEditAttendanceScreen({ route }) {
   };
 
   const submitEdit = async () => {
-    const currentFacultyId = user?.userId || facultyId;
+    const currentFacultyId = decodedToken?.userId || facultyId;
     
     if (!currentFacultyId) {
       Alert.alert('Error', 'Faculty ID not found');

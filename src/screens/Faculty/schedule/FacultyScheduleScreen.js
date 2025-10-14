@@ -215,7 +215,7 @@ import { useAuth } from "../../../context/authContext";
 import { useScrollToTop } from '@react-navigation/native';
 
 export default function FacultySchedulesScreen() {
-  const { user } = useAuth();
+  const { decodedToken } = useAuth();
   const [schedule, setSchedule] = useState([]);
   const [facultyName, setFacultyName] = useState('');
   const [loading, setLoading] = useState(true);
@@ -232,7 +232,7 @@ export default function FacultySchedulesScreen() {
     try {
       setLoading(true);
       
-      const facultyId = user?.userId;
+      const facultyId = decodedToken?.userId;
       
       if (!facultyId) {
         Alert.alert('Error', 'Faculty ID not found');

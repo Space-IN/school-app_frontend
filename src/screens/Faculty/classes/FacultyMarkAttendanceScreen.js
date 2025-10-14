@@ -302,7 +302,7 @@ export default function FacultyMarkAttendanceScreen({ route }) {
   const [currentSession, setCurrentSession] = useState(1);
 
   const navigation = useNavigation();
-  const { user } = useAuth();
+  const { decodedToken } = useAuth();
 
   const insets = useSafeAreaInsets();
 
@@ -316,13 +316,13 @@ export default function FacultyMarkAttendanceScreen({ route }) {
       section, 
       subjectName, 
       subjectId, 
-      facultyId: user?.userId
+      facultyId: decodedToken?.userId
     });
   };
 
   useEffect(() => {
     console.log('📱 FacultyMarkAttendanceScreen - Received Params:', {
-      grade, section, subjectMasterId, facultyId: user?.userId, subjectName, subjectId
+      grade, section, subjectMasterId, facultyId: decodedToken?.userId, subjectName, subjectId
     });
   }, []);
 
@@ -342,7 +342,7 @@ export default function FacultyMarkAttendanceScreen({ route }) {
   const verifyFacultyAssignment = async () => {
     try {
       console.log('🔍 Verifying faculty assignment...');
-      const currentFacultyId = user?.userId || facultyId;
+      const currentFacultyId = decodedToken?.userId || facultyId;
       
       const response = await axios.get(
         `${BASE_URL}/api/subject/subjects/faculty/${currentFacultyId}`
@@ -434,7 +434,7 @@ export default function FacultyMarkAttendanceScreen({ route }) {
   };
 
   const handleSubmit = async () => {
-    const currentFacultyId = user?.userId || facultyId;
+    const currentFacultyId = decodedToken?.userId || facultyId;
     
     if (!currentFacultyId) {
       Alert.alert('Error', 'Faculty ID not found. Please login again.');

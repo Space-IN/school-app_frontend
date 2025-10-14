@@ -17,14 +17,14 @@ import { useNavigation } from '@react-navigation/native';
 import { BASE_URL } from '@env';
 
 export default function FacultyProfileScreen() {
-  const { user, logout } = useAuth();
+  const { decodedToken, logout } = useAuth();
   const [faculty, setFaculty] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
 
   const fetchFacultyDetails = async () => {
     try {
-      const facultyId = user?.userId;
+      const facultyId = decodedToken?.userId;
       
       if (!facultyId) {
         Alert.alert('Error', 'Faculty information not available');
@@ -55,10 +55,10 @@ export default function FacultyProfileScreen() {
   };
 
   useEffect(() => {
-    if (user?.userId) {
+    if (decodedToken?.userId) {
       fetchFacultyDetails();
     }
-  }, [user?.userId]);
+  }, [decodedToken?.userId]);
 
   // Logic for handling the logout confirmation
   const handleLogout = () => {
@@ -91,7 +91,7 @@ export default function FacultyProfileScreen() {
 
   const handleGoToNotices = () => {
     navigation.navigate('NoticeBoardScreen', { 
-      userId: user?.userId, 
+      userId: decodedToken?.userId, 
       role: 'faculty' 
     });
   };

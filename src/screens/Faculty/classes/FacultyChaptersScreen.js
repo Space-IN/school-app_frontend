@@ -526,7 +526,6 @@ import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-
 import { BASE_URL } from '@env';
 
 export default function FacultyChaptersScreen({ route }) {
-  const { user } = useAuth();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   

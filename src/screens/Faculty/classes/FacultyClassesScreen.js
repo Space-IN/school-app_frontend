@@ -111,7 +111,7 @@ import { useScrollToTop } from '@react-navigation/native';
 import { BASE_URL } from '@env'
 
 export default function FacultyClassesScreen({ navigation, route }) {
-  const { user } = useAuth(); // Get user from auth context instead of params
+  const { decodedToken } = useAuth(); // Get user from auth context instead of params
   const [assignedClasses, setAssignedClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -128,7 +128,7 @@ export default function FacultyClassesScreen({ navigation, route }) {
       setLoading(true);
       
       // Use user ID from auth context instead of route params
-      const facultyId = user?.userId;
+      const facultyId = decodedToken?.userId;
       
       if (!facultyId) {
         Alert.alert('Error', 'User ID not found');
@@ -177,8 +177,8 @@ export default function FacultyClassesScreen({ navigation, route }) {
       console.error('Error details:', err.response?.data);
       
       // Try fallback to schedule endpoint
-      if (user?.userId) {
-        await fetchFromScheduleEndpoint(user.userId);
+      if (decodedToken?.userId) {
+        await fetchFromScheduleEndpoint(decodedToken.userId);
       } else {
         Alert.alert('Error', 'Failed to load classes');
         setAssignedClasses([]);
@@ -230,7 +230,7 @@ export default function FacultyClassesScreen({ navigation, route }) {
     grade: item.classAssigned,
     section: item.section,
     scheduleItem: item,
-    facultyId: user?.userId, // Use from auth context
+    facultyId: decodedToken?.userId, // Use from auth context
     subjectName: item.subjectName, // Add if available
     subjectId: item.subjectId, // Add if available
   });

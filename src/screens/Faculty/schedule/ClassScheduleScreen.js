@@ -17,7 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ClassScheduleScreen({ route }) {
-  const { user } = useAuth();
+  const { decodedToken } = useAuth();
   const { grade, section } = route.params; // From FacultyClassDashboard
   const [schedule, setSchedule] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +52,7 @@ export default function ClassScheduleScreen({ route }) {
 
   const fetchClassSchedule = async () => {
     try {
-      const facultyId = user?.userId;
+      const facultyId = decodedToken?.userId;
       console.log('🔍 Fetching schedule for faculty:', facultyId);
       
       const res = await axios.get(`${BASE_URL}/api/schedule/faculty/${facultyId}`);

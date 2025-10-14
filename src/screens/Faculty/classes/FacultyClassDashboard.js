@@ -511,7 +511,7 @@ import { BASE_URL } from '@env';
 import { SafeAreaView, SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function FacultyClassDashboard({ route }) {
-  const { user } = useAuth();
+  const { decodedToken } = useAuth();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   
@@ -529,7 +529,7 @@ export default function FacultyClassDashboard({ route }) {
   const [classInfo, setClassInfo] = useState(null);
 
   // Use facultyId from auth context instead of params
-  const facultyId = user?.userId;
+  const facultyId = decodedToken?.userId;
 
   // Set header with back button
   React.useLayoutEffect(() => {
@@ -779,7 +779,7 @@ export default function FacultyClassDashboard({ route }) {
             </Text>
           )}
           <Text style={styles.facultyInfo}>
-            Faculty: {user?.name} (ID: {facultyId})
+            Faculty: {decodedToken?.name} (ID: {facultyId})
           </Text>
         </View>
 
