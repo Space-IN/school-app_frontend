@@ -1,0 +1,509 @@
+// src/screens/Faculty/classes/FacultyEditAttendanceScreen.js
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Text,
+  ScrollView,
+  StatusBar,
+  Modal,
+  FlatList,
+} from 'react-native';
+import axios from 'axios';
+import { BASE_URL } from '@env';
+import * as SecureStore from 'expo-secure-store';
+import { useNavigation } from '@react-navigation/native';
+import { SafeAreaView, SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAuth } from '../../../context/authContext';
+import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
+
+export default function FacultyEditAttendanceScreen({ route }) {
+  const { grade, section, subjectName, facultyId } = route.params || {};
+  const [attendanceData, setAttendanceData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [students, setStudents] = useState([]);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingSession, setEditingSession] = useState(null);
+  const [editingAttendance, setEditingAttendance] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+
+  const navigation = useNavigation();
+  const { decodedToken } = useAuth();
+  const insets = useSafeAreaInsets();
+
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => (
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()}
+          style={styles.backButtonHeader}
+        >
+          <Ionicons name="arrow-back" size={24} color="#fff" />
+          <Text style={styles.backButtonTextHeader}>Back</Text>
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
+
+  useEffect(() => {
+    loadStudents();
+    loadAttendanceData(selectedDate);
+  }, []);
+
+  const loadStudents = async () => {
+    try {
+      const { data } = await axios.get(
+        `${BASE_URL}/api/admin/students/grade/${grade}/section/${section}`
+      );
+      setStudents(data);
+    } catch (err) {
+      console.error('Error loading students:', err);
+    }
+  };
+
+ const loadAttendanceData = async (date) => {
+  try {
+    setLoading(true);
+    const dateStr = date.toISOString().split('T')[0];
+    
+    console.log('📥 Fetching attendance for:', { grade, section, date: dateStr });
+    
+    const response = await axios.get(`${BASE_URL}/api/attendance`, {
+      params: {
+        classAssigned: grade,  // This should work now with fixed backend
+        section: section,
+        date: dateStr
+      }
+    });
+    
+    console.log('📊 Attendance data response:', response.data);
+    
+    if (response.data && response.data.length > 0) {
+      setAttendanceData(response.data[0]);
+      console.log('✅ Loaded attendance data:', response.data[0]);
+    } else {
+      setAttendanceData(null);
+      console.log('ℹ️ No attendance data found');
+    }
+  } catch (error) {
+    console.error('❌ Error loading attendance data:', error);
+    console.error('Error details:', error.response?.data);
+    Alert.alert('Error', 'Failed to load attendance data');
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const handleDateChange = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setSelectedDate(selectedDate);
+      loadAttendanceData(selectedDate);
+    }
+  };
+
+ const openEditModal = (sessionNumber) => {
+  if (!attendanceData) {
+    Alert.alert('No Data', 'No attendance data found for selected date');
+    return;
+  }
+
+  setEditingSession(sessionNumber);
+  
+  // Prepare editing data - FIXED VERSION
+  const editData = {};
+  students.forEach(student => {
+    // Find student record in attendance data
+    const studentRecord = attendanceData.records.find(record => {
+      // Handle both populated and non-populated student references
+      const recordStudentId = record.student?._id ? record.student._id.toString() : record.student.toString();
+      return recordStudentId === student._id.toString();
+    });
+    
+    if (studentRecord) {
+      // Find session for this student
+      const session = studentRecord.sessions.find(s => s.session_number === sessionNumber);
+      editData[student._id] = session ? session.status : 'absent';
+    } else {
+      editData[student._id] = 'absent';
+    }
+  });
+  
+  setEditingAttendance(editData);
+  setEditModalVisible(true);
+};
+
+
+
+
+
+
+
+
+
+
+  const updateEditingAttendance = (studentId, status) => {
+    setEditingAttendance(prev => ({
+      ...prev,
+      [studentId]: status
+    }));
+  };
+
+  const submitEdit = async () => {
+    const currentFacultyId = decodedToken?.userId || facultyId;
+    
+    if (!currentFacultyId) {
+      Alert.alert('Error', 'Faculty ID not found');
+      return;
+    }
+
+    setSubmitting(true);
+    const date = selectedDate.toISOString().split('T')[0];
+    
+    try {
+      const token = await SecureStore.getItemAsync('token');
+      if (!token) {
+        Alert.alert('Error', 'Authentication required');
+        return;
+      }
+
+      const records = students.map(student => ({
+        studentId: student.userId,
+        status: editingAttendance[student._id] || 'absent'
+      }));
+
+      const payload = {
+        grade: grade,
+        section: section,
+        date: date,
+        sessionNumber: editingSession,
+        markedBy: currentFacultyId,
+        records: records,
+        force: true // Always force for editing
+      };
+
+      console.log('📤 Sending edit payload:', payload);
+
+      const response = await axios.post(`${BASE_URL}/api/attendance/mark`, payload, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+      });
+
+      console.log('✅ Edit response:', response.data);
+      
+      Alert.alert('Success', `Session ${editingSession} attendance updated successfully!`);
+      
+      // Reload data and close modal
+      loadAttendanceData(selectedDate);
+      setEditModalVisible(false);
+      
+    } catch (err) {
+      console.error('🔴 Error updating attendance:', err);
+      Alert.alert('Error', 'Failed to update attendance');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const getSessionInfo = (sessionNumber) => {
+    if (!attendanceData?.marked_by) return null;
+    
+    const sessionMark = attendanceData.marked_by.find(mark => mark.session === sessionNumber);
+    return sessionMark;
+  };
+
+  const getSessionStats = (sessionNumber) => {
+    if (!attendanceData?.records) return { present: 0, absent: 0, total: 0 };
+    
+    let present = 0;
+    let absent = 0;
+    
+    attendanceData.records.forEach(record => {
+      const session = record.sessions.find(s => s.session_number === sessionNumber);
+      if (session) {
+        if (session.status === 'present') present++;
+        else absent++;
+      }
+    });
+    
+    return { present, absent, total: present + absent };
+  };
+
+  const formatDate = (date) => {
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+  };
+
+  return (
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
+        <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
+
+        <View style={[styles.header, { paddingTop: insets.top + 15 }]}>
+          <View style={styles.headerTopRow}>
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButtonContainer}>
+              <Ionicons name="arrow-back" size={24} color="#fff" />
+              <Text style={styles.backButtonText}>Back</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <Text style={styles.headerText}>✏️ Edit Attendance</Text>
+          <Text style={styles.classInfo}>
+            Class {grade} - Section {section}
+            {subjectName && ` | ${subjectName}`}
+          </Text>
+        </View>
+
+        {/* Date Picker */}
+        <View style={styles.dateSection}>
+          <Text style={styles.dateLabel}>Select Date:</Text>
+          <TouchableOpacity 
+            style={styles.dateButton}
+            onPress={() => setShowDatePicker(true)}
+          >
+            <Ionicons name="calendar" size={20} color="#4a90e2" />
+            <Text style={styles.dateButtonText}>{formatDate(selectedDate)}</Text>
+            <Ionicons name="chevron-down" size={16} color="#666" />
+          </TouchableOpacity>
+        </View>
+
+        {showDatePicker && (
+          <DateTimePicker
+            value={selectedDate}
+            mode="date"
+            display="default"
+            onChange={handleDateChange}
+            maximumDate={new Date()}
+          />
+        )}
+
+        <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#4a90e2" />
+              <Text style={styles.loadingText}>Loading attendance data...</Text>
+            </View>
+          ) : attendanceData ? (
+            <View style={styles.attendanceContainer}>
+              <Text style={styles.sectionTitle}>Attendance for {formatDate(selectedDate)}</Text>
+              
+              {/* Session 1 Card */}
+              <View style={styles.sessionCard}>
+                <View style={styles.sessionHeader}>
+                  <Text style={styles.sessionTitle}>Session 1</Text>
+                  <View style={styles.sessionStats}>
+                    <Text style={styles.statsText}>
+                      🟢 {getSessionStats(1).present} | 🔴 {getSessionStats(1).absent}
+                    </Text>
+                  </View>
+                </View>
+                
+                <View style={styles.sessionInfo}>
+                  <Text style={styles.infoText}>
+                    Marked by: {getSessionInfo(1)?.name || 'N/A'}
+                  </Text>
+                  <Text style={styles.infoText}>
+                    Faculty ID: {getSessionInfo(1)?.faculty?.$oid || 'N/A'}
+                  </Text>
+                </View>
+                
+                <TouchableOpacity 
+                  style={styles.editSessionButton}
+                  onPress={() => openEditModal(1)}
+                >
+                  <Ionicons name="create-outline" size={18} color="#fff" />
+                  <Text style={styles.editSessionButtonText}>Edit Session 1</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Session 2 Card */}
+              <View style={styles.sessionCard}>
+                <View style={styles.sessionHeader}>
+                  <Text style={styles.sessionTitle}>Session 2</Text>
+                  <View style={styles.sessionStats}>
+                    <Text style={styles.statsText}>
+                      🟢 {getSessionStats(2).present} | 🔴 {getSessionStats(2).absent}
+                    </Text>
+                  </View>
+                </View>
+                
+                <View style={styles.sessionInfo}>
+                  <Text style={styles.infoText}>
+                    Marked by: {getSessionInfo(2)?.name || 'N/A'}
+                  </Text>
+                  <Text style={styles.infoText}>
+                    Faculty ID: {getSessionInfo(2)?.faculty?.$oid || 'N/A'}
+                  </Text>
+                </View>
+                
+                <TouchableOpacity 
+                  style={styles.editSessionButton}
+                  onPress={() => openEditModal(2)}
+                >
+                  <Ionicons name="create-outline" size={18} color="#fff" />
+                  <Text style={styles.editSessionButtonText}>Edit Session 2</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            <View style={styles.noDataContainer}>
+              <Ionicons name="document-text-outline" size={64} color="#ccc" />
+              <Text style={styles.noDataText}>No attendance data found</Text>
+              <Text style={styles.noDataSubText}>
+                No attendance records found for {formatDate(selectedDate)}
+              </Text>
+            </View>
+          )}
+        </ScrollView>
+
+        {/* Edit Modal */}
+        <Modal
+          visible={editModalVisible}
+          animationType="slide"
+          presentationStyle="pageSheet"
+        >
+          <SafeAreaView style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                Edit Session {editingSession}
+              </Text>
+              <TouchableOpacity 
+                onPress={() => setEditModalVisible(false)}
+                style={styles.closeButton}
+              >
+                <Ionicons name="close" size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            <FlatList
+              data={students}
+              keyExtractor={item => item._id}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  onPress={() => updateEditingAttendance(
+                    item._id, 
+                    editingAttendance[item._id] === 'present' ? 'absent' : 'present'
+                  )}
+                  style={[
+                    styles.editStudentCard,
+                    editingAttendance[item._id] === 'present' ? styles.editPresent : styles.editAbsent
+                  ]}
+                >
+                  <View style={styles.editStudentInfo}>
+                    <Text style={styles.editStudentName}>{item.name}</Text>
+                    <Text style={styles.editStudentId}>ID: {item.userId}</Text>
+                  </View>
+                  <Text style={[
+                    styles.editStatus,
+                    editingAttendance[item._id] === 'present' ? styles.editStatusPresent : styles.editStatusAbsent
+                  ]}>
+                    {editingAttendance[item._id] === 'present' ? 'Present' : 'Absent'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              contentContainerStyle={styles.editListContent}
+            />
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity 
+                style={[styles.submitEditButton, submitting && styles.submitEditButtonDisabled]}
+                onPress={submitEdit}
+                disabled={submitting}
+              >
+                <Text style={styles.submitEditText}>
+                  {submitting ? 'Updating...' : `Update Session ${editingSession}`}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </SafeAreaView>
+        </Modal>
+      </SafeAreaView>
+    </SafeAreaProvider>
+  );
+}
+
+const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: '#bbdbfaff' },
+  header: {
+    paddingVertical: 15, backgroundColor: '#4a90e2', borderBottomLeftRadius: 15, borderBottomRightRadius: 15,
+    paddingHorizontal: 10, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1, shadowRadius: 4,
+  },
+  headerTopRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  backButtonContainer: { flexDirection: 'row', alignItems: 'center', padding: 5, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.2)' },
+  backButtonHeader: { flexDirection: 'row', alignItems: 'center', marginLeft: 10, padding: 5 },
+  backButtonTextHeader: { color: '#fff', marginLeft: 5, fontSize: 16, fontWeight: '600' },
+  backButtonText: { color: '#fff', marginLeft: 5, fontSize: 16, fontWeight: '600' },
+  headerText: { fontSize: 22, fontWeight: 'bold', color: '#fff', textAlign: 'center' },
+  classInfo: { fontSize: 14, color: '#e0e0ff', marginTop: 4, textAlign: 'center', fontStyle: 'italic' },
+  
+  dateSection: { padding: 16, backgroundColor: '#fff', marginHorizontal: 16, marginTop: 16, borderRadius: 12, elevation: 2 },
+  dateLabel: { fontSize: 16, fontWeight: '600', color: '#333', marginBottom: 8 },
+  dateButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 12, borderWidth: 1, borderColor: '#ddd', borderRadius: 8 },
+  dateButtonText: { fontSize: 16, color: '#333', flex: 1, marginLeft: 8 },
+  
+  content: { flex: 1 },
+  contentContainer: { paddingBottom: 20 },
+  loadingContainer: { alignItems: 'center', padding: 40 },
+  loadingText: { marginTop: 12, fontSize: 16, color: '#666' },
+  
+  attendanceContainer: { padding: 16 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#333', marginBottom: 16 },
+  
+  sessionCard: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 16, elevation: 2 },
+  sessionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  sessionTitle: { fontSize: 18, fontWeight: 'bold', color: '#4a90e2' },
+  sessionStats: { backgroundColor: '#f0f0f0', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 16 },
+  statsText: { fontSize: 14, fontWeight: '600', color: '#333' },
+  sessionInfo: { marginBottom: 16 },
+  infoText: { fontSize: 14, color: '#666', marginBottom: 4 },
+  editSessionButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#4a90e2', padding: 12, borderRadius: 8 },
+  editSessionButtonText: { color: '#fff', fontWeight: '600', marginLeft: 8 },
+  
+  noDataContainer: { alignItems: 'center', padding: 40 },
+  noDataText: { fontSize: 18, fontWeight: 'bold', color: '#666', marginTop: 16 },
+  noDataSubText: { fontSize: 14, color: '#999', marginTop: 8, textAlign: 'center' },
+  
+  modalContainer: { flex: 1, backgroundColor: '#fff' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#eee' },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', color: '#333' },
+  closeButton: { padding: 4 },
+  editListContent: { padding: 16 },
+  editStudentCard: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', 
+    padding: 16, marginBottom: 8, borderRadius: 8, borderLeftWidth: 6,
+  },
+  editPresent: { backgroundColor: '#f8fff8', borderLeftColor: '#4caf50' },
+  editAbsent: { backgroundColor: '#fff8f8', borderLeftColor: '#f44336' },
+  editStudentInfo: { flex: 1 },
+  editStudentName: { fontSize: 16, fontWeight: 'bold', color: '#333' },
+  editStudentId: { fontSize: 12, color: '#666', marginTop: 2 },
+  editStatus: { fontSize: 14, fontWeight: '600' },
+  editStatusPresent: { color: '#4caf50' },
+  editStatusAbsent: { color: '#f44336' },
+  modalFooter: { padding: 16, borderTopWidth: 1, borderTopColor: '#eee' },
+  submitEditButton: { backgroundColor: '#4a90e2', padding: 16, borderRadius: 8, alignItems: 'center' },
+  submitEditButtonDisabled: { backgroundColor: '#a0a0a0' },
+  submitEditText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+});

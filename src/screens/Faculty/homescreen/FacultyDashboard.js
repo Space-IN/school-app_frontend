@@ -18,6 +18,7 @@ import { useAuth } from "../../../context/authContext";
 import ProfileHeader from '../../../components/ProfileHeader';
 import PosterCarousel from '../../../components/PosterCarousel';
 import {BASE_URL} from '@env'
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function FacultyDashboard({ navigation }) {
   const [facultyInfo, setFacultyInfo] = useState(null);
@@ -25,7 +26,7 @@ export default function FacultyDashboard({ navigation }) {
   const [schedule, setSchedule] = useState([]);
   const [events, setEvents] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
-  const { user, logout } = useAuth();
+  const { decodedToken, logout } = useAuth();
 
   const scrollRef = useRef(null);
   useScrollToTop(scrollRef);
@@ -61,7 +62,7 @@ export default function FacultyDashboard({ navigation }) {
 
   // Fetch all data
   const fetchData = async () => {
-    if (!user?.userId) {
+    if (!decodedToken?.userId) {
       console.log("No user ID available");
       return;
     }
@@ -69,8 +70,8 @@ export default function FacultyDashboard({ navigation }) {
     try {
       setRefreshing(true);
       await Promise.all([
-        fetchAssignedSubjects(user.userId),
-        fetchFacultySchedule(user.userId),
+        fetchAssignedSubjects(decodedToken.userId),
+        fetchFacultySchedule(decodedToken.userId),
         fetchEventsData(),
       ]);
     } catch (error) {
@@ -81,17 +82,17 @@ export default function FacultyDashboard({ navigation }) {
   };
 
   useEffect(() => {
-    if (user) {
+    if (decodedToken) {
       // Set faculty info from auth context
       setFacultyInfo({
-        userId: user.userId,
-        role: user.role,
-        name: user.name || user.userId // Use name if available, fallback to userId
+        userId: decodedToken.userId,
+        role: decodedToken.role,
+        name: decodedToken.name || decodedToken.userId // Use name if available, fallback to userId
       });
       
       fetchData();
     }
-  }, [user]);
+  }, [decodedToken]);
 
   const fetchAssignedSubjects = async (facultyId) => {
     try {
@@ -239,6 +240,7 @@ export default function FacultyDashboard({ navigation }) {
   }
 
   return (
+    <SafeAreaProvider>
     <ScrollView
       ref={scrollRef}
       style={styles.container}
@@ -297,6 +299,7 @@ export default function FacultyDashboard({ navigation }) {
         )}
       </View>
     </ScrollView>
+    </SafeAreaProvider>
   );
 }
 

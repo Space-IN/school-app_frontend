@@ -11,18 +11,24 @@ import {
   FlatList,
   RefreshControl,
   Dimensions,
-  AppState
+  AppState,
+  StatusBar
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Audio } from 'expo-av';
 import axios from 'axios';
 import { TabView } from 'react-native-tab-view';
+import { useNavigation } from '@react-navigation/native';
+import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import BASE_URL from '../../../config/baseURL';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function LectureRecordingScreen({ route }) {
   const { facultyId } = route.params || {};
+  const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
   // ----- Tab Management -----
   const [activeTab, setActiveTab] = useState(0); // 0 = Recording, 1 = Past Recordings
@@ -54,6 +60,25 @@ export default function LectureRecordingScreen({ route }) {
   const timerRef = useRef(null);
   const startTsRef = useRef(null);
   const pausedDurationRef = useRef(0);
+
+  // Set header with back button
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => (
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()}
+          style={styles.backButtonHeader}
+        >
+          <Ionicons name="arrow-back" size={24} color="#fff" />
+          <Text style={styles.backButtonTextHeader}>Back</Text>
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
+
+  const handleBackPress = () => {
+    navigation.goBack();
+  };
 
   // AppState listener for call interruptions
   useEffect(() => {
@@ -686,39 +711,122 @@ export default function LectureRecordingScreen({ route }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Lecture Recording</Text>
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
+        <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
+        
+        {/* Custom Header with Back Button and Manual Top Safe Area */}
+        <View style={[styles.customHeader, { paddingTop: insets.top + 15 }]}>
+          <View style={styles.headerTopRow}>
+            <TouchableOpacity 
+              onPress={handleBackPress}
+              style={styles.backButtonContainer}
+            >
+              <Ionicons name="arrow-back" size={24} color="#fff" />
+              <Text style={styles.backButtonText}>Back</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <Text style={styles.headerTitle}>
+             Lecture Recording
+          </Text>
+          <Text style={styles.headerSubtitle}>
+            Record and manage your lecture audio
+          </Text>
+        </View>
 
-      {/* Keep original tab headers for visual consistency */}
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 0 && styles.activeTab]}
-          onPress={() => handleTabPress(0)}
-        >
-          <Text style={[styles.tabText, activeTab === 0 && styles.activeTabText]}>🎤 Record Lecture</Text>
-        </TouchableOpacity>
+        <View style={styles.container}>
+          {/* Keep original tab headers for visual consistency */}
+          <View style={styles.tabContainer}>
+            <TouchableOpacity
+              style={[styles.tab, activeTab === 0 && styles.activeTab]}
+              onPress={() => handleTabPress(0)}
+            >
+              <Text style={[styles.tabText, activeTab === 0 && styles.activeTabText]}>🎤 Record Lecture</Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 1 && styles.activeTab]}
-          onPress={() => handleTabPress(1)}
-        >
-          <Text style={[styles.tabText, activeTab === 1 && styles.activeTabText]}>📚 Past Recordings</Text>
-        </TouchableOpacity>
-      </View>
+            <TouchableOpacity
+              style={[styles.tab, activeTab === 1 && styles.activeTab]}
+              onPress={() => handleTabPress(1)}
+            >
+              <Text style={[styles.tabText, activeTab === 1 && styles.activeTabText]}>📚 Past Recordings</Text>
+            </TouchableOpacity>
+          </View>
 
-      <TabView
-        navigationState={{ index: activeTab, routes }}
-        renderScene={renderScene}
-        onIndexChange={setActiveTab}
-        initialLayout={{ width: screenWidth }}
-        style={styles.tabView}
-        renderTabBar={() => null}
-      />
-    </View>
+          <TabView
+            navigationState={{ index: activeTab, routes }}
+            renderScene={renderScene}
+            onIndexChange={setActiveTab}
+            initialLayout={{ width: screenWidth }}
+            style={styles.tabView}
+            renderTabBar={() => null}
+          />
+        </View>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#bbdbfaff',
+  },
+  customHeader: {
+    paddingVertical: 15,
+    backgroundColor: '#4a90e2',
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
+    paddingHorizontal: 10,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  headerTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  backButtonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 5,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  backButtonHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 10,
+    padding: 5,
+  },
+  backButtonTextHeader: {
+    color: '#fff',
+    marginLeft: 5,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  backButtonText: {
+    color: '#fff',
+    marginLeft: 5,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  headerTitle: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 5,
+  },
+  headerSubtitle: {
+    color: '#fff',
+    fontSize: 14,
+    opacity: 0.9,
+    textAlign: 'center',
+  },
   container: {
     flex: 1,
     padding: 18,
