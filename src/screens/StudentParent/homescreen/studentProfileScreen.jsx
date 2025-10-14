@@ -17,12 +17,14 @@ import { LinearGradient } from "expo-linear-gradient";
 import { BASE_URL } from "@env"
 import { useStudent } from "../../../context/student/studentContext";
 import StudentHeader from "../../../components/student/header";
+import { useAuth } from "../../../context/authContext";
 
 
 const StudentProfileScreen = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const { studentData } = useStudent()
+  const { logout } = useAuth()
 
   const fetchProfile = async () => {
     try {
