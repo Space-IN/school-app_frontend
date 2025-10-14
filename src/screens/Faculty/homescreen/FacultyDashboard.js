@@ -18,6 +18,7 @@ import { useAuth } from "../../../context/authContext";
 import ProfileHeader from '../../../components/ProfileHeader';
 import PosterCarousel from '../../../components/PosterCarousel';
 import {BASE_URL} from '@env'
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function FacultyDashboard({ navigation }) {
   const [facultyInfo, setFacultyInfo] = useState(null);
@@ -239,6 +240,7 @@ export default function FacultyDashboard({ navigation }) {
   }
 
   return (
+    <SafeAreaProvider>
     <ScrollView
       ref={scrollRef}
       style={styles.container}
@@ -297,6 +299,7 @@ export default function FacultyDashboard({ navigation }) {
         )}
       </View>
     </ScrollView>
+    </SafeAreaProvider>
   );
 }
 

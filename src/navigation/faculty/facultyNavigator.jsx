@@ -47,13 +47,28 @@
 // }
 
 
+
+
+
 // src/navigation/faculty/facultyNavigator.jsx
 
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import FacultyTabs from './FacultyTabs';
+
+import FacultyLayout  from "./FacultyLayout"; //new import
+
 import FacultyClassDashboard from '../../screens/Faculty/classes/FacultyClassDashboard';
 import FacultyStudentsScreen from '../../screens/Faculty/classes/FacultyStudentsScreen';
-import FacultyAttendanceScreen from '../../screens/Faculty/classes/FacultyAttendanceScreen';
+
+
+
+import FacultyMarkAttendanceScreen from '../../screens/Faculty/classes/FacultyMarkAttendanceScreen';
+import FacultyEditAttendanceScreen from '../../screens/Faculty/classes/FacultyEditAttendanceScreen';
+
+
+
+
+
 import FacultyAssignmentsScreen from '../../screens/Faculty/classes/FacultyAssignmentsScreen';
 import FacultyTestsScreen from '../../screens/Faculty/classes/FacultyTestsScreen';
 
@@ -61,6 +76,7 @@ import FacultyTestsScreen from '../../screens/Faculty/classes/FacultyTestsScreen
 import ManagePerformanceTabs from "../../screens/Faculty/classes/performance/ManagePerformanceTabs";
 
 
+import ClassScheduleScreen from "../../screens/Faculty/schedule/ClassScheduleScreen";
 import FacultyScheduleScreen from '../../screens/Faculty/schedule/FacultyScheduleScreen';
 
 
@@ -79,19 +95,32 @@ import StudentProfileScreen from "../../screens/Faculty/classes/StudentProfileSc
 
 
 
+import { SafeAreaProvider } from "react-native-safe-area-context";  //new import
 
 
 const Stack = createNativeStackNavigator()
 
 export default function FacultyNavigator() {
     return (
+         
+         <SafeAreaProvider>
+
         <Stack.Navigator
-            initialRouteName="FacultyTabs"
+            initialRouteName="FacultyLayout"
             screenOptions={{
-                headerShown: true,
+                headerShown: false, //hide the stack headers since we have our own header in FacultyLayout
                 headerBackTitleVisible: false,
             }}
         >
+              
+               {/* Main faculty interface with header + tabs */}
+            <Stack.Screen 
+                name="FacultyLayout" 
+                component={FacultyLayout} 
+            />     
+
+
+
             <Stack.Screen 
                 name="FacultyTabs" 
                 component={FacultyTabs} 
@@ -104,11 +133,27 @@ export default function FacultyNavigator() {
                 component={FacultyScheduleScreen} 
                 options={{ title: 'Schedule' }}
             />
+                 
+                  <Stack.Screen 
+                name="ClassScheduleScreen" 
+                component={ClassScheduleScreen} 
+                options={{ title: 'Schedule' }}
+            />
+
+            
+
+
             <Stack.Screen 
-                name="FacultyAttendanceScreen" 
-                component={FacultyAttendanceScreen} 
+                name="FacultyMarkAttendanceScreen" 
+                component={FacultyMarkAttendanceScreen} 
                 options={{ title: 'Attendance' }}
             />
+
+            <Stack.Screen name="FacultyEditAttendanceScreen"
+            component={FacultyEditAttendanceScreen}/>
+
+
+
             <Stack.Screen 
                 name="FacultyAssignmentsScreen" 
                 component={FacultyAssignmentsScreen} 
@@ -181,5 +226,6 @@ export default function FacultyNavigator() {
 
 
         </Stack.Navigator>
+        </SafeAreaProvider>
     )
 }
