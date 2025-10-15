@@ -26,7 +26,7 @@ export default function PerformanceGrid() {
                     </View>
                 </View>
 
-                <View style={[styles.card, { backgroundColor: !studentData?.cgpa ? "#909691" : studentData?.cgpa>8 ? "#10b981" : studentData?.cgpa>5 ? "#f59e0b"  : "#be3b3bff" }]}>
+                <View style={[styles.card, { backgroundColor: !studentData?.grade?.cgpa ? "#909691" : studentData?.grade>8 ? "#10b981" : studentData?.grade>5 ? "#f59e0b"  : "#be3b3bff" }]}>
                     <Text style={styles.cardTitle}>CGPA</Text>
                     <View style={styles.divider} />
                     <View style={styles.metricContainer}>
@@ -34,7 +34,7 @@ export default function PerformanceGrid() {
                       {studentLoading ? (
                         <ActivityIndicator size="small" color="#9c1006" />
                       ) : (
-                        <Text style={[styles.metricText, { marginLeft: 5 }]}>{!studentData?.cgpa ? "-" : `${studentData?.cgpa}`}</Text>
+                        <Text style={[styles.metricText, { marginLeft: 5 }]}>{!studentData?.grade?.cgpa ? "-" : `${studentData?.grade?.cgpa}`}</Text>
                       )}
                     </View>
                 </View>

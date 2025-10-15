@@ -22,9 +22,9 @@ export const StudentProvider = ({ children }) => {
                 let studentObj = studentRes?.data || {}
 
                 const cgpaRes = await fetchOverallCPGA(studentId)
-                const cgpaData = { cgpa: cgpaRes?.data }
+                const overall = { grade: cgpaRes }
 
-                studentObj = { ...studentObj, ...cgpaData }
+                studentObj = { ...studentObj, ...overall }
                 if(studentObj) {
                     setStudentData(studentObj)
                 }

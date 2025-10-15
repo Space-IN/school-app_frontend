@@ -312,7 +312,7 @@ export default function FacultyMarkAttendanceScreen({ route }) {
 
   const handleEditPress = () => {
     navigation.navigate('FacultyEditAttendanceScreen', {
-      grade, 
+      grade: Number(grade), 
       section, 
       subjectName, 
       subjectId, 
