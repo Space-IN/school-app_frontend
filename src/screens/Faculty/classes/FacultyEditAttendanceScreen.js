@@ -11,6 +11,7 @@ import {
   StatusBar,
   Modal,
   FlatList,
+  TextInput,
 } from 'react-native';
 import axios from 'axios';
 import { BASE_URL } from '@env';
@@ -36,6 +37,10 @@ export default function FacultyEditAttendanceScreen({ route }) {
   const navigation = useNavigation();
   const { decodedToken } = useAuth();
   const insets = useSafeAreaInsets();
+  
+  const [modalSearchQuery, setModalSearchQuery] = useState('');
+  const [filteredModalStudents, setFilteredModalStudents] = useState([]);
+
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
@@ -66,6 +71,25 @@ export default function FacultyEditAttendanceScreen({ route }) {
       console.error('Error loading students:', err);
     }
   };
+
+  //used for the filter student in the modal
+  useEffect(() => {
+  if (modalSearchQuery.trim() === '') {
+    setFilteredModalStudents(students);
+  } else {
+    const filtered = students.filter(student => {
+      const query = modalSearchQuery.toLowerCase();
+      const nameMatch = student.name?.toLowerCase().includes(query);
+      const idMatch = student.userId?.toLowerCase().includes(query);
+      return nameMatch || idMatch;
+    });
+    setFilteredModalStudents(filtered);
+  }
+}, [modalSearchQuery, students]);
+
+
+
+
 
  const loadAttendanceData = async (date) => {
   try {
@@ -127,19 +151,16 @@ export default function FacultyEditAttendanceScreen({ route }) {
   }
 
   setEditingSession(sessionNumber);
+  setModalSearchQuery('');
   
-  // Prepare editing data - FIXED VERSION
   const editData = {};
   students.forEach(student => {
-    // Find student record in attendance data
     const studentRecord = attendanceData.records.find(record => {
-      // Handle both populated and non-populated student references
       const recordStudentId = record.student?._id ? record.student._id.toString() : record.student.toString();
       return recordStudentId === student._id.toString();
     });
     
     if (studentRecord) {
-      // Find session for this student
       const session = studentRecord.sessions.find(s => s.session_number === sessionNumber);
       editData[student._id] = session ? session.status : 'absent';
     } else {
@@ -378,66 +399,108 @@ export default function FacultyEditAttendanceScreen({ route }) {
         </ScrollView>
 
         {/* Edit Modal */}
-        <Modal
-          visible={editModalVisible}
-          animationType="slide"
-          presentationStyle="pageSheet"
+        {/* Edit Modal */}
+<Modal
+  visible={editModalVisible}
+  animationType="slide"
+  presentationStyle="pageSheet"
+>
+  <SafeAreaView style={styles.modalContainer}>
+    <View style={styles.modalHeader}>
+      <Text style={styles.modalTitle}>
+        Edit Session {editingSession}
+      </Text>
+      <TouchableOpacity 
+        onPress={() => setEditModalVisible(false)}
+        style={styles.closeButton}
+      >
+        <Ionicons name="close" size={24} color="#666" />
+      </TouchableOpacity>
+    </View>
+
+    {/* Search Bar - NEW */}
+    <View style={styles.modalSearchContainer}>
+      <View style={styles.modalSearchInputContainer}>
+        <Ionicons name="search" size={20} color="#666" style={styles.modalSearchIcon} />
+        <TextInput
+          style={styles.modalSearchInput}
+          placeholder="Search student by name or ID..."
+          placeholderTextColor="#999"
+          value={modalSearchQuery}
+          onChangeText={setModalSearchQuery}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        {modalSearchQuery.length > 0 && (
+          <TouchableOpacity 
+            onPress={() => setModalSearchQuery('')} 
+            style={styles.modalClearButton}
+          >
+            <Ionicons name="close-circle" size={20} color="#666" />
+          </TouchableOpacity>
+        )}
+      </View>
+      {modalSearchQuery.length > 0 && (
+        <Text style={styles.modalResultCount}>
+          {filteredModalStudents.length} student{filteredModalStudents.length !== 1 ? 's' : ''} found
+        </Text>
+      )}
+    </View>
+
+    <FlatList
+      data={filteredModalStudents}  
+      keyExtractor={item => item._id}
+      renderItem={({ item }) => (
+        <TouchableOpacity
+          onPress={() => updateEditingAttendance(
+            item._id, 
+            editingAttendance[item._id] === 'present' ? 'absent' : 'present'
+          )}
+          style={[
+            styles.editStudentCard,
+            editingAttendance[item._id] === 'present' ? styles.editPresent : styles.editAbsent
+          ]}
         >
-          <SafeAreaView style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                Edit Session {editingSession}
-              </Text>
-              <TouchableOpacity 
-                onPress={() => setEditModalVisible(false)}
-                style={styles.closeButton}
-              >
-                <Ionicons name="close" size={24} color="#666" />
-              </TouchableOpacity>
-            </View>
+          <View style={styles.editStudentInfo}>
+            <Text style={styles.editStudentName}>{item.name}</Text>
+            <Text style={styles.editStudentId}>ID: {item.userId}</Text>
+          </View>
+          <Text style={[
+            styles.editStatus,
+            editingAttendance[item._id] === 'present' ? styles.editStatusPresent : styles.editStatusAbsent
+          ]}>
+            {editingAttendance[item._id] === 'present' ? 'Present' : 'Absent'}
+          </Text>
+        </TouchableOpacity>
+      )}
+      contentContainerStyle={styles.editListContent}
+      ListEmptyComponent={
+        modalSearchQuery.length > 0 ? (
+          <View style={styles.modalEmptyContainer}>
+            <Ionicons name="search-outline" size={48} color="#ccc" />
+            <Text style={styles.modalEmptyText}>No students found</Text>
+            <Text style={styles.modalEmptySubText}>
+              Try searching with a different name or ID
+            </Text>
+          </View>
+        ) : null
+      }
+    />
 
-            <FlatList
-              data={students}
-              keyExtractor={item => item._id}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  onPress={() => updateEditingAttendance(
-                    item._id, 
-                    editingAttendance[item._id] === 'present' ? 'absent' : 'present'
-                  )}
-                  style={[
-                    styles.editStudentCard,
-                    editingAttendance[item._id] === 'present' ? styles.editPresent : styles.editAbsent
-                  ]}
-                >
-                  <View style={styles.editStudentInfo}>
-                    <Text style={styles.editStudentName}>{item.name}</Text>
-                    <Text style={styles.editStudentId}>ID: {item.userId}</Text>
-                  </View>
-                  <Text style={[
-                    styles.editStatus,
-                    editingAttendance[item._id] === 'present' ? styles.editStatusPresent : styles.editStatusAbsent
-                  ]}>
-                    {editingAttendance[item._id] === 'present' ? 'Present' : 'Absent'}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              contentContainerStyle={styles.editListContent}
-            />
+    <View style={styles.modalFooter}>
+      <TouchableOpacity 
+        style={[styles.submitEditButton, submitting && styles.submitEditButtonDisabled]}
+        onPress={submitEdit}
+        disabled={submitting}
+      >
+        <Text style={styles.submitEditText}>
+          {submitting ? 'Updating...' : `Update Session ${editingSession}`}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </SafeAreaView>
+</Modal>
 
-            <View style={styles.modalFooter}>
-              <TouchableOpacity 
-                style={[styles.submitEditButton, submitting && styles.submitEditButtonDisabled]}
-                onPress={submitEdit}
-                disabled={submitting}
-              >
-                <Text style={styles.submitEditText}>
-                  {submitting ? 'Updating...' : `Update Session ${editingSession}`}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </SafeAreaView>
-        </Modal>
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -506,4 +569,57 @@ const styles = StyleSheet.create({
   submitEditButton: { backgroundColor: '#4a90e2', padding: 16, borderRadius: 8, alignItems: 'center' },
   submitEditButtonDisabled: { backgroundColor: '#a0a0a0' },
   submitEditText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+   modalSearchContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#f5f5f5',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  modalSearchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  modalSearchIcon: {
+    marginRight: 8,
+  },
+  modalSearchInput: {
+    flex: 1,
+    height: 40,
+    fontSize: 15,
+    color: '#333',
+  },
+  modalClearButton: {
+    padding: 4,
+  },
+  modalResultCount: {
+    marginTop: 8,
+    fontSize: 13,
+    color: '#666',
+    textAlign: 'center',
+  },
+  modalEmptyContainer: {
+    alignItems: 'center',
+    padding: 40,
+  },
+  modalEmptyText: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 12,
+    fontWeight: '600',
+  },
+  modalEmptySubText: {
+    fontSize: 14,
+    color: '#999',
+    marginTop: 8,
+    textAlign: 'center',
+  },
 });

@@ -14,7 +14,7 @@ import {
 import axios from 'axios';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import BASE_URL from '../../config/baseURL';
+import { BASE_URL } from '@env';
 
 const AddFacultyScreen = () => {
   const [formData, setFormData] = useState({

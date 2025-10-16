@@ -15,7 +15,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import XLSX from 'xlsx';
 import axios from 'axios';
-import BASE_URL from '../../../config/baseURL';
+import { BASE_URL } from '@env';
 
 export default function ClassScheduleXLSXUpload() {
   const [selectedClass, setSelectedClass] = useState('');

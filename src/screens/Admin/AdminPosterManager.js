@@ -12,7 +12,7 @@ import {
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
-import BASE_URL from '../../config/baseURL';
+import { BASE_URL } from '@env';
 
 export default function AdminPosterManager() {
   const [poster, setPoster] = useState({

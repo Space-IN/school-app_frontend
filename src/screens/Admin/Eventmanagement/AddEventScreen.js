@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
-import BASE_URL from '../../../config/baseURL';
+import { BASE_URL } from '@env';
 
 export default function AddEventScreen({ navigation }) {
   const [title, setTitle] = useState('');

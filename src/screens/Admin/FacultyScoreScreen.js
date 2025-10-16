@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import axios from "axios";
 import { Ionicons } from "@expo/vector-icons";
-import BASE_URL from "../../config/baseURL";
+import { BASE_URL } from '@env';
 
 const FacultyScoreScreen = ({ route }) => {
   const { facultyId, classId, section, subjectName } = route.params;

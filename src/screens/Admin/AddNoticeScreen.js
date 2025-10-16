@@ -15,7 +15,7 @@ import {
 import axios from "axios";
 import { io } from "socket.io-client";
 import * as DocumentPicker from 'expo-document-picker';
-import BASE_URL from "../../config/baseURL";
+import { BASE_URL } from '@env';
 
 
 

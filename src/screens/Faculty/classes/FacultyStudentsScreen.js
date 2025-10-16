@@ -1,259 +1,3 @@
-// // screens/faculty/FacultyStudentsScreen.js
-// import React, { useEffect, useState } from 'react';
-// import {
-//   View,
-//   Text,
-//   FlatList,
-//   ActivityIndicator,
-//   StyleSheet,
-//   StatusBar,
-//   TouchableOpacity,
-// } from 'react-native';
-// import { SafeAreaView } from 'react-native-safe-area-context';
-// import axios from 'axios';
-// import BASE_URL from '../../../config/baseURL';
-// import { useNavigation } from '@react-navigation/native';
-
-// export default function FacultyStudentsScreen({ route }) {
-//   const { grade, section = 'A' } = route.params || {};
-//   const [students, setStudents] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const navigation = useNavigation();
-
-//   useEffect(() => {
-//     fetchStudents();
-//   }, []);
-
-//   const fetchStudents = async () => {
-//     try {
-//       const response = await axios.get(
-//         `${BASE_URL}/api/admin/students/grade/${grade}/section/${section}`
-//       );
-//       setStudents(response.data);
-//     } catch (error) {
-//       console.error('Error fetching students:', error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const handleStudentPress = (student) => {
-//     navigation.navigate('StudentProfileScreen', {
-//       studentData: student,
-//     });
-//   };
-
-//   const renderItem = ({ item }) => (
-//     <TouchableOpacity onPress={() => handleStudentPress(item)} style={styles.card}>
-//       <Text style={styles.studentName}>👤 {item.name}</Text>
-//       <Text style={styles.studentId}>🆔 ID: {item.userId}</Text>
-//     </TouchableOpacity>
-//   );
-
-//   return (
-//     <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
-//       <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
-//       <View style={styles.header}>
-//         <Text style={styles.headerTitle}>
-//           📚 Students of Class {grade} - Section {section}
-//         </Text>
-//       </View>
-
-//       {loading ? (
-//         <ActivityIndicator size="large" style={{ marginTop: 10 }} />
-//       ) : (
-//         <FlatList
-//           data={students}
-//           keyExtractor={(item) => item._id}
-//           renderItem={renderItem}
-//           contentContainerStyle={styles.listContent}
-//         />
-//       )}
-//     </SafeAreaView>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   safeArea: {
-//     flex: 1,
-//     backgroundColor: '#bbdbfaff',
-//   },
-//   header: {
-//     paddingVertical: 10,
-//     backgroundColor: '#4a90e2',
-//     alignItems: 'center',
-//     borderBottomLeftRadius: 15,
-//     borderBottomRightRadius: 15,
-//   },
-//   headerTitle: {
-//     color: '#fff',
-//     fontSize: 22,
-//     fontWeight: 'bold',
-//     textAlign: 'center',
-//   },
-//   listContent: {
-//     padding: 5,
-//   },
-//   card: {
-//     backgroundColor: '#ffffff',
-//     borderRadius: 12,
-//     padding: 15,
-//     marginBottom: 12,
-//     elevation: 3,
-//     shadowColor: '#000',
-//     shadowOpacity: 0.1,
-//     shadowOffset: { width: 0, height: 2 },
-//     shadowRadius: 4,
-//   },
-//   studentName: {
-//     fontSize: 16,
-//     fontWeight: 'bold',
-//     color: '#333',
-//   },
-//   studentId: {
-//     fontSize: 14,
-//     marginTop: 5,
-//     color: '#555',
-//   },
-// });
-
-
-// // screens/faculty/FacultyStudentsScreen.js
-// import React, { useEffect, useState } from 'react';
-// import {
-//   View,
-//   Text,
-//   FlatList,
-//   ActivityIndicator,
-//   StyleSheet,
-//   StatusBar,
-//   TouchableOpacity,
-//   Alert
-// } from 'react-native';
-// import { SafeAreaView } from 'react-native-safe-area-context';
-// import axios from 'axios';
-// import BASE_URL from '../../../config/baseURL';
-// import { useNavigation, useRoute } from '@react-navigation/native';
-// import { useAuth } from '../../../context/authContext'; // Add this import
-
-// export default function FacultyStudentsScreen() {
-//   const route = useRoute();
-//   const { grade, section = 'A' } = route.params || {};
-//   const [students, setStudents] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const navigation = useNavigation();
-//   const { user } = useAuth(); // Get user from context
-
-//   useEffect(() => {
-//     fetchStudents();
-//   }, [grade, section]); // Add dependencies
-
-//   const fetchStudents = async () => {
-//     try {
-//       setLoading(true);
-//       const response = await axios.get(
-//         `${BASE_URL}/api/admin/students/grade/${grade}/section/${section}`
-//       );
-//       setStudents(response.data);
-//     } catch (error) {
-//       console.error('Error fetching students:', error);
-//       Alert.alert('Error', 'Failed to fetch students data');
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const handleStudentPress = (student) => {
-//     navigation.navigate('StudentProfileScreen', {
-//       studentData: student,
-//     });
-//   };
-
-//   const renderItem = ({ item }) => (
-//     <TouchableOpacity onPress={() => handleStudentPress(item)} style={styles.card}>
-//       <Text style={styles.studentName}>👤 {item.name}</Text>
-//       <Text style={styles.studentId}>🆔 ID: {item.userId}</Text>
-//     </TouchableOpacity>
-//   );
-
-//   return (
-//     <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
-//       <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
-//       <View style={styles.header}>
-//         <Text style={styles.headerTitle}>
-//           📚 Students of Class {grade} - Section {section}
-//         </Text>
-//         {/* Optional: Display faculty info from context */}
-//         <Text style={styles.facultyInfo}>Faculty: {user?.name}</Text>
-//       </View>
-
-//       {loading ? (
-//         <ActivityIndicator size="large" style={{ marginTop: 10 }} />
-//       ) : (
-//         <FlatList
-//           data={students}
-//           keyExtractor={(item) => item._id}
-//           renderItem={renderItem}
-//           contentContainerStyle={styles.listContent}
-//         />
-//       )}
-//     </SafeAreaView>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   safeArea: {
-//     flex: 1,
-//     backgroundColor: '#bbdbfaff',
-//   },
-//   header: {
-//     paddingVertical: 10,
-//     backgroundColor: '#4a90e2',
-//     alignItems: 'center',
-//     borderBottomLeftRadius: 15,
-//     borderBottomRightRadius: 15,
-//   },
-//   headerTitle: {
-//     color: '#fff',
-//     fontSize: 22,
-//     fontWeight: 'bold',
-//     textAlign: 'center',
-//   },
-//   facultyInfo: {
-//     color: '#fff',
-//     fontSize: 14,
-//     marginTop: 5,
-//     opacity: 0.8,
-//   },
-//   listContent: {
-//     padding: 5,
-//   },
-//   card: {
-//     backgroundColor: '#ffffff',
-//     borderRadius: 12,
-//     padding: 15,
-//     marginBottom: 12,
-//     elevation: 3,
-//     shadowColor: '#000',
-//     shadowOpacity: 0.1,
-//     shadowOffset: { width: 0, height: 2 },
-//     shadowRadius: 4,
-//   },
-//   studentName: {
-//     fontSize: 16,
-//     fontWeight: 'bold',
-//     color: '#333',
-//   },
-//   studentId: {
-//     fontSize: 14,
-//     marginTop: 5,
-//     color: '#555',
-//   },
-// });
-
-
-
-// screens/faculty/FacultyStudentsScreen.js
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -264,7 +8,8 @@ import {
   StatusBar,
   TouchableOpacity,
   Alert,
-  RefreshControl
+  RefreshControl,
+  TextInput
 } from 'react-native';
 import { SafeAreaView, SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import axios from 'axios';
@@ -277,6 +22,8 @@ export default function FacultyStudentsScreen() {
   const route = useRoute();
   const { grade, section = 'A' } = route.params || {};
   const [students, setStudents] = useState([]);
+  const [filteredStudents, setFilteredStudents] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
@@ -306,6 +53,21 @@ export default function FacultyStudentsScreen() {
     }
   }, [grade, section]);
 
+  // Filter students based on search query
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredStudents(students);
+    } else {
+      const filtered = students.filter(student => {
+        const query = searchQuery.toLowerCase();
+        const nameMatch = student.name?.toLowerCase().includes(query);
+        const idMatch = student.userId?.toLowerCase().includes(query);
+        return nameMatch || idMatch;
+      });
+      setFilteredStudents(filtered);
+    }
+  }, [searchQuery, students]);
+
   const fetchStudents = async () => {
     try {
       setLoading(true);
@@ -316,10 +78,12 @@ export default function FacultyStudentsScreen() {
       );
       console.log('✅ Students data:', response.data);
       setStudents(response.data);
+      setFilteredStudents(response.data);
     } catch (error) {
       console.error('❌ Error fetching students:', error);
       Alert.alert('Error', 'Failed to fetch students data');
       setStudents([]);
+      setFilteredStudents([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -343,6 +107,10 @@ export default function FacultyStudentsScreen() {
 
   const handleBackPress = () => {
     navigation.goBack();
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
   };
 
   const renderItem = ({ item }) => (
@@ -410,6 +178,32 @@ export default function FacultyStudentsScreen() {
           </Text>
         </View>
 
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <View style={styles.searchInputContainer}>
+            <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search by name or ID..."
+              placeholderTextColor="#999"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
+                <Ionicons name="close-circle" size={20} color="#666" />
+              </TouchableOpacity>
+            )}
+          </View>
+          {searchQuery.length > 0 && (
+            <Text style={styles.resultCount}>
+              {filteredStudents.length} student{filteredStudents.length !== 1 ? 's' : ''} found
+            </Text>
+          )}
+        </View>
+
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#4b4bfa" />
@@ -417,7 +211,7 @@ export default function FacultyStudentsScreen() {
           </View>
         ) : (
           <FlatList
-            data={students}
+            data={filteredStudents}
             keyExtractor={(item) => item._id || item.userId}
             renderItem={renderItem}
             refreshControl={
@@ -426,17 +220,35 @@ export default function FacultyStudentsScreen() {
             contentContainerStyle={styles.listContent}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No students found in this class</Text>
-                <Text style={styles.emptySubText}>
-                  Class {grade} - Section {section} has no enrolled students.
-                </Text>
-                <TouchableOpacity 
-                  style={styles.backButton}
-                  onPress={handleBackPress}
-                >
-                  <Ionicons name="arrow-back" size={20} color="#fff" />
-                  <Text style={styles.backButtonText}>Go Back</Text>
-                </TouchableOpacity>
+                {searchQuery.length > 0 ? (
+                  <>
+                    <Ionicons name="search-outline" size={64} color="#ccc" />
+                    <Text style={styles.emptyText}>No students found</Text>
+                    <Text style={styles.emptySubText}>
+                      Try searching with a different name or ID
+                    </Text>
+                    <TouchableOpacity 
+                      style={styles.clearSearchButton}
+                      onPress={clearSearch}
+                    >
+                      <Text style={styles.clearSearchButtonText}>Clear Search</Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <>
+                    <Text style={styles.emptyText}>No students found in this class</Text>
+                    <Text style={styles.emptySubText}>
+                      Class {grade} - Section {section} has no enrolled students.
+                    </Text>
+                    <TouchableOpacity 
+                      style={styles.backButton}
+                      onPress={handleBackPress}
+                    >
+                      <Ionicons name="arrow-back" size={20} color="#fff" />
+                      <Text style={styles.backButtonText}>Go Back</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
               </View>
             }
           />
@@ -506,6 +318,41 @@ const styles = StyleSheet.create({
     opacity: 0.9,
     textAlign: 'center',
   },
+  searchContainer: {
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    backgroundColor: '#bbdbfaff',
+  },
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    height: 45,
+    fontSize: 16,
+    color: '#333',
+  },
+  clearButton: {
+    padding: 5,
+  },
+  resultCount: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -535,6 +382,18 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  clearSearchButton: {
+    backgroundColor: '#4a90e2',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginTop: 15,
+  },
+  clearSearchButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   listContent: {
     padding: 10,

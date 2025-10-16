@@ -4,7 +4,7 @@ import {
   View, Text, TextInput, Button, StyleSheet, Alert, ScrollView, Dimensions
 } from 'react-native';
 import axios from 'axios';
-import BASE_URL from '../../config/baseURL';
+import { BASE_URL } from '@env';
 
 export default function EditStudentScreen({ route, navigation }) {
   const { student } = route.params;

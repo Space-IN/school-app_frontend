@@ -287,7 +287,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import { useFocusEffect } from '@react-navigation/native';
-import BASE_URL from '../../config/baseURL';
+import { BASE_URL } from '@env';
 
 export default function AllFacultyScreen({ navigation }) {
   const [activeTab, setActiveTab] = useState('active');

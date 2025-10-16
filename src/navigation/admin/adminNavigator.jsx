@@ -22,6 +22,10 @@ import FacultyListScreen from "../../screens/Admin/FacultyListScreen";
 import FacultyScoreScreen from "../../screens/Admin/FacultyScoreScreen";
 import FacultyProfileViewScreen from '../../screens/Admin/FacultyProfileViewScreen';
 
+// import AdminPosterManager from "../../screens/Admin/AdminPosterManager";
+
+import AdminStudentProfileView from "../../screens/Admin/AdminStudentProfileView";
+
 
 
 const Stack = createNativeStackNavigator()
@@ -56,6 +60,11 @@ export default function AdminNavigator() {
             <Stack.Screen name="FacultyListScreen" component={FacultyListScreen} />
             <Stack.Screen name="FacultyScore" component={FacultyScoreScreen} />
             <Stack.Screen name="FacultyProfileViewScreen" component={FacultyProfileViewScreen} />
+
+     
+
+      
+           <Stack.Screen name="AdminStudentProfileView" component={AdminStudentProfileView}  />
         </Stack.Navigator>
     )
 }

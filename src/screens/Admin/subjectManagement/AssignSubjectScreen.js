@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import axios from 'axios';
-import BASE_URL from '../../../config/baseURL';
+import { BASE_URL } from '@env';
 
 const AssignSubjectScreen = () => {
   const [subjectList, setSubjectList] = useState([]);

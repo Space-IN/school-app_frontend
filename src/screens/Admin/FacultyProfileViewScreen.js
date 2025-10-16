@@ -9,7 +9,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import axios from 'axios';
-import BASE_URL from '../../config/baseURL';
+import { BASE_URL } from '@env';
 
 export default function FacultyProfileViewScreen({ route }) {
   const { userId } = route.params;

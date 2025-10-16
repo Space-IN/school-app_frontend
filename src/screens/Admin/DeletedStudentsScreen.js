@@ -12,7 +12,7 @@ import {
   StatusBar,
 } from 'react-native';
 import axios from 'axios';
-import BASE_URL from '../../config/baseURL';
+import { BASE_URL } from '@env';
 
 export default function DeletedStudentsScreen({ navigation }) {
   const [students, setStudents] = useState([]);

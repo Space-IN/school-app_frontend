@@ -85,7 +85,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, Alert, StyleSheet, Dimensions, Text } from 'react-native';
 import axios from 'axios';
-import BASE_URL from '../../../config/baseURL';
+import { BASE_URL } from '@env';
 
 const AddSubjectMasterScreen = () => {
   const [name, setName] = useState('');
