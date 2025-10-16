@@ -14,7 +14,7 @@ export const loginUser = async (userId, password) => {
         await SecureStore.setItemAsync("token", token)
         return token
     } catch(err) {
-        console.error("Login error: ", err.response?.data)
-        throw err.response?.data || { message: "Something went wrong" }
+        console.error("Login error: ", err)
+        throw err || { message: "Something went wrong" }
     }
 }

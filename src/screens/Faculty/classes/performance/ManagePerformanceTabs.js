@@ -39,17 +39,18 @@
 
 // screens/Faculty/classes/performance/ManagePerformanceTabs.js
 import React from 'react';
-import { 
-  View, 
-  StyleSheet, 
-  StatusBar, 
-  TouchableOpacity, 
-  Text 
+import {
+  View,
+  StyleSheet,
+  StatusBar,
+  TouchableOpacity,
+  Text
 } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+
+// ✅ FIXED IMPORTS — make sure file names match exactly in your folder:
 import ManagePerformanceTab from './ManagePerformanceTab';
 import ViewPerformanceTab from './ViewPerformanceTab';
 
@@ -64,7 +65,7 @@ export default function ManagePerformanceTabs({ route, navigation }) {
   React.useLayoutEffect(() => {
     navigation.setOptions({
       headerLeft: () => (
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButtonHeader}
         >
@@ -83,11 +84,11 @@ export default function ManagePerformanceTabs({ route, navigation }) {
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
         <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
-        
-        {/* Custom Header with Manual Top Safe Area - Same as FacultyStudentsScreen */}
+
+        {/* Custom Header */}
         <View style={[styles.customHeader, { paddingTop: insets.top + 15 }]}>
           <View style={styles.headerTopRow}>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={handleBackPress}
               style={styles.backButtonContainer}
             >
@@ -95,10 +96,8 @@ export default function ManagePerformanceTabs({ route, navigation }) {
               <Text style={styles.backButtonText}>Back</Text>
             </TouchableOpacity>
           </View>
-          
-          <Text style={styles.headerTitle}>
-            📊 Performance Management
-          </Text>
+
+          <Text style={styles.headerTitle}>📊 Performance Management</Text>
           <Text style={styles.classInfo}>
             Class {grade} - Section {section}
             {student && ` | Student: ${student.name}`}
@@ -125,7 +124,7 @@ export default function ManagePerformanceTabs({ route, navigation }) {
             initialParams={{
               studentId,
               grade,
-              section
+              section,
             }}
             options={{ title: 'View Performance' }}
           />

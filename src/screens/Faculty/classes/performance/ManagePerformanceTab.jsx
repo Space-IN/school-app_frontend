@@ -94,7 +94,7 @@
 // export default ManagePerformanceTab;
 
 
-// screens/Faculty/classes/performance/ManagePerformanceTab.js
+//src\screens\Faculty\classes\performance\ManagePerformanceTab.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import { 
   View, 
@@ -111,11 +111,14 @@ import { useAuth } from "../../../../context/authContext";
 import { useScrollToTop } from '@react-navigation/native';
 import { BASE_URL } from '@env';
 
-const ManagePerformanceTab = ({ grade, section, navigation }) => {
+const ManagePerformanceTab = ({ route, navigation }) => {
+  const { grade, section } = route.params || {};
   const { user } = useAuth();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  console.log("Received params:", grade, section);
+
 
   const listRef = useRef(null);
   useScrollToTop(listRef);
