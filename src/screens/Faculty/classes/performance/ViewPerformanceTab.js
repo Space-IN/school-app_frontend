@@ -1,10 +1,12 @@
+//src\screens\Faculty\classes\performance\ViewPerformanceTab.js
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
-import BASE_URL from '../../../../config/baseURL';
+import { BASE_URL } from '@env';
 
-const ViewPerformanceTab = ({ grade, section }) => {
+const ViewPerformanceTab = ({ route }) => {
+  const { grade, section } = route.params || {};
   const [loading, setLoading] = useState(true);
   const [examTypes, setExamTypes] = useState([]);
   const [selectedExamType, setSelectedExamType] = useState('');
