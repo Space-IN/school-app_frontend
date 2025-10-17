@@ -34,7 +34,7 @@ export default function PerformanceGrid() {
                       {studentLoading ? (
                         <ActivityIndicator size="small" color="#9c1006" />
                       ) : (
-                        <Text style={[styles.metricText, { marginLeft: 5 }]}>{!studentData?.grade?.cgpa ? "-" : `${studentData?.grade?.cgpa}`}</Text>
+                        <Text style={[styles.metricText, { marginLeft: 5 }]}>{!studentData?.grade?.cgpa ? "-" : `${(studentData?.grade?.cgpa).toFixed(2)}`}</Text>
                       )}
                     </View>
                 </View>

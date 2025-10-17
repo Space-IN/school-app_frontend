@@ -1,10 +1,10 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import StudentHomeNavigator from "./studentHomeNavigator"
-import StudentProfileScreen from "../../screens/StudentParent/profilescreen/studentProfileScreen"
 import MenuScreen from "./StudentParentTabs"
 import { Ionicons } from "@expo/vector-icons"
 import Entypo from '@expo/vector-icons/Entypo'
 import FontAwesome from '@expo/vector-icons/FontAwesome'
+import StudentProfileNavigator from "./studentProfileNavigator"
 
 const Tab = createBottomTabNavigator()
 
@@ -45,7 +45,7 @@ export default function StudentTab() {
 
             <Tab.Screen
                 name="Profile"
-                component={StudentProfileScreen}
+                component={StudentProfileNavigator}
                 options={{
                     tabBarLabel: "Profile",
                     tabBarIcon: ({ color, size }) => (
