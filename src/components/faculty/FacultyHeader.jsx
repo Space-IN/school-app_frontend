@@ -1,170 +1,56 @@
+import { View, Image, TouchableOpacity, StyleSheet } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { useAuth } from "../../context/authContext";
 
+export default function FacultyHeader({ navigation, back }) {
+   const { decodedToken } = useAuth();
 
+  return (
+    <View style={styles.container}>
+      <View style={styles.elementContainer}>
+        {back ? (
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Ionicons name="caret-back-outline" size={24} color="black" />
+          </TouchableOpacity>
+        ) : (
+          <Image
+            source={require("../../assets/logo.png")}
+            style={styles.logo}
+          />
+        )}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// src/components/faculty/header.js
-
-// import React from 'react';
-// import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-// import { Ionicons } from '@expo/vector-icons';
-// import { useAuth } from '../../context/authContext';
-
-// export default function FacultyHeader({ navigation, route }) {
-//     const { user, logout } = useAuth();
-
-//     const handleLogout = () => {
-//         Alert.alert('Logout', 'Are you sure you want to logout?', [
-//             { text: 'Cancel', style: 'cancel' },
-//             {
-//                 text: 'Logout',
-//                 style: 'destructive',
-//                 onPress: async () => {
-//                     logout();
-//                 },
-//             },
-//         ]);
-//     };
-
-//     return (
-//         <View style={styles.header}>
-//             <View style={styles.headerContent}>
-//                 <Text style={styles.headerTitle}>
-//                     {route.name === 'FacultyHome' ? 'Faculty Dashboard' : route.name}
-//                 </Text>
-//                 <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-//                     <Ionicons name="log-out-outline" size={20} color="#d9534f" />
-//                     <Text style={styles.logoutText}>Logout</Text>
-//                 </TouchableOpacity>
-//             </View>
-//         </View>
-//     );
-// }
-
-// const styles = StyleSheet.create({
-//     header: {
-//         backgroundColor: '#4b4bfa',
-//         paddingTop: 50,
-//         paddingBottom: 15,
-//         paddingHorizontal: 20,
-//     },
-//     headerContent: {
-//         flexDirection: 'row',
-//         justifyContent: 'space-between',
-//         alignItems: 'center',
-//     },
-//     headerTitle: {
-//         fontSize: 18,
-//         fontWeight: 'bold',
-//         color: 'white',
-//     },
-//     logoutButton: {
-//         flexDirection: 'row',
-//         alignItems: 'center',
-//         backgroundColor: 'rgba(255,255,255,0.2)',
-//         paddingHorizontal: 12,
-//         paddingVertical: 6,
-//         borderRadius: 8,
-//     },
-//     logoutText: {
-//         color: 'white',
-//         marginLeft: 4,
-//         fontWeight: '600',
-//         fontSize: 12,
-//     },
-// });
-
-// src/components/faculty/FacultyHeader.js
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../context/authContext';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-
-export default function FacultyHeader({ navigation }) {
-    const { user, logout } = useAuth();
-
-    // const handleLogout = () => {
-    //     Alert.alert('Logout', 'Are you sure you want to logout?', [
-    //         { text: 'Cancel', style: 'cancel' },
-    //         {
-    //             text: 'Logout',
-    //             style: 'destructive',
-    //             onPress: async () => {
-    //                 logout();
-    //             },
-    //         },
-    //     ]);
-    // };
-
-    return (
-        
-        <View style={styles.header}>
-            <View style={styles.headerContent}>
-                <Text style={styles.headerTitle}>Faculty Dashboard</Text>
-                {/* <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-                    <Ionicons name="log-out-outline" size={20} color="#fff" />
-                    <Text style={styles.logoutText}>Logout</Text>
-                </TouchableOpacity> */}
-            </View>
-        </View>
-    );
+        <TouchableOpacity onPress={() => alert("Calendar icon clicked!")}>
+          <Ionicons name="calendar" size={20} color="white" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    header: {
-        backgroundColor: '#4545ccff',
-        paddingTop: 50,
-        paddingBottom: 15,
-        paddingHorizontal: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
-    },
-    headerContent: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    headerTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: 'white',
-    },
-    logoutButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 8,
-    },
-    logoutText: {
-        color: 'white',
-        marginLeft: 4,
-        fontWeight: '600',
-        fontSize: 12,
-    },
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
+    height: 90,
+    paddingTop: "6%",
+    paddingHorizontal: "5%",
+    backgroundColor: "#c01e12ff",
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#ccc",
+  },
+  elementContainer: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+  logo: {
+    width: 130,
+    height: 130,
+    resizeMode: "contain",
+  },
 });

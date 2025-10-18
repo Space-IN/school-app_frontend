@@ -17,13 +17,6 @@ import { io } from "socket.io-client";
 import * as DocumentPicker from 'expo-document-picker';
 import { BASE_URL } from '@env';
 
-
-
-
-
-
-
-
 const AddNoticeScreen = () => {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
@@ -34,7 +27,7 @@ const AddNoticeScreen = () => {
   const [selectedFile, setSelectedFile] = useState(null);
 
   const [previewVisible, setPreviewVisible] = useState(false);
-const [previewUrl, setPreviewUrl] = useState('');
+  const [previewUrl, setPreviewUrl] = useState('');
 
 
   const socket = io(BASE_URL);
@@ -251,8 +244,6 @@ const pickFile = async () => {
             {new Date(notice.date).toLocaleString()}
           </Text>
 
-
-
           <Text style={styles.noticeTitle}>{notice.title}</Text>
           <Text style={styles.noticeMessage}>{notice.message}</Text>
           <Text style={styles.noticeTarget}>Target: {notice.target}</Text>
@@ -264,7 +255,7 @@ const pickFile = async () => {
       <TouchableOpacity
         onPress={() => {
           const filename = notice.fileUrl.split('/').pop();
-setPreviewUrl(`${BASE_URL}/api/notices/preview/${filename}`);
+          setPreviewUrl(`${BASE_URL}/api/notices/preview/${filename}`);
 
           setPreviewVisible(true);
         }}
@@ -291,7 +282,6 @@ setPreviewUrl(`${BASE_URL}/api/notices/preview/${filename}`);
     )}
   </>
 )}
-
 
           <TouchableOpacity
             onPress={() => handleDeleteNotice(notice._id)}

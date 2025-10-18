@@ -14,13 +14,18 @@ export default function EditStudentScreen({ route, navigation }) {
     userId: student.userId || '',
     className: student.className || '',
     section: student.section || '',
-    parentName: student.parentName || '',
     dob: student.dob || '',
     gender: student.gender || '',
-    contactNumber: student.contactNumber || '',
-    address: student.address || '',
     admissionDate: student.admissionDate || '',
     bloodGroup: student.bloodGroup || '',
+    profileImage: student.profileImage || '',
+    fatherName: student.fatherName || '',
+    fatherOccupation: student.fatherOccupation || '',
+    fatherContact: student.fatherContact || '',
+    motherName: student.motherName || '',
+    motherOccupation: student.motherOccupation || '',
+    motherContact: student.motherContact || '',
+    parentEmail: student.parentEmail || '',
   });
 
   const handleChange = (field, value) => {
@@ -33,15 +38,21 @@ export default function EditStudentScreen({ route, navigation }) {
 
     const payload = {
       name: form.name.trim(),
+      userId: form.userId.trim().toLowerCase(),
       className: form.className.trim(),
       section: form.section.trim().toUpperCase(),
-      parentName: form.parentName?.trim() || '',
-      contactNumber: form.contactNumber?.trim() || '',
       dob: form.dob?.trim() || '',
       gender: form.gender?.trim() || '',
-      address: form.address?.trim() || '',
       admissionDate: form.admissionDate?.trim() || '',
       bloodGroup: form.bloodGroup?.trim() || '',
+      profileImage: form.profileImage?.trim() || '',
+      fatherName: form.fatherName?.trim() || '',
+      fatherOccupation: form.fatherOccupation?.trim() || '',
+      fatherContact: form.fatherContact?.trim() || '',
+      motherName: form.motherName?.trim() || '',
+      motherOccupation: form.motherOccupation?.trim() || '',
+      motherContact: form.motherContact?.trim() || '',
+      parentEmail: form.parentEmail?.trim() || '',
     };
 
     try {
@@ -61,15 +72,21 @@ export default function EditStudentScreen({ route, navigation }) {
 
         {[
           ['name', 'Full Name'],
+          ['userId', 'User ID'],
           ['className', 'Class (e.g. 6)'],
           ['section', 'Section (e.g. A)'],
-          ['parentName', 'Parent Name'],
           ['dob', 'Date of Birth (YYYY-MM-DD)'],
           ['gender', 'Gender'],
-          ['contactNumber', 'Contact Number'],
-          ['address', 'Address'],
           ['admissionDate', 'Admission Date (YYYY-MM-DD)'],
           ['bloodGroup', 'Blood Group (e.g. B+)'],
+          ['profileImage', 'Profile Image URL'],
+          ['fatherName', 'Father Name'],
+          ['fatherOccupation', 'Father Occupation'],
+          ['fatherContact', 'Father Contact'],
+          ['motherName', 'Mother Name'],
+          ['motherOccupation', 'Mother Occupation'],
+          ['motherContact', 'Mother Contact'],
+          ['parentEmail', 'Parent Email'],
         ].map(([field, placeholder]) => (
           <TextInput
             key={field}

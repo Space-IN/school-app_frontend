@@ -21,7 +21,7 @@ import { TabView } from 'react-native-tab-view';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import BASE_URL from '../../../config/baseURL';
+import { BASE_URL } from "@env";;
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -713,7 +713,7 @@ export default function LectureRecordingScreen({ route }) {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
-        <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
+        <StatusBar style="light" backgroundColor="#9c1006" />
         
         {/* Custom Header with Back Button and Manual Top Safe Area */}
         <View style={[styles.customHeader, { paddingTop: insets.top + 15 }]}>
@@ -774,7 +774,7 @@ const styles = StyleSheet.create({
   },
   customHeader: {
     paddingVertical: 15,
-    backgroundColor: '#4a90e2',
+    backgroundColor: '#c01e12ff',
     borderBottomLeftRadius: 15,
     borderBottomRightRadius: 15,
     paddingHorizontal: 10,

@@ -237,10 +237,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     flex: 1,
     textAlign: 'center',
-    marginRight: -29, // Compensate for back button width to center title
+    marginRight: -29, 
   },
   headerPlaceholder: {
-    width: 29, // Same as back button width
+    width: 29, 
   },
   container: {
     flex: 1,

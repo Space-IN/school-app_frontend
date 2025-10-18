@@ -21,10 +21,14 @@ import FacultyPerformance from "../../screens/Admin/FacultyPerformance";
 import FacultyListScreen from "../../screens/Admin/FacultyListScreen";  
 import FacultyScoreScreen from "../../screens/Admin/FacultyScoreScreen";
 import FacultyProfileViewScreen from '../../screens/Admin/FacultyProfileViewScreen';
+import AdminAttendanceScreen from '../../screens/Admin/AdminAttendanceScreen';
 
 // import AdminPosterManager from "../../screens/Admin/AdminPosterManager";
 
 import AdminStudentProfileView from "../../screens/Admin/AdminStudentProfileView";
+
+import { StatusBar } from "react-native";
+import { SafeAreaFrameContext } from "react-native-safe-area-context";
 
 
 
@@ -60,11 +64,11 @@ export default function AdminNavigator() {
             <Stack.Screen name="FacultyListScreen" component={FacultyListScreen} />
             <Stack.Screen name="FacultyScore" component={FacultyScoreScreen} />
             <Stack.Screen name="FacultyProfileViewScreen" component={FacultyProfileViewScreen} />
-
-     
-
-      
            <Stack.Screen name="AdminStudentProfileView" component={AdminStudentProfileView}  />
+           <Stack.Screen name="AdminAttendanceScreen" component={AdminAttendanceScreen} />
+           
+           
         </Stack.Navigator>
+        
     )
 }

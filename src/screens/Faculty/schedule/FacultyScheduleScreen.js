@@ -336,11 +336,11 @@ export default function FacultySchedulesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#ffffffff',
   },
   header: {
     padding: 16,
-    backgroundColor: '#4a90e2',
+    backgroundColor: '#c01e12ff',
     alignItems: 'center',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
