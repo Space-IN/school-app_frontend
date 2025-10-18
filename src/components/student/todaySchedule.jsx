@@ -80,7 +80,9 @@ export default function TodaySchedule({ studentId }) {
                 <Text style={styles.noDataText}>{error}</Text>
             </View>
         ) : !todaySchedule || todaySchedule.periods.length === 0 ? (
-            <Text style={styles.noDataText}>No classes scheduled for today.</Text>
+            <View style={styles.card}>
+                <Text style={styles.noDataText}>No classes scheduled for today.</Text>
+            </View>
         ) : (
             <View style={{ padding: 20 }}>
                 <View style={styles.timelineContainer}>
@@ -101,7 +103,7 @@ const styles = StyleSheet.create({
     container: {
         width: "95%",
         alignSelf: "center",
-        backgroundColor: "#e2dadaff",
+        backgroundColor: "#e7e0e0ff",
         marginBottom: 20,
         height: "auto",
         borderRadius:12
@@ -115,7 +117,7 @@ const styles = StyleSheet.create({
     timelineContainer: {
         paddingLeft: 10,
         borderLeftWidth: 2,
-        borderColor: "#9c1006",
+        borderColor: "#101c2eff",
     },
     timelineItem: {
         marginBottom: 25,
@@ -126,7 +128,7 @@ const styles = StyleSheet.create({
         width: 10,
         height: 10,
         borderRadius: 5,
-        backgroundColor: "#9c1006",
+        backgroundColor: "#101c2eff",
         marginRight: 10,
         marginTop: 4,
         marginLeft: 3
@@ -135,7 +137,7 @@ const styles = StyleSheet.create({
     timelineTime: {
         fontSize: 13,
         fontWeight: "bold",
-        color: "#9c1006",
+        color: "#101c2eff",
     },
     timelineClass: {
         fontSize: 15.5,
@@ -160,10 +162,17 @@ const styles = StyleSheet.create({
     card: {
         width: "100%",
         padding: 16,
-        backgroundColor: "#ffffff",
+        backgroundColor: "#e7e0e0ff",
+        borderRadius: 12,
     },
     noDataText: {
         color: "#64748b",
+        fontSize: 14,
+        marginLeft: 12,
+        marginTop: 8,
+    },
+    errorText: {
+        color: "#f12a2aff",
         fontSize: 14,
         marginLeft: 12,
         marginTop: 8,

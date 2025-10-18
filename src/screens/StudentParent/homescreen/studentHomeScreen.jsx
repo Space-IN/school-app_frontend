@@ -12,7 +12,7 @@ import EventSlider from "../../../components/student/events";
 
 
 export default function StudentHome() {
-  const { studentData, studentLoading } = useStudent()
+  const { studentData, studentLoading, studentErr } = useStudent()
   const [events, setEvents] = useState([])
 
 
@@ -29,7 +29,7 @@ export default function StudentHome() {
   }, [studentData])
 
   return (
-    <ScrollView style={{ flex: 1, padding: 10, backgroundColor: "#ece2e2ff" }}>
+    <ScrollView style={{ flex: 1, padding: 10, backgroundColor: "#F9FAFB" }}>
       {events.length!==0 && (
         <View style={styles.eventsContainer}>
           <EventSlider events={events} />
@@ -37,7 +37,7 @@ export default function StudentHome() {
       )}
 
       <View style={styles.userBannerContainer}>
-        <UserBanner studentData={studentData} />
+        <UserBanner studentData={studentData} loading={studentLoading} err={studentErr} />
       </View>
       
       <View style={styles.userPerformanceGrid}>
@@ -58,12 +58,11 @@ export default function StudentHome() {
 const styles = StyleSheet.create({
   userBannerContainer: {
     width: "100%",
-    height: 120,
-    marginTop: 3
+    marginTop: 3,
   },
   userPerformanceGrid: {
     width: "100%",
-    marginTop: -4,
+    marginTop: -4
   },
   announcementsContainer: {
     padding: 2,

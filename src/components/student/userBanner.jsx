@@ -10,7 +10,7 @@ const getGreeting = () => {
   else return "Good Evening"
 };
 
-export default function UserBanner({ studentData, loading }) {
+export default function UserBanner({ studentData, loading, err }) {
   const [greeting, setGreeting] = useState(getGreeting())
   const scaleAnim = new Animated.Value(1)
   const navigation = useNavigation()
@@ -37,16 +37,24 @@ export default function UserBanner({ studentData, loading }) {
 
         {loading ? (
           <ActivityIndicator size="small" color="#9c1006" />
-        ) : (
+        ) : err ? (
           <View style={styles.infoContainer}>
-              <View style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "flex-start" }}>
-                  <Text style={styles.greeting}>{greeting},</Text>
-                  <Text style={styles.userName}>{studentData?.name?.toUpperCase() || <ActivityIndicator size="small" color="#9c1006" />}</Text>
-                  <View style={styles.divider} />
-              </View>
+            <Text style={styles.errData}>Something went wrong while fetching your data. Please try again later.</Text>
+          </View>
+        ) : studentData ? (
+          <View style={styles.infoContainer}>
+            <View style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "flex-start" }}>
+              <Text style={styles.greeting}>{greeting},</Text>
+              <Text style={styles.userName}>{loading ? <ActivityIndicator size="small" color="#9c1006" /> : !studentData?.name ? "N/A" : studentData?.name?.toUpperCase()}</Text>
+              <View style={styles.divider} />
+            </View>
             <Text style={styles.userDetails}>
               ID: {studentData?.userId} | Class: "{studentData?.className}" | Section: "{studentData?.section}"
             </Text>
+          </View>
+        ) : (
+          <View style={styles.infoContainer}>
+            <Text style={styles.noData}>User data couldn't be fetched. Please check your internet connection and try again later...</Text>
           </View>
         )}
       </Animated.View>
@@ -63,11 +71,10 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     borderRadius: 12,
     padding: 15,
-    height: 120
+    maxHeight: 200
   },
   avatarContainer: {
     width: "25%",
-    height: "100%",
     marginRight: 15,
     display: "flex",
     alignItems: "center",
@@ -84,7 +91,7 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 23,
-    fontWeight: "700",
+    fontWeight: "900",
     color: "white",
     marginTop: -2,
   },
@@ -93,7 +100,7 @@ const styles = StyleSheet.create({
     color: "white",
     marginTop: 2,
     fontWeight: "500",
-    marginTop: 10,
+    marginTop: 3,
   },
   divider: {
     width: "100%",
@@ -101,5 +108,15 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.3)",
     marginBottom: 8,
     marginTop: 3,
+  },
+  errData: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: "red",
+  },
+  noData: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: "gray",
   },
 });

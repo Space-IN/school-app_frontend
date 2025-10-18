@@ -15,7 +15,7 @@ export default function StudentTab() {
             screenOptions={{
                 tabBarActiveTintColor: "white",
                 tabBarInactiveTintColor: "rgba(255,255,255,0.6)",
-                tabBarStyle: { height: 80, paddingTop: 5, backgroundColor: "#c01e12ff" },
+                tabBarStyle: { height: 80, paddingTop: 5, backgroundColor: "#ac1d1dff" },
                 headerShown: false,
                 headerBackTitleVisible: false,
                 

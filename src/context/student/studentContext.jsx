@@ -9,6 +9,7 @@ export const StudentProvider = ({ children }) => {
     const { decodedToken } = useAuth()
     const [studentData, setStudentData] = useState(null)
     const [studentLoading, setStudentLoading] = useState(false)
+    const [studentErr, setStudentErr] = useState(null)
 
     useEffect(() => {
         if (!decodedToken?.userId) return
@@ -30,6 +31,7 @@ export const StudentProvider = ({ children }) => {
                 }
             } catch(err) {
                 console.error("error setting student data: ", err)
+                setStudentErr(err)
             } finally {
                 setStudentLoading(false)
             }
@@ -38,7 +40,7 @@ export const StudentProvider = ({ children }) => {
     }, [decodedToken])
 
     return (
-        <StudentContext.Provider value={{ studentData, studentLoading }}>
+        <StudentContext.Provider value={{ studentData, studentLoading, studentErr }}>
             {children}
         </StudentContext.Provider>
     )

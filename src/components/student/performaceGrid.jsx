@@ -67,7 +67,8 @@ export default function PerformanceGrid() {
 const styles = StyleSheet.create({
   container: {
     padding: 12,
-    width: "100%"
+    width: "100%",
+    marginTop: 0,
   },
   row: {
     flexDirection: "row",
