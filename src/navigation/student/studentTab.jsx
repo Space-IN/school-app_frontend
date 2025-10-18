@@ -1,10 +1,10 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import StudentHomeNavigator from "./studentHomeNavigator"
-import MenuScreen from "./StudentParentTabs"
 import { Ionicons } from "@expo/vector-icons"
 import Entypo from '@expo/vector-icons/Entypo'
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import StudentProfileNavigator from "./studentProfileNavigator"
+import StudentMenuNavigator from "./studentMenuNavigator"
 
 const Tab = createBottomTabNavigator()
 
@@ -12,14 +12,14 @@ const Tab = createBottomTabNavigator()
 export default function StudentTab() {
     return (
         <Tab.Navigator
-            screenOptions={{
+            screenOptions={({ route }) => ({
                 tabBarActiveTintColor: "white",
                 tabBarInactiveTintColor: "rgba(255,255,255,0.6)",
                 tabBarStyle: { height: 80, paddingTop: 5, backgroundColor: "#ac1d1dff" },
                 headerShown: false,
                 headerBackTitleVisible: false,
                 
-            }}
+            })}
         >
             <Tab.Screen
                 name="Home"
@@ -34,7 +34,7 @@ export default function StudentTab() {
 
             <Tab.Screen
                 name="Menu"
-                component={MenuScreen}
+                component={StudentMenuNavigator}
                 options={{
                     tabBarLabel: "Menu",
                     tabBarIcon: ({ color, size }) => (

@@ -1,8 +1,8 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 
-import StudentParentTabs from './StudentParentTabs'
+import StudentParentTabs from './studentMenu'
 import SubjectDashboard from '../../screens/StudentParent/homescreen/SubjectDashboard'
-import StudentProfileScreen from '../../screens/StudentParent/homescreen/StudentProfileScreen'
+import StudentProfileScreen from '../../screens/StudentParent/homescreen/studentProfileScreen'
 import AttendanceStudent from '../../screens/StudentParent/menuscreen/AttendanceScreen'
 import TimetableScreen from '../../screens/StudentParent/menuscreen/TimetableScreen'
 import NoticeBoardScreen from '../../screens/StudentParent/menuscreen/NoticeBoardScreen'
@@ -10,7 +10,7 @@ import ParentProfileScreen from '../../screens/StudentParent/menuscreen/ParentPr
 import AcademicCalendarScreen from '../../screens/StudentParent/menuscreen/AcademicCalendarScreen'
 import SettingsScreen from '../../screens/StudentParent/menuscreen/settings/SettingsScreen'
 import ExamDetailScreen from '../../screens/StudentParent/menuscreen/ExamDetailScreen'
-import FeesScreen from '../../screens/StudentParent/menuscreen/settings/FeesScreen'
+import FeesScreen from '../../screens/StudentParent/menuscreen/FeesScreen';
 import ChangePasswordScreen from '../../screens/StudentParent/menuscreen/settings/ChangePasswordScreen'
 import PrivacyPolicyScreen from '../../screens/StudentParent/menuscreen/settings/PrivacyPolicyScreen'
 import TermsScreen from '../../screens/StudentParent/menuscreen/settings/TermsScreen'
@@ -26,7 +26,7 @@ export default function StudentNavigator() {
         <Stack.Navigator
             initialRouteName="StudentParentTabs"
             screenOptions={{
-                headerShown: true,
+                headerShown: false,
             }}
         >
             <Stack.Screen name="StudentParentTabs" component={StudentParentTabs} options={{ headerShown: false }} />

@@ -81,7 +81,7 @@ export default function StudentHeader({ navigation, back }) {
             <View style={styles.elementContainer}>
                 {back ? (
                     <TouchableOpacity onPress={navigation.goback}>
-                        <Ionicons name="caret-back-outline" size={24} color="black" />
+                        <Ionicons name="caret-back-outline" size={24} color="white" />
                     </TouchableOpacity>
                 ) : (
                     <Image

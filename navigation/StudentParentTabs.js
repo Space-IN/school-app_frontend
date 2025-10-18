@@ -6,15 +6,15 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
+  Platform,
+  StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
-import StudentParentHome from '../../screens/StudentParent/homescreen/studentHomeScreen';
+import StudentParentHome from '../screens/StudentParent/homescreen/StudentParentHome';
 
 const Tab = createBottomTabNavigator();
 
-export default function MenuScreen({ navigation, route }) {
+function MenuScreen({ navigation, route }) {
   const { userId, userData } = route?.params || {};
   const flatListRef = useRef(null);
 
@@ -38,10 +38,11 @@ export default function MenuScreen({ navigation, route }) {
     { title: 'Timetable', screen: 'TimetableScreen', icon: 'calendar-outline' },
     { title: 'Notice Board', screen: 'NoticeBoardScreen', icon: 'megaphone-outline' },
     { title: 'Performance', screen: 'StudentPerformanceScreen', icon: 'stats-chart-outline' },
+    { title: 'Fees', screen: 'FeesScreen', icon: 'card-outline' },
     { title: 'Parent Profile', screen: 'ParentProfileScreen', icon: 'person-circle-outline' },
     { title: 'Academic Calendar', screen: 'AcademicCalendarScreen', icon: 'calendar-number-outline' },
     { title: 'Settings', screen: 'SettingsScreen', icon: 'settings-outline' },
-    { title: 'studentProfile', screen: 'StudentProfileScreen', icon: 'person-outline' },
+    { title: 'Student Profile', screen: 'StudentProfileScreen', icon: 'person-outline' },
   ];
 
   return (
@@ -50,11 +51,10 @@ export default function MenuScreen({ navigation, route }) {
         ref={flatListRef}
         data={menuItems}
         keyExtractor={(item) => item.title}
-        numColumns={2}
-        contentContainerStyle={styles.grid}
+        contentContainerStyle={styles.list}
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={styles.menuTile}
+            style={styles.menuItem}
             onPress={() =>
               navigation.navigate(item.screen, {
                 userId,
@@ -62,10 +62,11 @@ export default function MenuScreen({ navigation, route }) {
               })
             }
           >
-            <Ionicons name={item.icon} size={28} color="#4f46e5" style={{ marginBottom: 8 }} />
-            <Text style={styles.menuText} numberOfLines={1} ellipsizeMode="tail">
-              {item.title}
-            </Text>
+            <View style={styles.menuContent}>
+              <Ionicons name={item.icon} size={24} color="#1e3a8a" />
+              <Text style={styles.menuText}>{item.title}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color="#1e3a8a" />
           </TouchableOpacity>
         )}
       />
@@ -73,7 +74,7 @@ export default function MenuScreen({ navigation, route }) {
   );
 }
 
-function StudentParentTabs({ route }) {
+export default function StudentParentTabs({ route }) {
   const params = route?.params || {};
   const userId = params?.userId;
   const userData = params?.userData || params;
@@ -91,11 +92,29 @@ function StudentParentTabs({ route }) {
           else if (route.name === 'Menu') iconName = 'grid-outline';
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#4f46e5',
+        tabBarActiveTintColor: '#1e3a8a',
         tabBarInactiveTintColor: 'gray',
-        tabBarStyle: { height: 60, paddingBottom: 5 },
+        tabBarStyle: { 
+          height: 60,
+          paddingBottom: 5,
+          backgroundColor: '#ffffff'
+        },
         headerShown: true,
-        headerBackTitleVisible: false,
+        headerBackVisible: true,
+        headerTitleStyle: {
+          color: '#1e3a8a',
+          fontSize: 20,
+          fontWeight: '600',
+        },
+        headerStyle: {
+          backgroundColor: '#ffffff',
+          elevation: 2,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 2,
+        },
+        headerTintColor: '#1e3a8a',
       })}
     >
       <Tab.Screen
@@ -117,36 +136,37 @@ function StudentParentTabs({ route }) {
   );
 }
 
-const { width } = Dimensions.get('window');
-const tileWidth = (width - 48) / 2;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#f8fafc',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
-  grid: {
-    padding: 10,
-    paddingBottom: 30,
+  list: {
+    padding: 16,
   },
-  menuTile: {
-    width: tileWidth,
-    margin: 8,
-    paddingVertical: 16,
-    paddingHorizontal: 6,
-    backgroundColor: '#eef2ff',
+  menuItem: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 16,
+    justifyContent: 'space-between',
+    backgroundColor: '#ffffff',
+    padding: 16,
+    marginBottom: 12,
+    borderRadius: 12,
     elevation: 2,
-    minHeight: 100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  menuContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   menuText: {
-    fontSize: 13,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '500',
     color: '#1e3a8a',
-    flexShrink: 1,
-    includeFontPadding: false,
+    marginLeft: 16,
   },
 });

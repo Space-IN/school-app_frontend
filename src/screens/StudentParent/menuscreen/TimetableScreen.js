@@ -1,202 +1,363 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   ActivityIndicator,
-  Alert,
-  Platform,
-  StatusBar,
+  Dimensions,
+  TouchableOpacity,
+  RefreshControl,
   SafeAreaView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
 import BASE_URL from '../../../config/baseURL';
 
-export default function TimeTableScreen() {
+const { width } = Dimensions.get('window');
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+export default function TimetableScreen() {
   const [schedule, setSchedule] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedDay, setSelectedDay] = useState(DAYS[0]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
+
+  const debugUserData = async () => {
+    try {
+      const keys = await AsyncStorage.getAllKeys();
+      const result = await AsyncStorage.multiGet(keys);
+      console.log('🔍 All AsyncStorage data:', result);
+    } catch (err) {
+      console.error('Debug error:', err);
+    }
+  };
+
+  const fetchSchedule = async () => {
+    try {
+      setError(null);
+      const stored = await AsyncStorage.getItem('userData');
+      console.log('📦 Retrieved userData:', stored);
+      
+      if (!stored) {
+        throw new Error('No user data found. Please log in again.');
+      }
+
+      const userData = JSON.parse(stored);
+      console.log('🔍 Parsed userData:', userData);
+
+      // Check for student ID in different possible locations
+      const studentUserId = userData?.userId || userData?.studentId || userData?.id;
+      const grade = userData?.classAssigned || userData?.className || userData?.grade;
+      const section = userData?.section;
+
+      console.log('📚 Student Info:', { studentUserId, grade, section });
+
+      if (!studentUserId) {
+        throw new Error('Student ID not found in user data');
+      }
+
+      // First try to get student's personal schedule
+      const response = await fetch(
+        `${BASE_URL}/api/class-schedule/student/${studentUserId}`
+      );
+      const data = await response.json();
+
+      console.log('📊 Schedule response:', data);
+
+      if (!response.ok || data.error) {
+        console.log('⚠️ Failed to get student schedule, trying class schedule...');
+        // If student schedule fails, try getting class schedule
+        if (grade && section) {
+          const classResponse = await fetch(
+            `${BASE_URL}/api/class-schedule/class/${encodeURIComponent(grade)}/section/${encodeURIComponent(section)}`
+          );
+          const classData = await classResponse.json();
+          console.log('📊 Class schedule response:', classData);
+          
+          if (!classResponse.ok || classData.error) {
+            throw new Error(classData.message || 'Failed to fetch class schedule');
+          }
+          setSchedule(classData);
+        } else {
+          throw new Error('Class and section information not found');
+        }
+      } else {
+        setSchedule(data);
+      }
+    } catch (err) {
+      console.error('❌ Error fetching schedule:', err.message);
+      setError(err.message || 'Failed to load timetable');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchSchedule = async () => {
-      try {
-        const stored = await AsyncStorage.getItem('userData');
-        console.log('🟦 raw userData from AsyncStorage:', stored);
-
-        const parsed = stored ? JSON.parse(stored) : null;
-        console.log('🟩 parsed userData:', parsed);
-
-        if (!parsed) {
-          Alert.alert('Not Logged In', 'No user data found.');
-          return;
-        }
-
-        // Helpful role check
-        console.log('🧾 role:', parsed.role);
-
-        // Trim + stringify in case backend expects string
-        const classAssigned = (parsed.classAssigned || parsed.className)?.toString().trim();
-        const section = parsed.section?.toString().trim();
-
-        console.log('📚 classAssigned:', classAssigned, ' section:', section);
-
-        if (!classAssigned || !section) {
-          Alert.alert(
-            'Missing Info',
-            'Class or section not found in user data. Try logging out and back in with a Student account.'
-          );
-          return;
-        }
-
-        const apiUrl = `${BASE_URL}/api/schedule/class/${encodeURIComponent(
-          classAssigned
-        )}/section/${encodeURIComponent(section)}`;
-        console.log('🌐 Fetching schedule from:', apiUrl);
-
-        const response = await axios.get(apiUrl);
-        console.log('✅ Schedule response status:', response.status);
-        console.log('✅ Schedule data (keys):', Object.keys(response.data || {}));
-
-        setSchedule(response.data);
-      } catch (err) {
-        // Capture full error details
-        console.error('❌ Error fetching schedule:', err?.message);
-
-        if (err?.response) {
-          console.log('❌ Response status:', err.response.status);
-          console.log('❌ Response data:', err.response.data);
-        } else if (err?.request) {
-          console.log('❌ No response received. Request object:', err.request);
-        } else {
-          console.log('❌ Unknown error object:', err);
-        }
-
-        Alert.alert('Error', 'Could not fetch timetable. Try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    debugUserData(); // Debug AsyncStorage data
     fetchSchedule();
   }, []);
 
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    fetchSchedule().finally(() => setRefreshing(false));
+  }, []);
+
+  const renderTimeSlot = (period) => {
+    if (!period) return null;
+
+    return (
+      <View style={styles.periodCard}>
+        <View style={styles.periodHeader}>
+          <Text style={styles.periodNumber}>Period {period.periodNumber}</Text>
+          <Text style={styles.timeSlot}>{period.timeSlot}</Text>
+        </View>
+        <View style={styles.periodContent}>
+          <View style={styles.subjectContainer}>
+            <Ionicons name="book-outline" size={20} color="#1e3a8a" />
+            <Text style={styles.subjectText}>
+              {period.subjectMasterId?.name || period.subjectName || 'N/A'}
+            </Text>
+          </View>
+          <View style={styles.teacherContainer}>
+            <Ionicons name="person-outline" size={20} color="#1e3a8a" />
+            <Text style={styles.teacherText}>
+              {period.facultyId?.name || period.facultyName || period.facultyId || 'TBD'}
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  const getDaySchedule = () => {
+    if (!schedule?.weeklySchedule) return [];
+    const daySchedule = schedule.weeklySchedule.find(
+      (day) => day.day === selectedDay
+    );
+    return daySchedule?.periods || [];
+  };
+
   if (loading) {
     return (
-      <View style={styles.loader}>
+      <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color="#1e3a8a" />
       </View>
     );
   }
 
-  if (!schedule) {
+  if (error) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.container}>
-          <Text style={styles.noSchedule}>No timetable found for this class and section.</Text>
-        </ScrollView>
-      </SafeAreaView>
+      <View style={styles.centerContainer}>
+        <Ionicons name="alert-circle-outline" size={48} color="#ef4444" />
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={fetchSchedule}>
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.container}>
-        <Text style={styles.heading}>
-          Weekly Timetable ({schedule.classAssigned} {schedule.section})
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Class Timetable</Text>
+        <Text style={styles.subHeaderText}>
+          {schedule?.classAssigned} - {schedule?.section}
         </Text>
+      </View>
 
-        {schedule.weeklySchedule?.map((dayObj, index) => (
-          <View key={index} style={styles.dayBox}>
-            <Text style={styles.dayTitle}>{dayObj.day}</Text>
-
-            {dayObj.periods?.map((period, idx) => (
-              <View key={idx} style={styles.periodCard}>
-                <Text style={styles.subject}>
-                  {period.subjectMasterId?.name || 'Free Period'}
-                </Text>
-                <Text style={styles.faculty}>
-                  {period.facultyName || period.facultyId || ''}
-                </Text>
-                {period.timeSlot && (
-                  <Text style={styles.timeSlot}>{period.timeSlot}</Text>
-                )}
-              </View>
-            ))}
-          </View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.daySelector}
+      >
+        {DAYS.map((day) => (
+          <TouchableOpacity
+            key={day}
+            style={[
+              styles.dayButton,
+              selectedDay === day && styles.selectedDayButton,
+            ]}
+            onPress={() => setSelectedDay(day)}
+          >
+            <Text
+              style={[
+                styles.dayButtonText,
+                selectedDay === day && styles.selectedDayText,
+              ]}
+            >
+              {day.slice(0, 3)}
+            </Text>
+          </TouchableOpacity>
         ))}
+      </ScrollView>
+
+      <ScrollView
+        contentContainerStyle={styles.scheduleContainer}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {getDaySchedule().map((period) => (
+          <View key={period.periodNumber}>{renderTimeSlot(period)}</View>
+        ))}
+        {getDaySchedule().length === 0 && (
+          <View style={styles.noClassesContainer}>
+            <Ionicons name="calendar-outline" size={48} color="#94a3b8" />
+            <Text style={styles.noClassesText}>No classes scheduled</Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: '#bbdbfaff',
-    // paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
-  container: {
-    paddingHorizontal: 16,
-    paddingBottom: 20,
-  },
-  heading: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#1e3a8a',
-    marginBottom: 16,
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  dayBox: {
-    marginBottom: 24,
-  },
-  dayTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2563eb',
-    backgroundColor: '#9ec8ffff',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  periodCard: {
-    backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  subject: {
-    fontWeight: '600',
-    fontSize: 16,
-    color: '#1e293b',
-  },
-  faculty: {
-    fontSize: 14,
-    color: '#64748b',
-    marginTop: 2,
-  },
-  timeSlot: {
-    fontSize: 13,
-    color: '#6b7280',
-    marginTop: 4,
-    fontStyle: 'italic',
-  },
-  loader: {
+  centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#bbdbfaff',
   },
-  noSchedule: {
-    fontSize: 16,
-    color: '#9ca3af',
+  header: {
+    backgroundColor: '#1e3a8a',
+    padding: 16,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  headerText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffffff',
     textAlign: 'center',
-    marginTop: 30,
+  },
+  subHeaderText: {
+    fontSize: 16,
+    color: '#e2e8f0',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  daySelector: {
+    flexGrow: 0,
+    padding: 16,
+  },
+  dayButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    marginRight: 10,
+    borderRadius: 20,
+    backgroundColor: '#ffffff',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+  },
+  selectedDayButton: {
+    backgroundColor: '#1e3a8a',
+  },
+  dayButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1e3a8a',
+  },
+  selectedDayText: {
+    color: '#ffffff',
+  },
+  scheduleContainer: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  periodCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+  },
+  periodHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  periodNumber: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1e3a8a',
+  },
+  timeSlot: {
+    fontSize: 14,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  periodContent: {
+    gap: 8,
+  },
+  subjectContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  teacherContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  subjectText: {
+    fontSize: 16,
+    color: '#334155',
+    fontWeight: '500',
+  },
+  teacherText: {
+    fontSize: 14,
+    color: '#64748b',
+  },
+  noClassesContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+  },
+  noClassesText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#94a3b8',
+    textAlign: 'center',
+  },
+  errorText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#ef4444',
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: 16,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: '#1e3a8a',
+    borderRadius: 8,
+  },
+  retryText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

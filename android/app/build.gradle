@@ -4,6 +4,31 @@ apply plugin: "com.facebook.react"
 
 def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
 
+android {
+    ndkVersion rootProject.ext.ndkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+
+    namespace "com.schoolappfrontend"
+    compileSdkVersion 34  // Updated to latest stable SDK version
+    
+    defaultConfig {
+        applicationId "com.schoolappfrontend"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion 34  // Updated to match compileSdkVersion
+        versionCode 1
+        versionName "1.0"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
+
+    kotlinOptions {
+        jvmTarget = "21"
+    }
+}
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
