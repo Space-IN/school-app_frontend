@@ -39,7 +39,7 @@ export default function FacultyChaptersScreen({ route }) {
   const [optionsModalVisible, setOptionsModalVisible] = useState(false);
   const [selectedChapterForOptions, setSelectedChapterForOptions] = useState(null);
 
-  console.log("ROUTE PARAMS:", route.params);
+  // console.log("ROUTE PARAMS:", route.params);
 
   // Set header with back button
   React.useLayoutEffect(() => {
@@ -64,12 +64,12 @@ export default function FacultyChaptersScreen({ route }) {
   const fetchChapters = async () => {
     try {
       setLoading(true);
-      console.log("fetch data from chapters: ", subjectId, grade, section)
+      // console.log("fetch data from chapters: ", subjectId, grade, section)
       const res = await fetch(
         `${BASE_URL}/api/chapters?subjectId=${subjectId}&classAssigned=${grade}&section=${section}`
       );
       const text = await res.text();
-      console.log("FETCH CHAPTERS RESPONSE:", text);
+      // console.log("FETCH CHAPTERS RESPONSE:", text);
       let data;
       try {
         data = JSON.parse(text);
@@ -127,7 +127,7 @@ export default function FacultyChaptersScreen({ route }) {
       });
 
       const text = await res.text();
-      console.log("UPLOAD EXCEL RESPONSE:", text);
+      // console.log("UPLOAD EXCEL RESPONSE:", text);
       let data;
       try {
         data = JSON.parse(text);
@@ -175,7 +175,7 @@ export default function FacultyChaptersScreen({ route }) {
       });
 
       const text = await res.text();
-      console.log("UPLOAD PDF RESPONSE:", text);
+      // console.log("UPLOAD PDF RESPONSE:", text);
       let data;
       try {
         data = JSON.parse(text);
@@ -266,7 +266,7 @@ export default function FacultyChaptersScreen({ route }) {
       });
 
       const text = await res.text();
-      console.log("UPDATE RESPONSE:", text);
+      // console.log("UPDATE RESPONSE:", text);
       let data;
       try {
         data = JSON.parse(text);
@@ -291,7 +291,7 @@ export default function FacultyChaptersScreen({ route }) {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
-        <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
+        <StatusBar backgroundColor="#9c1006" barStyle="light-content" />
         
         {/* Custom Header with Back Button and Manual Top Safe Area */}
         <View style={[styles.customHeader, { paddingTop: insets.top + 15 }]}>
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
   },
   customHeader: {
     paddingVertical: 15,
-    backgroundColor: '#4a90e2',
+    backgroundColor: '#9c1006',
     borderBottomLeftRadius: 15,
     borderBottomRightRadius: 15,
     paddingHorizontal: 10,

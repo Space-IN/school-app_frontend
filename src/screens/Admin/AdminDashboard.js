@@ -16,7 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { BASE_URL } from '@env';
-import PosterCarousel from '../../components/PosterCarousel';
+// import PosterCarousel from '../../components/PosterCarousel';
 import { useAuth } from '../../context/authContext';
 
 export default function AdminDashboard({ navigation }) {
@@ -26,7 +26,7 @@ export default function AdminDashboard({ navigation }) {
   const { logout } = useAuth() 
 
   useEffect(() => {
-    navigation.setOptions({ headerShown: false }); // ✅ hide default header
+    navigation.setOptions({ headerShown: false });
 
     const loadUserData = async () => {
       try {
@@ -72,7 +72,7 @@ export default function AdminDashboard({ navigation }) {
   const handleAssignSubject = () => navigation.navigate('AssignSubjectScreen');
   const handleAddEvent = () => navigation.navigate('AddEventScreen');
   const handleViewClassSchedule = () => navigation.navigate('ClassScheduleViewScreen');
-  const handlePosterManagement = () => navigation.navigate('AdminPosterManager');
+  // const handlePosterManagement = () => navigation.navigate('AdminPosterManager');
   const handleAddNotice = () => navigation.navigate('AddNoticeScreen');
   const handleFacultyPerformance = () => navigation.navigate('FacultyPerformance');
 
@@ -107,7 +107,7 @@ export default function AdminDashboard({ navigation }) {
           <Text style={styles.subtitle}>Welcome to the Admin Dashboard</Text>
         </View>
 
-        <PosterCarousel />
+        {/* <PosterCarousel /> */}
 
         {/* ---------------- Sections ---------------- */}
 
@@ -183,13 +183,13 @@ export default function AdminDashboard({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.sectionTitle}>🖼️ Manage Posters</Text>
+        {/* <Text style={styles.sectionTitle}>🖼️ Manage Posters</Text>
         <View style={styles.row}>
           <TouchableOpacity style={styles.tileButton} onPress={handlePosterManagement}>
             <Ionicons name="images-outline" size={30} color="#000000ff" />
             <Text style={styles.tileText}>Manage Posters</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
       </ScrollView>
     </SafeAreaView>
   );
@@ -198,7 +198,7 @@ export default function AdminDashboard({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#bbdbfaff',  //#bbdbfaff
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   headerRow: {
@@ -207,14 +207,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#fff',
+    backgroundColor: '#9c1006',
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#000',
+    color: '#ffffffff',
   },
   scrollContent: {
     paddingBottom: 30,

@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { LogBox } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
+import { StatusBar } from 'react-native';
 import { AuthProvider } from './context/authContext';
 import ProtectedRoute from './navigation/protectedRoute';
 import * as NavigationBar from "expo-navigation-bar";

@@ -140,9 +140,7 @@ export default function FacultyProfileScreen() {
       <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
       
       {/* Standard Centered Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>👨‍🏫 Faculty Profile</Text>
-      </View>
+    /
       
       <ScrollView 
         style={styles.container} 
@@ -159,16 +157,16 @@ export default function FacultyProfileScreen() {
             <Text style={styles.userId}>ID: {faculty.userId || 'N/A'}</Text>
           </View>
 
-          {/* Quick Actions */}
+          Quick Actions
           <View style={styles.actionsSection}>
-            <TouchableOpacity style={styles.actionButton} onPress={handleGoToNotices}>
+            {/* <TouchableOpacity style={styles.actionButton} onPress={handleGoToNotices}>
               <Ionicons name="megaphone-outline" size={24} color="#4a90e2" />
               <Text style={styles.actionText}>Notice Board</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton} onPress={handleGoToCalendar}>
+            </TouchableOpacity> */}
+            {/* <TouchableOpacity style={styles.actionButton} onPress={handleGoToCalendar}>
               <Ionicons name="calendar-outline" size={24} color="#4a90e2" />
               <Text style={styles.actionText}>Academic Calendar</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
 
           {/* Personal Information */}
@@ -226,7 +224,7 @@ const styles = StyleSheet.create({
   },
   // Standard Header style (used for main screen and loading/error states)
   header: {
-    paddingVertical: 15,
+    paddingVertical: 30,
     backgroundColor: '#c6d9eeff',
     alignItems: 'center',
     borderBottomLeftRadius: 15,
