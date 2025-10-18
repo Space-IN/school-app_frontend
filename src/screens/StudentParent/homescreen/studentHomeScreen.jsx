@@ -30,11 +30,11 @@ export default function StudentHome() {
 
   return (
     <ScrollView style={{ flex: 1, padding: 10, backgroundColor: "#F9FAFB" }}>
-      {events.length!==0 && (
+      {/* {events.length!==0 && (
         <View style={styles.eventsContainer}>
           <EventSlider events={events} />
         </View>
-      )}
+      )} */}
 
       <View style={styles.userBannerContainer}>
         <UserBanner studentData={studentData} loading={studentLoading} err={studentErr} />

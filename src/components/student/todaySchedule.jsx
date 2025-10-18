@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     container: {
         width: "95%",
         alignSelf: "center",
-        backgroundColor: "#e7e0e0ff",
+        backgroundColor: "#d4d0d0ce",
         marginBottom: 20,
         height: "auto",
         borderRadius:12
