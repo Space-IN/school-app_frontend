@@ -7,28 +7,38 @@ import {
   SafeAreaView,
   ActivityIndicator,
   Alert,
+  TouchableOpacity,
+  RefreshControl,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BASE_URL from '../../../config/baseURL';
+import { useStudent } from '../../../context/student/studentContext';
+
+const SESSIONS_PER_DAY = 8; // Assuming 8 sessions per day
 
 const AttendanceScreen = () => {
-  const [groupedAttendance, setGroupedAttendance] = useState([]);
+  const [attendanceData, setAttendanceData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [stats, setStats] = useState({ present: 0, absent: 0, percentage: 0 });
+  const [studentId, setStudentId] = useState(null);
+  const { studentData } = useStudent()
 
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
         const stored = await AsyncStorage.getItem('userData');
         const parsed = JSON.parse(stored);
-        const studentUserId = parsed?.userId;
+        const studentId = parsed?.userId;
 
-        if (!studentUserId) {
-          Alert.alert('Error', 'Student user ID is missing.');
+        if (!studentId) {
+          Alert.alert('Error', 'Student ID is missing.');
           setLoading(false);
           return;
         }
 
-        const res = await fetch(`${BASE_URL}/api/attendance/student/${studentUserId}`);
+        setStudentId(studentId);
+        const res = await fetch(`${BASE_URL}/api/attendance/student/${studentId}`);
         const data = await res.json();
 
         console.log('📦 Attendance response:', data);
@@ -39,8 +49,8 @@ const AttendanceScreen = () => {
           return;
         }
 
-        const grouped = groupByDate(data);
-        setGroupedAttendance(grouped);
+        setAttendanceData(data);
+        calculateStats(data, studentId);
       } catch (error) {
         console.error('❌ Error fetching attendance:', error);
         Alert.alert('Error', 'Something went wrong while fetching attendance.');
@@ -52,64 +62,143 @@ const AttendanceScreen = () => {
     fetchAttendance();
   }, []);
 
-  const groupByDate = (data) => {
-    const grouped = {};
-    data.forEach((item) => {
-      const dateKey = new Date(item.date).toDateString();
-      if (!grouped[dateKey]) {
-        grouped[dateKey] = [];
+  const calculateStats = (data, studentId) => {
+    let totalPresent = 0;
+    let totalSessions = 0;
+
+    data.forEach(day => {
+      const studentRecord = day.records.find(record => 
+        record.student.toString() === studentId
+      );
+
+      if (studentRecord) {
+        studentRecord.sessions.forEach(session => {
+          totalSessions++;
+          if (session.status === 'present') {
+            totalPresent++;
+          }
+        });
       }
-      grouped[dateKey].push(item);
     });
-    return Object.keys(grouped).map((date) => ({
-      date,
-      records: grouped[date],
-    }));
+
+    const percentage = totalSessions > 0 ? (totalPresent / totalSessions) * 100 : 0;
+
+    setStats({
+      present: totalPresent,
+      absent: totalSessions - totalPresent,
+      percentage: percentage.toFixed(1)
+    });
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <Text style={styles.dateLabel}>📅 {item.date}</Text>
-      {item.records.map((record, index) => (
-        <View key={index} style={styles.subjectBox}>
-          <Text style={styles.subject}>📘 {record.subject}</Text>
-          <View style={styles.statusRow}>
-            <View
-              style={[
-                styles.statusDot,
-                { backgroundColor: record.status === 'Present' ? '#4CAF50' : '#F44336' },
-              ]}
-            />
-            <Text
-              style={[
-                styles.statusText,
-                { color: record.status === 'Present' ? '#2e7d32' : '#c62828' },
-              ]}
-            >
-              {record.status}
-            </Text>
-          </View>
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const res = await fetch(`${BASE_URL}/api/attendance/student/${studentId}`);
+      const data = await res.json();
+      setAttendanceData(data);
+      calculateStats(data, studentId);
+    } catch (error) {
+      console.error('Error refreshing attendance:', error);
+      Alert.alert('Error', 'Failed to refresh attendance data');
+    }
+    setRefreshing(false);
+  };
+
+  const renderItem = ({ item }) => {
+    const studentRecord = item.records.find(
+      record => record.student.toString() === studentId
+    );
+
+    if (!studentRecord) return null;
+
+    const date = new Date(item.date).toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+
+    return (
+      <View style={styles.card}>
+        <Text style={styles.dateLabel}>📅 {date}</Text>
+        <Text style={styles.gradeSection}>Grade {item.grade}-{item.section}</Text>
+        <View style={styles.sessionsContainer}>
+          {Array.from({ length: SESSIONS_PER_DAY }).map((_, index) => {
+            const session = studentRecord.sessions.find(
+              s => s.session_number === index + 1
+            );
+            const status = session?.status || 'NA';
+            
+            return (
+              <View
+                key={index}
+                style={[
+                  styles.sessionBadge,
+                  status === 'present' && styles.presentBadge,
+                  status === 'absent' && styles.absentBadge
+                ]}
+              >
+                <Text style={styles.sessionNumber}>{index + 1}</Text>
+                <Text style={[
+                  styles.statusText,
+                  status === 'present' && styles.presentText,
+                  status === 'absent' && styles.absentText
+                ]}>
+                  {status === 'present' ? 'P' : status === 'absent' ? 'A' : '-'}
+                </Text>
+              </View>
+            );
+          })}
         </View>
-      ))}
-    </View>
-  );
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>📋 Attendance Summary</Text>
+      <View style={styles.statsContainer}>
+        <View style={styles.statsRow}>
+          <View style={styles.statBox}>
+            <Text style={styles.statNumber}>{stats.present}</Text>
+            <Text style={styles.statLabel}>Present</Text>
+          </View>
+          <View style={styles.statBox}>
+            <Text style={styles.statNumber}>{stats.absent}</Text>
+            <Text style={styles.statLabel}>Absent</Text>
+          </View>
+        </View>
+        <View style={styles.statsRow}>
+          <View style={styles.statBox}>
+            <Text style={styles.statNumber}>{studentData?.attendancePercentage}%</Text>
+            <Text style={styles.statLabel}>Present %</Text>
+          </View>
+          <View style={styles.statBox}>
+            <Text style={styles.statNumber}>{(100 - studentData?.attendancePercentage).toFixed(1)}%</Text>
+            <Text style={styles.statLabel}>Absent %</Text>
+          </View>
+        </View>
       </View>
 
       {loading ? (
-        <ActivityIndicator style={{ marginTop: 40 }} size="large" color="#4b4bfa" />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#c01e12ff" />
+        </View>
       ) : (
         <FlatList
-          data={groupedAttendance}
-          keyExtractor={(item, index) => index.toString()}
+          data={attendanceData}
+          keyExtractor={(item) => item._id}
           renderItem={renderItem}
           contentContainerStyle={styles.list}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={["#c01e12ff"]}
+            />
+          }
           ListEmptyComponent={
-            <Text style={styles.noData}>⚠️ No attendance records found.</Text>
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No attendance records found</Text>
+            </View>
           }
         />
       )}
@@ -120,67 +209,117 @@ const AttendanceScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#bbdbfaff',
-    
+    backgroundColor: '#f8fafc',
   },
-  header: {
-    padding: 16,
-    backgroundColor: '#4a90e2',
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    elevation: 3,
   },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: '700',
+  statsContainer: {
+    padding: 16,
+    backgroundColor: '#ffffff',
+    marginBottom: 8,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 16,
+  },
+  statBox: {
+    alignItems: 'center',
+    flex: 1,
+    margin: 8,
+    padding: 16,
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 1,
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#c01e12ff',
+  },
+  statLabel: {
+    fontSize: 14,
+    color: '#64748b',
+    marginTop: 4,
   },
   list: {
     padding: 16,
   },
   card: {
-    backgroundColor: '#fff',
-    padding: 16,
+    backgroundColor: '#ffffff',
     borderRadius: 12,
+    padding: 16,
     marginBottom: 12,
     elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   dateLabel: {
     fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 10,
-    color: '#333',
+    fontWeight: '600',
+    color: '#1e293b',
+    marginBottom: 4,
   },
-  subjectBox: {
-    marginBottom: 10,
+  gradeSection: {
+    fontSize: 14,
+    color: '#64748b',
+    marginBottom: 12,
   },
-  subject: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#555',
-  },
-  statusRow: {
+  sessionsContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
+    flexWrap: 'wrap',
+    gap: 8,
   },
-  statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: 8,
+  sessionBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#e2e8f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  presentBadge: {
+    backgroundColor: '#dcfce7',
+  },
+  absentBadge: {
+    backgroundColor: '#fee2e2',
+  },
+  sessionNumber: {
+    fontSize: 12,
+    color: '#64748b',
   },
   statusText: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '500',
   },
-  noData: {
-    textAlign: 'center',
-    marginTop: 40,
+  presentText: {
+    color: '#16a34a',
+  },
+  absentText: {
+    color: '#dc2626',
+  },
+  emptyContainer: {
+    padding: 32,
+    alignItems: 'center',
+  },
+  emptyText: {
     fontSize: 16,
-    color: '#999',
-    fontStyle: 'italic',
+    color: '#64748b',
+    textAlign: 'center',
   },
 });
 

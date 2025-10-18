@@ -39,11 +39,6 @@ export default function SettingsScreen() {
 
   const settingsOptions = [
     {
-      title: 'Fees Section',
-      icon: 'card-outline',
-      screen: 'FeesScreen',
-    },
-    {
       title: 'Change Password',
       icon: 'key-outline',
       screen: 'ChangePasswordScreen',
