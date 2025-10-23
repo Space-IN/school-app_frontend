@@ -17,9 +17,14 @@ export default function StudentHome() {
 
 
   useEffect(() => {
+    if (!studentData?.userId) {
+      setEvents([]); // Clear events if studentId is not available
+      return;
+    }
+
     const loadEvents = async () => {
       try {
-        const response = await fetchEvents(studentData?.userId)
+        const response = await fetchEvents(studentData.userId)
         if(response) setEvents(response)
       } catch(err) {
         console.error("error fetching events.", err)

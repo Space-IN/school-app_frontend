@@ -9,15 +9,17 @@ import {
   StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useStudent } from '../../../context/student/studentContext'; // Import useStudent
 
 export default function MenuScreen({ navigation, route }) {
-  const { userId, userData } = route?.params || {};
+  const { studentData } = useStudent(); // Get studentData from context
+  const userId = studentData?.userId; // Extract userId
   const flatListRef = useRef(null);
 
   useEffect(() => {
     console.log('📦 MenuScreen route params:', route?.params);
     if (!userId) {
-      console.warn('⚠️ No userId found in MenuScreen params');
+      console.warn('⚠️ No userId found in MenuScreen params (from context)');
     }
 
     const unsubscribe = navigation.addListener('tabPress', () => {
@@ -53,8 +55,8 @@ export default function MenuScreen({ navigation, route }) {
             style={styles.menuItem}
             onPress={() =>
               navigation.navigate(item.screen, {
-                userId,
-                userData,
+                userId: studentData?.userId, // Pass userId from context
+                userData: studentData, // Pass userData from context
               })
             }
           >

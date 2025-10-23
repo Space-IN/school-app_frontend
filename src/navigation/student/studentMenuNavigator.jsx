@@ -28,7 +28,11 @@ export default function StudentMenuNavigator() {
       <Stack.Screen name="MenuScreen" component={MenuScreen} />
       <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
       <Stack.Screen name="AttendanceScreen" component={AttendanceScreen} />
-      <Stack.Screen name="TimetableScreen" component={TimetableScreen} />
+      <Stack.Screen
+        name="TimetableScreen"
+        component={TimetableScreen}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen name="NoticeBoardScreen" component={NoticeBoardScreen} />
       <Stack.Screen name="StudentPerformanceScreen" component={StudentPerformanceScreen} />
       <Stack.Screen name="ParentProfileScreen" component={ParentProfileScreen} />

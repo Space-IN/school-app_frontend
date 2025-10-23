@@ -41,6 +41,7 @@
     "react-dom": "19.1.0",
     "react-native": "0.81.4",
     "react-native-android-navigation-bar": "^1.0.1",
+    "react-native-animatable": "^1.4.0",
     "react-native-calendars": "^1.1313.0",
     "react-native-chart-kit": "^6.12.0",
     "react-native-document-picker": "^9.3.1",

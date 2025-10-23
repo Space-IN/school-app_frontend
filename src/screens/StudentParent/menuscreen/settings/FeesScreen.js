@@ -1,29 +1,118 @@
+
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { Card } from 'react-native-paper';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function FeesScreen() {
+  const feeDetails = {
+    tuition: 'N/A',
+    hostel: 'N/A',
+    transport: 'N/A',
+    other: 'N/A',
+    total: 'N/A'
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Fees Details</Text>
-      <Text style={styles.subtitle}>No fee data available currently.</Text>
-    </View>
+    <LinearGradient
+      colors={['#bbdbfaff', '#FFC0CB']}
+      style={styles.container}
+    >
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <Text style={styles.title}>Fees Details</Text>
+        
+        <Card style={styles.card}>
+          <Card.Content>
+            <View style={styles.feeRow}>
+              <Text style={styles.feeType}>Tuition Fee</Text>
+              <Text style={styles.feeAmount}>{feeDetails.tuition}</Text>
+            </View>
+            <View style={styles.separator} />
+            
+            <View style={styles.feeRow}>
+              <Text style={styles.feeType}>Hostel Fee</Text>
+              <Text style={styles.feeAmount}>{feeDetails.hostel}</Text>
+            </View>
+            <View style={styles.separator} />
+            
+            <View style={styles.feeRow}>
+              <Text style={styles.feeType}>Transport Fee</Text>
+              <Text style={styles.feeAmount}>{feeDetails.transport}</Text>
+            </View>
+            <View style={styles.separator} />
+            
+            <View style={styles.feeRow}>
+              <Text style={styles.feeType}>Other Fees</Text>
+              <Text style={styles.feeAmount}>{feeDetails.other}</Text>
+            </View>
+          </Card.Content>
+        </Card>
+
+        <Card style={[styles.card, styles.totalCard]}>
+          <Card.Content>
+            <View style={styles.feeRow}>
+              <Text style={[styles.feeType, styles.totalText]}>Total Fees</Text>
+              <Text style={[styles.feeAmount, styles.totalText]}>{feeDetails.total}</Text>
+            </View>
+          </Card.Content>
+        </Card>
+
+        <Text style={styles.note}>* All amounts are in INR (₹)</Text>
+      </ScrollView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollViewContent: {
     padding: 20,
-    backgroundColor: '#bbdbfaff',
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#1e3a8a',
-    marginBottom: 10,
+    marginBottom: 20,
+    textAlign: 'center',
   },
-  subtitle: {
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    elevation: 3,
+    marginBottom: 20,
+  },
+  totalCard: {
+    backgroundColor: '#1e3a8a',
+  },
+  feeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 15,
+  },
+  feeType: {
     fontSize: 16,
     color: '#475569',
+  },
+  feeAmount: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1e3a8a',
+  },
+  totalText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#f0f0f0',
+  },
+  note: {
+    textAlign: 'center',
+    color: '#475569',
+    marginTop: 20,
   },
 });

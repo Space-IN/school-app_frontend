@@ -15,7 +15,7 @@ import {
   StatusBar
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { Audio } from 'expo-av';
+import * as Audio from 'expo-audio';
 import axios from 'axios';
 import { TabView } from 'react-native-tab-view';
 import { useNavigation } from '@react-navigation/native';

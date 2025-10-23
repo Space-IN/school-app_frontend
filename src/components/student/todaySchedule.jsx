@@ -26,6 +26,12 @@ export default function TodaySchedule({ studentId }) {
 
 
   useEffect(() => {
+    if (!studentId) {
+      setLoading(false);
+      setError("Student ID not available.");
+      return;
+    }
+
     const loadSchedule = async () => {
         setLoading(true)
         setError(null)
@@ -43,8 +49,8 @@ export default function TodaySchedule({ studentId }) {
     loadSchedule()
   }, [studentId, today])
 
-   const renderItem = ({ item, index }) => (
-    <View key={index} style={styles.timelineItem}>
+   const renderItem = ({ item }) => (
+    <View key={item._id} style={styles.timelineItem}>
         <View style={styles.timelineDot} />
         <View style={styles.timelineContent}>
             <Text style={styles.timelineTime}>
@@ -86,12 +92,7 @@ export default function TodaySchedule({ studentId }) {
         ) : (
             <View style={{ padding: 20 }}>
                 <View style={styles.timelineContainer}>
-                    <FlatList
-                        data={todaySchedule.periods}
-                        renderItem={renderItem}
-                        keyExtractor={(item) => item._id}
-                        scrollEnabled={false}
-                    />
+                    {todaySchedule.periods.map((item, index) => renderItem({ item, index }))}
                 </View>
             </View>
         )}

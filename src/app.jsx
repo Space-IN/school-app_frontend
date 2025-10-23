@@ -15,7 +15,6 @@ LogBox.ignoreLogs(['ViewPropTypes']);
 
 export default function App() {
   useEffect(() => {
-    NavigationBar.setBackgroundColorAsync("#9c1006")
     NavigationBar.setButtonStyleAsync("light")
   }, [])
 

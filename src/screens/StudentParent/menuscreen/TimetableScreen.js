@@ -9,15 +9,33 @@ import {
   TouchableOpacity,
   RefreshControl,
   SafeAreaView,
+  Platform,
+  StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRoute, useNavigation } from '@react-navigation/native';
+import * as Animatable from 'react-native-animatable';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
 import BASE_URL from '../../../config/baseURL';
 
 const { width } = Dimensions.get('window');
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
+const SUBJECT_COLORS = [
+  ['#667eea', '#764ba2'],
+  ['#f093fb', '#f5576c'],
+  ['#4facfe', '#00f2fe'],
+  ['#43e97b', '#38f9d7'],
+  ['#fa709a', '#fee140'],
+  ['#30cfd0', '#330867'],
+  ['#a8edea', '#fed6e3'],
+  ['#ff9a9e', '#fecfef'],
+];
+
 export default function TimetableScreen() {
+  const route = useRoute();
+  const navigation = useNavigation();
   const [schedule, setSchedule] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState(DAYS[0]);
@@ -37,17 +55,24 @@ export default function TimetableScreen() {
   const fetchSchedule = async () => {
     try {
       setError(null);
-      const stored = await AsyncStorage.getItem('userData');
-      console.log('📦 Retrieved userData:', stored);
-      
-      if (!stored) {
+      setLoading(true);
+
+      let userData = route.params?.userData;
+
+      if (!userData) {
+        console.log('⚠️ No userData in route params, trying AsyncStorage...');
+        const stored = await AsyncStorage.getItem('userData');
+        if (stored) {
+          userData = JSON.parse(stored);
+        }
+      }
+
+      if (!userData) {
         throw new Error('No user data found. Please log in again.');
       }
 
-      const userData = JSON.parse(stored);
       console.log('🔍 Parsed userData:', userData);
 
-      // Check for student ID in different possible locations
       const studentUserId = userData?.userId || userData?.studentId || userData?.id;
       const grade = userData?.classAssigned || userData?.className || userData?.grade;
       const section = userData?.section;
@@ -58,32 +83,40 @@ export default function TimetableScreen() {
         throw new Error('Student ID not found in user data');
       }
 
-      // First try to get student's personal schedule
       const response = await fetch(
-        `${BASE_URL}/api/class-schedule/student/${studentUserId}`
+        `${BASE_URL}/api/schedule/student/${studentUserId}`
       );
-      const data = await response.json();
 
-      console.log('📊 Schedule response:', data);
+      if (!response.ok) {
+        console.log(`⚠️ Student schedule fetch failed with status: ${response.status}. Trying class schedule...`);
 
-      if (!response.ok || data.error) {
-        console.log('⚠️ Failed to get student schedule, trying class schedule...');
-        // If student schedule fails, try getting class schedule
         if (grade && section) {
           const classResponse = await fetch(
-            `${BASE_URL}/api/class-schedule/class/${encodeURIComponent(grade)}/section/${encodeURIComponent(section)}`
+            `${BASE_URL}/api/schedule/class/${encodeURIComponent(grade)}/section/${encodeURIComponent(section)}`
           );
+
+          if (!classResponse.ok) {
+            const errorText = await classResponse.text();
+            throw new Error(`Failed to fetch class schedule. Server responded with: ${errorText}`);
+          }
+
           const classData = await classResponse.json();
           console.log('📊 Class schedule response:', classData);
-          
-          if (!classResponse.ok || classData.error) {
-            throw new Error(classData.message || 'Failed to fetch class schedule');
-          }
           setSchedule(classData);
         } else {
           throw new Error('Class and section information not found');
         }
       } else {
+        let data;
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          const rawResponse = await response.text();
+          console.error('🚨 JSON PARSE FAILED. Server response was:', rawResponse);
+          throw new Error('Failed to parse server response.');
+        }
+
+        console.log('📊 Student schedule response:', data);
         setSchedule(data);
       }
     } catch (err) {
@@ -95,7 +128,7 @@ export default function TimetableScreen() {
   };
 
   useEffect(() => {
-    debugUserData(); // Debug AsyncStorage data
+    debugUserData();
     fetchSchedule();
   }, []);
 
@@ -104,30 +137,63 @@ export default function TimetableScreen() {
     fetchSchedule().finally(() => setRefreshing(false));
   }, []);
 
-  const renderTimeSlot = (period) => {
+  const getColorForPeriod = (index) => {
+    return SUBJECT_COLORS[index % SUBJECT_COLORS.length];
+  };
+
+  const renderTimeSlot = (period, index) => {
     if (!period) return null;
 
+    const colors = getColorForPeriod(index);
+
     return (
-      <View style={styles.periodCard}>
-        <View style={styles.periodHeader}>
-          <Text style={styles.periodNumber}>Period {period.periodNumber}</Text>
-          <Text style={styles.timeSlot}>{period.timeSlot}</Text>
-        </View>
-        <View style={styles.periodContent}>
-          <View style={styles.subjectContainer}>
-            <Ionicons name="book-outline" size={20} color="#1e3a8a" />
-            <Text style={styles.subjectText}>
-              {period.subjectMasterId?.name || period.subjectName || 'N/A'}
-            </Text>
+      <Animatable.View 
+        animation="fadeInUp" 
+        delay={index * 100}
+        duration={600} 
+        style={styles.periodCard}
+      >
+        <LinearGradient
+          colors={colors}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientBorder}
+        >
+          <View style={styles.periodInner}>
+            <View style={styles.periodTop}>
+              <View style={styles.periodBadge}>
+                <Text style={styles.periodBadgeText}>P{period.periodNumber}</Text>
+              </View>
+              <View style={styles.timeChip}>
+                <Ionicons name="time-outline" size={14} color="#64748b" />
+                <Text style={styles.timeText}>{period.timeSlot}</Text>
+              </View>
+            </View>
+
+            <View style={styles.periodMain}>
+              <Text style={styles.subjectName}>
+                {period.subjectMasterId?.name || period.subjectName || 'Subject Not Assigned'}
+              </Text>
+              
+              <View style={styles.teacherRow}>
+                <View style={styles.teacherAvatar}>
+                  <Ionicons name="person" size={16} color="#ffffff" />
+                </View>
+                <Text style={styles.teacherName}>
+                  {period.facultyId?.name || period.facultyName || period.facultyId || 'Teacher TBD'}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.periodFooter}>
+              <View style={styles.durationBadge}>
+                <Ionicons name="hourglass-outline" size={12} color="#8b5cf6" />
+                <Text style={styles.durationText}>45 min</Text>
+              </View>
+            </View>
           </View>
-          <View style={styles.teacherContainer}>
-            <Ionicons name="person-outline" size={20} color="#1e3a8a" />
-            <Text style={styles.teacherText}>
-              {period.facultyId?.name || period.facultyName || period.facultyId || 'TBD'}
-            </Text>
-          </View>
-        </View>
-      </View>
+        </LinearGradient>
+      </Animatable.View>
     );
   };
 
@@ -142,7 +208,12 @@ export default function TimetableScreen() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#1e3a8a" />
+        <Animatable.View animation="pulse" iterationCount="infinite">
+          <View style={styles.loaderCircle}>
+            <ActivityIndicator size="large" color="#667eea" />
+          </View>
+        </Animatable.View>
+        <Text style={styles.loadingText}>Loading your timetable...</Text>
       </View>
     );
   }
@@ -150,64 +221,144 @@ export default function TimetableScreen() {
   if (error) {
     return (
       <View style={styles.centerContainer}>
-        <Ionicons name="alert-circle-outline" size={48} color="#ef4444" />
-        <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={fetchSchedule}>
-          <Text style={styles.retryText}>Retry</Text>
-        </TouchableOpacity>
+        <Animatable.View animation="shake" style={styles.errorContainer}>
+          <View style={styles.errorIconCircle}>
+            <Ionicons name="alert-circle" size={48} color="#ef4444" />
+          </View>
+          <Text style={styles.errorTitle}>Oops!</Text>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchSchedule}>
+            <LinearGradient
+              colors={['#667eea', '#764ba2']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.retryGradient}
+            >
+              <Ionicons name="refresh" size={20} color="#ffffff" />
+              <Text style={styles.retryText}>Retry</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </Animatable.View>
       </View>
     );
   }
 
+  const daySchedule = getDaySchedule();
+  const totalPeriods = daySchedule.length;
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Class Timetable</Text>
-        <Text style={styles.subHeaderText}>
-          {schedule?.classAssigned} - {schedule?.section}
-        </Text>
+      <StatusBar barStyle="light-content" backgroundColor="#667eea" />
+      
+      {/* Header with Gradient */}
+      <LinearGradient
+        colors={['#667eea', '#764ba2']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
+        <View style={styles.headerContent}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={28} color="#ffffff" />
+          </TouchableOpacity>
+          <View style={styles.headerTitleContainer}>
+            <Text style={styles.headerTitle}>My Timetable</Text>
+            <Text style={styles.headerSubtitle}>
+              {schedule?.classAssigned} - Section {schedule?.section}
+            </Text>
+          </View>
+          {/* This empty view helps center the title correctly */}
+          <View style={styles.headerRightPlaceholder} /> 
+          {/* <View style={styles.headerBadge}>
+            <Ionicons name="calendar" size={20} color="#667eea" />
+          </View> */}
+        </View>
+      </LinearGradient>
+
+      {/* Day Selector */}
+      <View style={styles.daySelectorWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.daySelector}
+        >
+          {DAYS.map((day, index) => {
+            const isSelected = selectedDay === day;
+            return (
+              <TouchableOpacity
+                key={day}
+                style={[styles.dayButton, isSelected && styles.selectedDayButton]}
+                onPress={() => setSelectedDay(day)}
+                activeOpacity={0.7}
+              >
+                {isSelected && (
+                  <LinearGradient
+                    colors={['#667eea', '#764ba2']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.dayButtonGradient}
+                  />
+                )}
+                <Text style={[styles.dayButtonText, isSelected && styles.selectedDayText]}>
+                  {day.substring(0, 3)}
+                </Text>
+                {isSelected && <View style={styles.dayDot} />}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.daySelector}
-      >
-        {DAYS.map((day) => (
-          <TouchableOpacity
-            key={day}
-            style={[
-              styles.dayButton,
-              selectedDay === day && styles.selectedDayButton,
-            ]}
-            onPress={() => setSelectedDay(day)}
-          >
-            <Text
-              style={[
-                styles.dayButtonText,
-                selectedDay === day && styles.selectedDayText,
-              ]}
-            >
-              {day.slice(0, 3)}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      {/* Schedule Stats */}
+      {totalPeriods > 0 && (
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Ionicons name="book-outline" size={20} color="#667eea" />
+            <Text style={styles.statNumber}>{totalPeriods}</Text>
+            <Text style={styles.statLabel}>Periods</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Ionicons name="time-outline" size={20} color="#667eea" />
+            <Text style={styles.statNumber}>{totalPeriods * 45}</Text>
+            <Text style={styles.statLabel}>Minutes</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Ionicons name="calendar-outline" size={20} color="#667eea" />
+            <Text style={styles.statNumber}>{selectedDay.substring(0, 3)}</Text>
+            <Text style={styles.statLabel}>Today</Text>
+          </View>
+        </View>
+      )}
 
+      {/* Schedule Content */}
       <ScrollView
         contentContainerStyle={styles.scheduleContainer}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh}
+            colors={['#667eea']}
+            tintColor="#667eea"
+          />
         }
+        showsVerticalScrollIndicator={false}
       >
-        {getDaySchedule().map((period) => (
-          <View key={period.periodNumber}>{renderTimeSlot(period)}</View>
-        ))}
-        {getDaySchedule().length === 0 && (
-          <View style={styles.noClassesContainer}>
-            <Ionicons name="calendar-outline" size={48} color="#94a3b8" />
-            <Text style={styles.noClassesText}>No classes scheduled</Text>
+        {daySchedule.map((period, index) => (
+          <View key={period.periodNumber}>
+            {renderTimeSlot(period, index)}
           </View>
+        ))}
+        
+        {daySchedule.length === 0 && (
+          <Animatable.View animation="fadeIn" style={styles.emptyContainer}>
+            <View style={styles.emptyIconCircle}>
+              <Ionicons name="calendar-outline" size={64} color="#cbd5e1" />
+            </View>
+            <Text style={styles.emptyTitle}>No Classes Today</Text>
+            <Text style={styles.emptyText}>
+              Enjoy your free day! Check other days for your schedule.
+            </Text>
+          </Animatable.View>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -217,147 +368,355 @@ export default function TimetableScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#f8fafc',
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#f8fafc',
+    padding: 20,
   },
-  header: {
-    backgroundColor: '#1e3a8a',
-    padding: 16,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+  loaderCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#667eea',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
   },
-  headerText: {
+  loadingText: {
+    marginTop: 20,
+    fontSize: 16,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  errorContainer: {
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorIconCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#fee2e2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  errorTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#ffffff',
-    textAlign: 'center',
-  },
-  subHeaderText: {
-    fontSize: 16,
-    color: '#e2e8f0',
-    textAlign: 'center',
-    marginTop: 4,
-  },
-  daySelector: {
-    flexGrow: 0,
-    padding: 16,
-  },
-  dayButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    marginRight: 10,
-    borderRadius: 20,
-    backgroundColor: '#ffffff',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
-  },
-  selectedDayButton: {
-    backgroundColor: '#1e3a8a',
-  },
-  dayButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1e3a8a',
-  },
-  selectedDayText: {
-    color: '#ffffff',
-  },
-  scheduleContainer: {
-    padding: 16,
-    paddingBottom: 32,
-  },
-  periodCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
-  },
-  periodHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-  },
-  periodNumber: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1e3a8a',
-  },
-  timeSlot: {
-    fontSize: 14,
-    color: '#64748b',
-    fontWeight: '500',
-  },
-  periodContent: {
-    gap: 8,
-  },
-  subjectContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  teacherContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  subjectText: {
-    fontSize: 16,
-    color: '#334155',
-    fontWeight: '500',
-  },
-  teacherText: {
-    fontSize: 14,
-    color: '#64748b',
-  },
-  noClassesContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 32,
-  },
-  noClassesText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#94a3b8',
-    textAlign: 'center',
+    color: '#1e293b',
+    marginBottom: 8,
   },
   errorText: {
-    marginTop: 16,
     fontSize: 16,
-    color: '#ef4444',
+    color: '#64748b',
     textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 24,
   },
   retryButton: {
-    marginTop: 16,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    backgroundColor: '#1e3a8a',
-    borderRadius: 8,
+    borderRadius: 12,
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#667eea',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  retryGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    gap: 8,
   },
   retryText: {
     color: '#ffffff',
     fontSize: 16,
+    fontWeight: '700',
+  },
+  header: {
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 24 : 60,
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 0,
+    zIndex: 1,
+    padding: 8,
+  },
+  headerTitleContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  headerSubtitle: {
+    fontSize: 15,
+    color: '#e0e7ff',
+    fontWeight: '500',
+  },
+  headerBadge: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerRightPlaceholder: {
+    width: 36, // Same as back button to balance layout
+  },
+  daySelectorWrapper: {
+    backgroundColor: '#ffffff',
+    marginTop: -15,
+    marginHorizontal: 16,
+    borderRadius: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  daySelector: {
+    paddingHorizontal: 12,
+    paddingVertical: 16,
+    gap: 8,
+  },
+  dayButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#f1f5f9',
+    marginRight: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 70,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  selectedDayButton: {
+    backgroundColor: 'transparent',
+  },
+  dayButtonGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  dayButtonText: {
+    fontSize: 14,
     fontWeight: '600',
+    color: '#64748b',
+  },
+  selectedDayText: {
+    color: '#ffffff',
+    fontWeight: '700',
+  },
+  dayDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#ffffff',
+    marginTop: 4,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  statNumber: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    marginTop: 4,
+  },
+  statLabel: {
+    fontSize: 11,
+    color: '#94a3b8',
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  scheduleContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 24,
+  },
+  periodCard: {
+    marginBottom: 16,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  gradientBorder: {
+    padding: 2,
+    borderRadius: 16,
+  },
+  periodInner: {
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
+    padding: 16,
+  },
+  periodTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  periodBadge: {
+    backgroundColor: '#ede9fe',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  periodBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#7c3aed',
+  },
+  timeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    gap: 4,
+  },
+  timeText: {
+    fontSize: 12,
+    color: '#64748b',
+    fontWeight: '600',
+  },
+  periodMain: {
+    marginBottom: 12,
+  },
+  subjectName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    marginBottom: 8,
+  },
+  teacherRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  teacherAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#667eea',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  teacherName: {
+    fontSize: 14,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  periodFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  durationBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#f5f3ff',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  durationText: {
+    fontSize: 11,
+    color: '#8b5cf6',
+    fontWeight: '600',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 80,
+  },
+  emptyIconCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#f1f5f9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  emptyTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontSize: 15,
+    color: '#94a3b8',
+    textAlign: 'center',
+    paddingHorizontal: 40,
+    lineHeight: 22,
   },
 });
