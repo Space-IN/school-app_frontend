@@ -3,13 +3,9 @@ import MenuScreen from '../../screens/StudentParent/menuscreen/menuScreen';
 import AttendanceScreen from '../../screens/StudentParent/menuscreen/attendanceScreen';
 import SettingsScreen from '../../screens/StudentParent/menuscreen/settings/SettingsScreen';
 import TimetableScreen from '../../screens/StudentParent/menuscreen/timetableScreen'
-import NoticeBoardScreen from '../../screens/StudentParent/menuscreen/NoticeBoardScreen';
-import StudentPerformanceScreen from '../../screens/StudentParent/menuscreen/StudentPerformanceScreen';
-import ParentProfileScreen from '../../screens/StudentParent/menuscreen/ParentProfileScreen';
+import StudentPerformanceScreen from '../../screens/StudentParent/menuscreen/studentPerformanceScreen';
 import AcademicCalendarScreen from '../../screens/StudentParent/menuscreen/AcademicCalendarScreen';
-import StudentProfileScreen from '../../screens/StudentParent/profilescreen/studentProfileScreen';
 import FeesScreen from '../../screens/StudentParent/menuscreen/feesScreen';
-import ChangePasswordScreen from '../../screens/StudentParent/menuscreen/settings/ChangePasswordScreen';
 import PrivacyPolicyScreen from '../../screens/StudentParent/menuscreen/settings/PrivacyPolicyScreen';
 import TermsScreen from '../../screens/StudentParent/menuscreen/settings/TermsScreen';
 import AboutScreen from '../../screens/StudentParent/menuscreen/settings/AboutScreen';
