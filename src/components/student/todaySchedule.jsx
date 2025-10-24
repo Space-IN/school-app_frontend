@@ -38,6 +38,7 @@ export default function TodaySchedule({ studentId }) {
         try {
             const scheduleData = await fetchStudentSchedule(studentId)
             const todayData = scheduleData.weeklySchedule?.find(day => day.day === today)
+            console.log("schedule data: ", todayData)
             setTodaySchedule(todayData)
         } catch (err) {
             setError(err.message || "Error fetching schedule")
@@ -57,7 +58,7 @@ export default function TodaySchedule({ studentId }) {
                 {item.periodNumber}. {item.timeSlot}
             </Text>
             <Text style={styles.timelineClass}>
-                Subject: {item.subjectMasterId}
+                Subject: {item.subjectMasterId.name}
             </Text>
             <Text style={styles.faculty}>
                 Faculty: {item.facultyId}
@@ -104,7 +105,7 @@ const styles = StyleSheet.create({
     container: {
         width: "95%",
         alignSelf: "center",
-        backgroundColor: "#d4d0d0ce",
+        backgroundColor: "#c7c1c1ff",
         marginBottom: 20,
         height: "auto",
         borderRadius:12

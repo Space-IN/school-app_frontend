@@ -1,47 +1,28 @@
-import React, { useRef, useEffect } from 'react';
+import { useRef, } from 'react';
 import {
   View,
   Text,
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  Platform,
-  StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useStudent } from '../../../context/student/studentContext'; // Import useStudent
+import { useStudent } from '../../../context/student/studentContext';
+
+
+
+const menuItems = [
+  { title: 'ATTENDANCE', screen: 'attendanceScreen', icon: 'checkmark-done-circle-sharp' },
+  { title: 'TIMETABLE', screen: 'timetableScreen', icon: 'calendar' },
+  { title: 'ASSESSMENTS', screen: 'studentPerformanceScreen', icon: 'book-sharp' },
+  { title: 'FEES', screen: 'feesScreen', icon: 'card' },
+  { title: 'ACADEMIC CALENDAR', screen: 'academicCalendarScreen', icon: 'calendar-clear' },
+  { title: 'SETTINGS', screen: 'settingsScreen', icon: 'settings' },
+]
 
 export default function MenuScreen({ navigation, route }) {
-  const { studentData } = useStudent(); // Get studentData from context
-  const userId = studentData?.userId; // Extract userId
-  const flatListRef = useRef(null);
-
-  useEffect(() => {
-    console.log('📦 MenuScreen route params:', route?.params);
-    if (!userId) {
-      console.warn('⚠️ No userId found in MenuScreen params (from context)');
-    }
-
-    const unsubscribe = navigation.addListener('tabPress', () => {
-      if (flatListRef.current) {
-        flatListRef.current.scrollToOffset({ offset: 0, animated: true });
-      }
-    });
-
-    return unsubscribe;
-  }, [navigation]);
-
-  const menuItems = [
-    { title: 'Attendance', screen: 'AttendanceScreen', icon: 'checkmark-done-circle' },
-    { title: 'Timetable', screen: 'TimetableScreen', icon: 'calendar-outline' },
-    { title: 'Notice Board', screen: 'NoticeBoardScreen', icon: 'megaphone-outline' },
-    { title: 'Performance', screen: 'StudentPerformanceScreen', icon: 'stats-chart-outline' },
-    { title: 'Fees', screen: 'FeesScreen', icon: 'card-outline' },
-    { title: 'Parent Profile', screen: 'ParentProfileScreen', icon: 'person-circle-outline' },
-    { title: 'Academic Calendar', screen: 'AcademicCalendarScreen', icon: 'calendar-number-outline' },
-    { title: 'Settings', screen: 'SettingsScreen', icon: 'settings-outline' },
-    { title: 'Student Profile', screen: 'StudentProfileScreen', icon: 'person-outline' },
-  ];
+  const { studentData } = useStudent()
+  const flatListRef = useRef(null)
 
   return (
     <View style={styles.container}>
@@ -55,18 +36,17 @@ export default function MenuScreen({ navigation, route }) {
             style={styles.menuItem}
             onPress={() =>
               navigation.navigate(item.screen, {
-                userId: studentData?.userId, // Pass userId from context
-                userData: studentData, // Pass userData from context
+                studentData
               })
             }
           >
             <View style={styles.menuContent}>
               <View style={styles.iconContainer}>
-                <Ionicons name={item.icon} size={24} color="#1e3a8a" />
+                <Ionicons name={item.icon} size={24} color="white" />
               </View>
               <Text style={styles.menuText}>{item.title}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={24} color="#1e3a8a" />
+            <Ionicons name="caret-forward" size={24} color="black" />
           </TouchableOpacity>
         )}
       />
@@ -77,21 +57,21 @@ export default function MenuScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    backgroundColor: '#F9FAFB',
+    padding: 10,
   },
   list: {
-    padding: 16,
+    padding: 10,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#F0F4F7',
     padding: 16,
     marginBottom: 12,
     borderRadius: 12,
-    elevation: 2,
+    elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -105,8 +85,8 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f1f5f9',
+    borderRadius: 15,
+    backgroundColor: '#181817b7',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -114,7 +94,7 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#1e3a8a',
+    color: 'black',
     flex: 1,
     textAlign: 'left',
   },

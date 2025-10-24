@@ -46,7 +46,7 @@ export default function StudentAnnouncements() {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Foundation name="megaphone" size={24} color="white" />
+                <Foundation name="megaphone" size={24} color="black" />
                 <Text style={styles.heading}>Announcements</Text>
             </View>
 
@@ -85,7 +85,6 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         width: "95%",
         alignSelf: "center",
-        backgroundColor: "#475569",
         overflow: "hidden"
     },
     header: {
@@ -94,7 +93,7 @@ const styles = StyleSheet.create({
         justifyContent: "flex-start",
         alignItems: "center",
         height: 50,
-        backgroundColor: "#2a3546ff",
+        backgroundColor: "#817f7fff",
         padding: 10,
         paddingLeft: 20,
         gap: 10,
@@ -102,9 +101,10 @@ const styles = StyleSheet.create({
     heading: {
         fontWeight: "700",
         fontSize: 18,
-        color: "white"
+        color: "black"
     },
     announcementsContainer: {
+        backgroundColor: "#c7c1c1ff",
     },
     noData: {
         fontSize: 14,
@@ -123,13 +123,13 @@ const styles = StyleSheet.create({
         borderBottomColor: "#ddd",
     },
     title: {
-        color: "white",
+        color: "black",
         fontSize: 18,
         fontWeight: "500",
         marginTop: 10
     },
     description: {
-        color: "#DCDCDC",
+        color: "#242222ff",
         fontSize: 14
     },
     loadingText: {
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
         marginTop: 8,
     },
     date: {
-        color: "white",
+        color: "#333232ff",
         fontSize: 12,
         fontWeight: "500"        
     }

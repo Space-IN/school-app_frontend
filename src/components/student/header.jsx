@@ -80,7 +80,7 @@ export default function StudentHeader({ navigation, back }) {
         <View style={styles.container}>
             <View style={styles.elementContainer}>
                 {back ? (
-                    <TouchableOpacity onPress={navigation.goback}>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Ionicons name="caret-back-outline" size={24} color="white" />
                     </TouchableOpacity>
                 ) : (

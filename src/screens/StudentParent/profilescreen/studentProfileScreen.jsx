@@ -14,6 +14,7 @@ import { BASE_URL } from "@env"
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useStudent } from "../../../context/student/studentContext";
 import { useAuth } from "../../../context/authContext";
+import { LinearGradient } from "expo-linear-gradient";
 
 
 
@@ -76,7 +77,12 @@ const StudentProfileScreen = () => {
             </Text>
           </View>
         ) : (
-          <View style={styles.idCard}>
+              <LinearGradient
+                colors={['#ce312cff', '#9c2f2bff']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.idCard}
+              >
             {/* student's profile section */}
             <View style={styles.topRow}>
               <Ionicons name="person-circle-outline" size={80} color="#fff" />
@@ -202,7 +208,7 @@ const StudentProfileScreen = () => {
                 </View>
               </View>
             </View>
-          </View>
+          </LinearGradient>
         )}
 
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -231,7 +237,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 4,
-    backgroundColor: "#475569"
+    backgroundColor: "#ce312cff"
   },
   topRow: {
     flexDirection: "row",

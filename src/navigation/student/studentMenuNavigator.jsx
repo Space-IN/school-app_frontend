@@ -1,14 +1,14 @@
 import { createStackNavigator } from '@react-navigation/stack';
-import MenuScreen from '../../screens/StudentParent/menuscreen/MenuScreen';
+import MenuScreen from '../../screens/StudentParent/menuscreen/menuScreen';
+import AttendanceScreen from '../../screens/StudentParent/menuscreen/attendanceScreen';
 import SettingsScreen from '../../screens/StudentParent/menuscreen/settings/SettingsScreen';
-import AttendanceScreen from '../../screens/StudentParent/menuscreen/AttendanceScreen';
-import TimetableScreen from '../../screens/StudentParent/menuscreen/TimetableScreen';
+import TimetableScreen from '../../screens/StudentParent/menuscreen/timetableScreen'
 import NoticeBoardScreen from '../../screens/StudentParent/menuscreen/NoticeBoardScreen';
 import StudentPerformanceScreen from '../../screens/StudentParent/menuscreen/StudentPerformanceScreen';
 import ParentProfileScreen from '../../screens/StudentParent/menuscreen/ParentProfileScreen';
 import AcademicCalendarScreen from '../../screens/StudentParent/menuscreen/AcademicCalendarScreen';
 import StudentProfileScreen from '../../screens/StudentParent/profilescreen/studentProfileScreen';
-import FeesScreen from '../../screens/StudentParent/menuscreen/settings/FeesScreen';
+import FeesScreen from '../../screens/StudentParent/menuscreen/feesScreen';
 import ChangePasswordScreen from '../../screens/StudentParent/menuscreen/settings/ChangePasswordScreen';
 import PrivacyPolicyScreen from '../../screens/StudentParent/menuscreen/settings/PrivacyPolicyScreen';
 import TermsScreen from '../../screens/StudentParent/menuscreen/settings/TermsScreen';
@@ -20,29 +20,21 @@ const Stack = createStackNavigator();
 export default function StudentMenuNavigator() {
   return (
     <Stack.Navigator
-      initialRouteName="MenuScreen"
+      initialRouteName="menuScreen"
       screenOptions={{
           header: (props) => <StudentHeader {...props} />,
       }}
     >
-      <Stack.Screen name="MenuScreen" component={MenuScreen} />
-      <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
-      <Stack.Screen name="AttendanceScreen" component={AttendanceScreen} />
-      <Stack.Screen
-        name="TimetableScreen"
-        component={TimetableScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen name="NoticeBoardScreen" component={NoticeBoardScreen} />
-      <Stack.Screen name="StudentPerformanceScreen" component={StudentPerformanceScreen} />
-      <Stack.Screen name="ParentProfileScreen" component={ParentProfileScreen} />
-      <Stack.Screen name="AcademicCalendarScreen" component={AcademicCalendarScreen} />
-      <Stack.Screen name="StudentProfileScreen" component={StudentProfileScreen} />
-      <Stack.Screen name="FeesScreen" component={FeesScreen} />
-      <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} />
-      <Stack.Screen name="PrivacyPolicyScreen" component={PrivacyPolicyScreen} />
-      <Stack.Screen name="TermsScreen" component={TermsScreen} />
-      <Stack.Screen name="AboutScreen" component={AboutScreen} />
+      <Stack.Screen name="menuScreen" component={MenuScreen} />
+      <Stack.Screen name="attendanceScreen" component={AttendanceScreen} />
+      <Stack.Screen name="timetableScreen" component={TimetableScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="studentPerformanceScreen" component={StudentPerformanceScreen} />
+      <Stack.Screen name="settingsScreen" component={SettingsScreen} />
+      <Stack.Screen name="academicCalendarScreen" component={AcademicCalendarScreen} />
+      <Stack.Screen name="feesScreen" component={FeesScreen} />
+      <Stack.Screen name="privacyPolicyScreen" component={PrivacyPolicyScreen} />
+      <Stack.Screen name="termsScreen" component={TermsScreen} />
+      <Stack.Screen name="aboutScreen" component={AboutScreen} />
     </Stack.Navigator>
   );
 }

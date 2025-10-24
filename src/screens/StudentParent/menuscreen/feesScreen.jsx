@@ -14,8 +14,7 @@ export default function FeesScreen() {
   };
 
   return (
-    <LinearGradient
-      colors={['#bbdbfaff', '#FFC0CB']}
+    <View
       style={styles.container}
     >
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
@@ -59,13 +58,14 @@ export default function FeesScreen() {
 
         <Text style={styles.note}>* All amounts are in INR (₹)</Text>
       </ScrollView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#F9FAFB",
   },
   scrollViewContent: {
     padding: 20,
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1e3a8a',
+    color: '#8f1b1bff',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -84,7 +84,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   totalCard: {
-    backgroundColor: '#1e3a8a',
+    backgroundColor: '#8f1b1bff',
+    paddingHorizontal: 10
   },
   feeRow: {
     flexDirection: 'row',
@@ -99,7 +100,7 @@ const styles = StyleSheet.create({
   feeAmount: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1e3a8a',
+    color: '#8f1b1bff',
   },
   totalText: {
     color: 'white',

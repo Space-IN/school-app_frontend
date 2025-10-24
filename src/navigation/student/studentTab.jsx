@@ -25,7 +25,7 @@ export default function StudentTab() {
                 name="Home"
                 component={StudentHomeNavigator}
                 options={{
-                    tabBarLabel: "Home",
+                    tabBarLabel: "HOME",
                     tabBarIcon: ({ color, size }) => (
                         <Entypo name="home" size={size} color={color} />
                     )
@@ -36,7 +36,7 @@ export default function StudentTab() {
                 name="Menu"
                 component={StudentMenuNavigator}
                 options={{
-                    tabBarLabel: "Menu",
+                    tabBarLabel: "MENU",
                     tabBarIcon: ({ color, size }) => (
                         <Ionicons name="menu-sharp" size={size} color={color} />
                     )
@@ -47,7 +47,7 @@ export default function StudentTab() {
                 name="Profile"
                 component={StudentProfileNavigator}
                 options={{
-                    tabBarLabel: "Profile",
+                    tabBarLabel: "PROFILE",
                     tabBarIcon: ({ color, size }) => (
                         <FontAwesome name="user" size={size} color={color} />
                     )

@@ -18,6 +18,7 @@ import * as Animatable from 'react-native-animatable';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import BASE_URL from '../../../config/baseURL';
+import { useStudent } from '../../../context/student/studentContext';
 
 const { width } = Dimensions.get('window');
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -34,6 +35,7 @@ const SUBJECT_COLORS = [
 ];
 
 export default function TimetableScreen() {
+  const { studentData } = useStudent()
   const route = useRoute();
   const navigation = useNavigation();
   const [schedule, setSchedule] = useState(null);
@@ -54,24 +56,14 @@ export default function TimetableScreen() {
 
   const fetchSchedule = async () => {
     try {
-      setError(null);
-      setLoading(true);
+      setError(null)
+      setLoading(true)
 
-      let userData = route.params?.userData;
-
-      if (!userData) {
-        console.log('⚠️ No userData in route params, trying AsyncStorage...');
-        const stored = await AsyncStorage.getItem('userData');
-        if (stored) {
-          userData = JSON.parse(stored);
-        }
-      }
+      let userData = studentData
 
       if (!userData) {
-        throw new Error('No user data found. Please log in again.');
+        throw new Error('No user data found. Please try again later');
       }
-
-      console.log('🔍 Parsed userData:', userData);
 
       const studentUserId = userData?.userId || userData?.studentId || userData?.id;
       const grade = userData?.classAssigned || userData?.className || userData?.grade;
@@ -187,7 +179,7 @@ export default function TimetableScreen() {
 
             <View style={styles.periodFooter}>
               <View style={styles.durationBadge}>
-                <Ionicons name="hourglass-outline" size={12} color="#8b5cf6" />
+                <Ionicons name="hourglass-outline" size={12} color="#8f1b1bff" />
                 <Text style={styles.durationText}>45 min</Text>
               </View>
             </View>
@@ -228,15 +220,10 @@ export default function TimetableScreen() {
           <Text style={styles.errorTitle}>Oops!</Text>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={fetchSchedule}>
-            <LinearGradient
-              colors={['#667eea', '#764ba2']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.retryGradient}
-            >
+            <View style={[styles.retryGradient, { backgroundColor: '#f12a2aff' }]}>
               <Ionicons name="refresh" size={20} color="#ffffff" />
               <Text style={styles.retryText}>Retry</Text>
-            </LinearGradient>
+            </View>
           </TouchableOpacity>
         </Animatable.View>
       </View>
@@ -252,14 +239,14 @@ export default function TimetableScreen() {
       
       {/* Header with Gradient */}
       <LinearGradient
-        colors={['#667eea', '#764ba2']}
+        colors={['#d72b2b', '#8b1313']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.header}
       >
         <View style={styles.headerContent}>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={28} color="#ffffff" />
+            <Ionicons name="caret-back-outline" size={30} color="white" />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Text style={styles.headerTitle}>My Timetable</Text>
@@ -293,7 +280,7 @@ export default function TimetableScreen() {
               >
                 {isSelected && (
                   <LinearGradient
-                    colors={['#667eea', '#764ba2']}
+                    colors={['#d72b2b', '#8b1313']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={styles.dayButtonGradient}
@@ -313,17 +300,17 @@ export default function TimetableScreen() {
       {totalPeriods > 0 && (
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Ionicons name="book-outline" size={20} color="#667eea" />
+            <Ionicons name="book-outline" size={20} color='#d72b2b' />
             <Text style={styles.statNumber}>{totalPeriods}</Text>
             <Text style={styles.statLabel}>Periods</Text>
           </View>
           <View style={styles.statCard}>
-            <Ionicons name="time-outline" size={20} color="#667eea" />
+            <Ionicons name="time-outline" size={20} color='#d72b2b' />
             <Text style={styles.statNumber}>{totalPeriods * 45}</Text>
             <Text style={styles.statLabel}>Minutes</Text>
           </View>
           <View style={styles.statCard}>
-            <Ionicons name="calendar-outline" size={20} color="#667eea" />
+            <Ionicons name="calendar-outline" size={20} color='#d72b2b' />
             <Text style={styles.statNumber}>{selectedDay.substring(0, 3)}</Text>
             <Text style={styles.statLabel}>Today</Text>
           </View>
@@ -337,8 +324,8 @@ export default function TimetableScreen() {
           <RefreshControl 
             refreshing={refreshing} 
             onRefresh={onRefresh}
-            colors={['#667eea']}
-            tintColor="#667eea"
+            colors={['#d72b2b']}
+            tintColor='#8b1313'
           />
         }
         showsVerticalScrollIndicator={false}
@@ -386,7 +373,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: '#667eea',
+        
+        shadowColor: '#d72b2b',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,
@@ -433,7 +421,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     ...Platform.select({
       ios: {
-        shadowColor: '#667eea',
+        shadowColor: '#d72b2b',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,
@@ -631,7 +619,7 @@ const styles = StyleSheet.create({
   periodBadgeText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#7c3aed',
+    color: '#d72b2b',
   },
   timeChip: {
     flexDirection: 'row',
@@ -665,7 +653,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#667eea',
+    backgroundColor: '#a71b1bff',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -689,7 +677,7 @@ const styles = StyleSheet.create({
   },
   durationText: {
     fontSize: 11,
-    color: '#8b5cf6',
+    color: '#8f1b1bff',
     fontWeight: '600',
   },
   emptyContainer: {

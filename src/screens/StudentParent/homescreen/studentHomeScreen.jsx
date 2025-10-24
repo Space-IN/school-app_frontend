@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   },
   scheduleContainer: {
     padding: 1,
-    marginTop: 15
+    marginTop: 30
   },
   eventsContainer: {
     marginBottom: 10

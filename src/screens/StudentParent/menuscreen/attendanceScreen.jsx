@@ -12,33 +12,26 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BASE_URL from '../../../config/baseURL';
-import { useStudent } from '../../../context/student/studentContext';
 
 const SESSIONS_PER_DAY = 8; // Assuming 8 sessions per day
 
-const AttendanceScreen = () => {
+const AttendanceScreen = ({ route }) => {
+  const { studentData } = route.params || {}
   const [attendanceData, setAttendanceData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState({ present: 0, absent: 0, percentage: 0 });
-  const [studentId, setStudentId] = useState(null);
-  const { studentData } = useStudent()
 
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
-        const stored = await AsyncStorage.getItem('userData');
-        const parsed = JSON.parse(stored);
-        const studentId = parsed?.userId;
-
-        if (!studentId) {
+        if (!studentData?.userId) {
           Alert.alert('Error', 'Student ID is missing.');
           setLoading(false);
           return;
         }
 
-        setStudentId(studentId);
-        const res = await fetch(`${BASE_URL}/api/attendance/student/${studentId}`);
+        const res = await fetch(`${BASE_URL}/api/attendance/student/${studentData?.userId}`);
         const data = await res.json();
 
         console.log('📦 Attendance response:', data);
@@ -50,7 +43,7 @@ const AttendanceScreen = () => {
         }
 
         setAttendanceData(data);
-        calculateStats(data, studentId);
+        calculateStats(data, studentData?.userId);
       } catch (error) {
         console.error('❌ Error fetching attendance:', error);
         Alert.alert('Error', 'Something went wrong while fetching attendance.');
@@ -93,10 +86,10 @@ const AttendanceScreen = () => {
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      const res = await fetch(`${BASE_URL}/api/attendance/student/${studentId}`);
+      const res = await fetch(`${BASE_URL}/api/attendance/student/${studentData?.userId}`);
       const data = await res.json();
       setAttendanceData(data);
-      calculateStats(data, studentId);
+      calculateStats(data, studentData?.userId);
     } catch (error) {
       console.error('Error refreshing attendance:', error);
       Alert.alert('Error', 'Failed to refresh attendance data');
@@ -106,7 +99,7 @@ const AttendanceScreen = () => {
 
   const renderItem = ({ item }) => {
     const studentRecord = item.records.find(
-      record => record.student.toString() === studentId
+      record => record.student.toString() === studentData?.userId
     );
 
     if (!studentRecord) return null;

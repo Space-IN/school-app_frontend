@@ -11,9 +11,11 @@ import {
 import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
 import BASE_URL from '../../../config/baseURL';
+import { useStudent } from '../../../context/student/studentContext';
 
-const StudentPerformanceScreen = ({ route }) => {
-  const userId = route?.params?.userId || route?.params?.userData?.userId;
+const StudentPerformanceScreen = () => {
+  const { studentData } = useStudent()
+  const userId = studentData?.userId
 
   const [performanceData, setPerformanceData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -108,14 +110,14 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#F9FAFB',
     // padding:13,
   },
   container: {
     flex: 1,
     paddingHorizontal: width * 0.05, 
     paddingVertical: 16,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#F9FAFB',
     padding: 40,
   },
   noDataText: {
@@ -141,25 +143,25 @@ const styles = StyleSheet.create({
   picker: {
     width: '100%',
     height: Platform.OS === 'ios' ? 180 : 50,
-    color: '#1e3a8a',
+    color: '#a31d1dff',
   },
   pickerItem: {
     fontSize: 16,
   },
   table: {
     borderWidth: 1,
-    borderColor: '#65a9fcff',
+    borderColor: '#a31d1dff',
     borderRadius: 10,
     overflow: 'hidden',
   },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#e0e7ff',
+    backgroundColor: '#d66d6dff',
   },
   tableRow: {
     flexDirection: 'row',
     borderTopWidth: 1,
-    borderColor: '#65a9fcff',
+    borderColor: '#a31d1dff',
   },
   cell: {
     flex: 1,
@@ -169,7 +171,7 @@ const styles = StyleSheet.create({
   },
   header: {
     fontWeight: 'bold',
-    color: '#1e3a8a',
+    color: '#7a1010ff',
   },
   pass: {
     color: 'green',

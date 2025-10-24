@@ -2,13 +2,18 @@ import { useEffect, useState } from "react"
 import { View, Text, StyleSheet, Pressable, Animated, ActivityIndicator } from "react-native"
 import FontAwesome from "@expo/vector-icons/FontAwesome"
 import { useNavigation } from "@react-navigation/native"
+import { LinearGradient } from "expo-linear-gradient"
+
+
+
+const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient)
 
 const getGreeting = () => {
   const hour = new Date().getHours()
   if (hour >= 5 && hour < 12) return "Good Morning"
   else if (hour >= 12 && hour < 17) return "Good Afternoon"
   else return "Good Evening"
-};
+}
 
 export default function UserBanner({ studentData, loading, err }) {
   const [greeting, setGreeting] = useState(getGreeting())
@@ -30,7 +35,12 @@ export default function UserBanner({ studentData, loading, err }) {
 
   return (
     <Pressable onPress={handlePress}>
-      <Animated.View style={[styles.container, { transform: [{ scale: scaleAnim }] }]}>
+      <AnimatedLinearGradient
+        colors={['#ce312cff', '#9c2f2bff']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.container, { transform: [{ scale: scaleAnim }] }]}
+      >
         <View style={styles.avatarContainer}>
           <FontAwesome name="user-circle-o" size={65} color="white" />
         </View>
@@ -57,7 +67,7 @@ export default function UserBanner({ studentData, loading, err }) {
             <Text style={styles.noData}>User data couldn't be fetched. Please check your internet connection and try again later...</Text>
           </View>
         )}
-      </Animated.View>
+      </AnimatedLinearGradient>
     </Pressable>
   );
 }
