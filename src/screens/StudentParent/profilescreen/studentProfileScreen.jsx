@@ -77,12 +77,12 @@ const StudentProfileScreen = () => {
             </Text>
           </View>
         ) : (
-              <LinearGradient
-                colors={['#ce312cff', '#9c2f2bff']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.idCard}
-              >
+          <LinearGradient
+            colors={['#ce312cff', '#9c2f2bff']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.idCard}
+          >
             {/* student's profile section */}
             <View style={styles.topRow}>
               <Ionicons name="person-circle-outline" size={80} color="#fff" />

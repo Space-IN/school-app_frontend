@@ -57,3 +57,25 @@ export const fetchEvents = async (studentId) => {
         throw err.response?.data || { message: "something went wrong while fetching events." }
     }
 }
+
+
+export const fetchAssessments = async (grade, section, year) => {
+    try {
+        const res = await axios.get(`${BASE_URL}/api/assessment/assessmentName?grade=${grade}&section=${section}&year=${year}`)
+        return res.data
+    } catch(err) {
+        console.error(`failed to fetch student's assessment: `, err.response?.data)
+        throw err.response?.data || { message: `something went wrong while fetching student's assessments.` }
+    }
+}
+
+export const fetchAssessmentScore = async (studentId, grade, section, testName, year) => {
+    try {
+        const res = await axios.get(`${BASE_URL}/api/assessment/assessmentScore?studentId=${studentId}&grade=${grade}&section=${section}&test_name=${testName}&year=${year}`)
+        return res.data
+    } catch(err) {
+        console.error(`failed to fetch student's ${testName} score: `, err.response?.data)
+        throw err.response?.data || { message: `something went wrong while fetching student's ${testName} score.` }
+    }
+}
+

@@ -38,7 +38,6 @@ export default function TodaySchedule({ studentId }) {
         try {
             const scheduleData = await fetchStudentSchedule(studentId)
             const todayData = scheduleData.weeklySchedule?.find(day => day.day === today)
-            console.log("schedule data: ", todayData)
             setTodaySchedule(todayData)
         } catch (err) {
             setError(err.message || "Error fetching schedule")
@@ -69,13 +68,12 @@ export default function TodaySchedule({ studentId }) {
 
   return (
     <View style={styles.container}>
-        <View style={{ padding: 10, paddingLeft: 20 }}>
+        <View style={{ padding: 10, paddingLeft: 20, backgroundColor: "#817f7fff", borderTopLeftRadius: 12, borderTopRightRadius: 12, }}>
             <View style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 10, width: "50%" }}>
-                <FontAwesome5 name="calendar-day" size={19} color="#2E2E2E" />
+                <FontAwesome5 name="calendar-day" size={19} color="black" />
                 <Text style={styles.sectionTitle}>Today's Schedule</Text>
             </View>
         </View>
-        <View style={styles.divider} />
 
         {loading ? (
             <View style={styles.loadingBox}>
@@ -114,7 +112,7 @@ const styles = StyleSheet.create({
         fontSize: 17.5,
         fontWeight: "900",
         marginVertical: 5,
-        color: "#2E2E2E",
+        color: "black",
     },
     timelineContainer: {
         paddingLeft: 10,
@@ -178,10 +176,5 @@ const styles = StyleSheet.create({
         fontSize: 14,
         marginLeft: 12,
         marginTop: 8,
-    },
-    divider: {
-        width: "100%",
-        height: 0.5,
-        backgroundColor: "#2E2E2E",
     },
 })

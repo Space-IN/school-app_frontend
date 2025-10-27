@@ -235,8 +235,6 @@ export default function TimetableScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#667eea" />
-      
       {/* Header with Gradient */}
       <LinearGradient
         colors={['#d72b2b', '#8b1313']}
@@ -355,7 +353,7 @@ export default function TimetableScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#F9FAFB',
   },
   centerContainer: {
     flex: 1,

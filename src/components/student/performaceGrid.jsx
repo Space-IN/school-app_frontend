@@ -13,7 +13,7 @@ export default function PerformanceGrid() {
     return (
         <ScrollView contentContainerStyle={styles.container}>
             <View style={styles.row}>
-                <View style={[styles.card, { backgroundColor: !studentData?.attendancePercentage ? "#909691" : studentData?.attendancePercentage>75 ? "#10b981" : studentData?.attendancePercentage>45 ? "#f59e0b" : "#be3b3bff" }]}>
+                <View style={[styles.card, { backgroundColor: !studentData?.attendancePercentage ? "#909691" : studentData?.attendancePercentage>75 ? "#10b981" : studentData?.attendancePercentage>45 ? "#f59e0b" : "#e23333ff" }]}>
                     <Text style={styles.cardTitle}>ATTENDANCE</Text>
                     <View style={styles.divider} />
                     <View style={styles.metricContainer}>
@@ -26,7 +26,7 @@ export default function PerformanceGrid() {
                     </View>
                 </View>
 
-                <View style={[styles.card, { backgroundColor: !studentData?.grade?.cgpa ? "#909691" : studentData?.grade>8 ? "#10b981" : studentData?.grade>5 ? "#f59e0b"  : "#be3b3bff" }]}>
+                <View style={[styles.card, { backgroundColor: !studentData?.grade?.cgpa ? "#909691" : studentData?.grade>8 ? "#10b981" : studentData?.grade>5 ? "#f59e0b"  : "#DC2626" }]}>
                     <Text style={styles.cardTitle}>CGPA</Text>
                     <View style={styles.divider} />
                     <View style={styles.metricContainer}>
@@ -41,7 +41,7 @@ export default function PerformanceGrid() {
             </View>
             
             <View style={styles.row2}>
-              <View style={[styles.card, { backgroundColor: assignmentsNum>0 ? "#f59e0b" : assignmentsNum<0 ? "#be3b3bff" : assignmentsNum==="-" ? "#909691" : "#10b981" }]}>
+              <View style={[styles.card, { backgroundColor: assignmentsNum>0 ? "#f59e0b" : assignmentsNum<0 ? "#DC2626" : assignmentsNum==="-" ? "#909691" : "#10b981" }]}>
                   <Text style={styles.cardTitle}>ASSIGNMENTS</Text>
                   <View style={styles.divider} />
                   <View style={styles.metricContainer}>

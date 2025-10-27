@@ -3,7 +3,7 @@ import MenuScreen from '../../screens/StudentParent/menuscreen/menuScreen';
 import AttendanceScreen from '../../screens/StudentParent/menuscreen/attendanceScreen';
 import SettingsScreen from '../../screens/StudentParent/menuscreen/settings/SettingsScreen';
 import TimetableScreen from '../../screens/StudentParent/menuscreen/timetableScreen'
-import StudentPerformanceScreen from '../../screens/StudentParent/menuscreen/studentPerformanceScreen';
+import AssessmentScreen from '../../screens/StudentParent/menuscreen/assessmentScreen';
 import AcademicCalendarScreen from '../../screens/StudentParent/menuscreen/AcademicCalendarScreen';
 import FeesScreen from '../../screens/StudentParent/menuscreen/feesScreen';
 import PrivacyPolicyScreen from '../../screens/StudentParent/menuscreen/settings/PrivacyPolicyScreen';
@@ -24,7 +24,7 @@ export default function StudentMenuNavigator() {
       <Stack.Screen name="menuScreen" component={MenuScreen} />
       <Stack.Screen name="attendanceScreen" component={AttendanceScreen} />
       <Stack.Screen name="timetableScreen" component={TimetableScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="studentPerformanceScreen" component={StudentPerformanceScreen} />
+      <Stack.Screen name="studentPerformanceScreen" component={AssessmentScreen} options={{ headerShown: false }} />
       <Stack.Screen name="settingsScreen" component={SettingsScreen} />
       <Stack.Screen name="academicCalendarScreen" component={AcademicCalendarScreen} />
       <Stack.Screen name="feesScreen" component={FeesScreen} />
