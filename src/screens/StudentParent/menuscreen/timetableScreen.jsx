@@ -62,6 +62,7 @@ export default function TimetableScreen() {
       let userData = studentData
 
       if (!userData) {
+        console.log("user data: ", studentData)
         throw new Error('No user data found. Please try again later');
       }
 
