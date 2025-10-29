@@ -1,43 +1,3 @@
-// import React from 'react';
-// import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-// import ManagePerformanceTab from './ManagePerformanceTab';
-// import ViewPerformanceTab from './ViewPerformanceTab';
-
-// const Tab = createMaterialTopTabNavigator();
-
-// export default function ManagePerformanceTabs({ route }) {
-//   const { grade, section, student } = route.params; 
-//   const studentId = student?.userId || null;
-
-//   return (
-//     <Tab.Navigator
-//       screenOptions={{
-//         tabBarActiveTintColor: '#007AFF',
-//         tabBarLabelStyle: { fontSize: 14, fontWeight: 'bold' },
-//         tabBarIndicatorStyle: { backgroundColor: '#007AFF' },
-//       }}
-//     >
-//       <Tab.Screen
-//         name="ManagePerformanceTab"
-//         component={ManagePerformanceTab}
-//         initialParams={{ grade, section }}
-//         options={{ title: 'Manage Performance' }}
-//       />
-//       <Tab.Screen
-//         name="ViewPerformanceTab"
-//         component={ViewPerformanceTab}
-//         initialParams={{ 
-//           studentId,
-//           classAssigned: grade, 
-//           section 
-//         }}
-//         options={{ title: 'View Performance' }}
-//       />
-//     </Tab.Navigator>
-//   );
-// }
-
-// screens/Faculty/classes/performance/ManagePerformanceTabs.js
 import React from 'react';
 import {
   View,
@@ -83,7 +43,7 @@ export default function ManagePerformanceTabs({ route, navigation }) {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
-        <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
+        <StatusBar backgroundColor="#c01e12ff" barStyle="light-content" />
 
         {/* Custom Header */}
         <View style={[styles.customHeader, { paddingTop: insets.top + 15 }]}>
@@ -137,11 +97,11 @@ export default function ManagePerformanceTabs({ route, navigation }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#ffffffff',
   },
   customHeader: {
     paddingVertical: 15,
-    backgroundColor: '#4a90e2',
+    backgroundColor: '#c01e12ff',
     borderBottomLeftRadius: 15,
     borderBottomRightRadius: 15,
     paddingHorizontal: 10,

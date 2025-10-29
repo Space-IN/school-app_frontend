@@ -484,13 +484,13 @@ export default function AllFacultyScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#ffffffff',
     // paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   tabRow: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
-    backgroundColor: '#7fa9ecff',
+    backgroundColor: '#ec7f7fff',
     paddingVertical: 10,
   },
   tabBtn: {
@@ -516,7 +516,7 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   facultyCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#faebebff',
     padding: 15,
     borderRadius: 10,
     marginBottom: 12,

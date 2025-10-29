@@ -88,7 +88,7 @@ export default function FacultyProfileViewScreen({ route }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#bbdbfaff', 
+    backgroundColor: '#ffffffff', 
   },
   container: {
     padding: 20,
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#bbdbfaff',
   },
    headerCard: {
-    backgroundColor: '#1e3a8a',
+    backgroundColor: '#c01e12ff',
     padding: 20,
     borderRadius: 16,
     marginBottom: 20,
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     color: '#e0e0e0',
   },
   infoCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#faebebff',
     padding: 15,
     borderRadius: 12,
     marginBottom: 12,

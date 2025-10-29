@@ -173,7 +173,7 @@ export default function AddEventScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     padding: 5,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#ffffffff',
     flex: 1,
   },
   label: {

@@ -177,7 +177,7 @@ export default function ClassScheduleViewScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#bbdbfaff",
+    backgroundColor: "#ffffffff",
     // paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   header: {

@@ -17,7 +17,7 @@ const ViewPerformanceTab = ({ route }) => {
     const fetchExamTypesAndData = async () => {
       try {
         const typesRes = await axios.get(
-          `${BASE_URL}/api/assessment/types/all/class/${grade}/section/${section}`
+          `${BASE_URL}/api/performance/types/all/class/${grade}/section/${section}`
         );
 
         const types = typesRes.data.examTypes;
@@ -29,7 +29,7 @@ const ViewPerformanceTab = ({ route }) => {
         for (const examType of types) {
           const encodedType = encodeURIComponent(examType.trim());
           const res = await axios.get(
-            `${BASE_URL}/api/assessment/class/${grade}/section/${section}/exam/${encodedType}`
+            `${BASE_URL}/api/performance/class/${grade}/section/${section}/exam/${encodedType}`
           );
 
           performanceResults[examType] = res.data.performances || [];
@@ -123,7 +123,7 @@ const ViewPerformanceTab = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#ffffffff',
     flex: 1,
   },
   pickerWrapper: {
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     marginVertical: 12,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#faebebff',
     padding: 16,
     marginBottom: 12,
     borderRadius: 10,

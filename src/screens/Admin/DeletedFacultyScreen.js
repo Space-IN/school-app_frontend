@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#ffffffff',
   },
   heading: {
     fontSize: 20,
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   card: {
-    backgroundColor: '#e0f2fe',
+    backgroundColor: '#faebebff',
     padding: 16,
     borderRadius: 10,
     marginBottom: 12,

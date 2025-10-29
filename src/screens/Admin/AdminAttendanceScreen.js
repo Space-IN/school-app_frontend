@@ -121,7 +121,7 @@ export default function AdminAttendanceScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#bbdbfaff' },
+  container: { flex: 1, backgroundColor: '#ffffffff' },
   heading: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   },
   list: { paddingHorizontal: 16, paddingBottom: 20, marginTop: 10 },
   card: {
-    backgroundColor: '#e0f2fe',
+    backgroundColor: '#faebebff',
     padding: 16,
     borderRadius: 10,
     marginBottom: 12,

@@ -350,7 +350,7 @@ export default AddNoticeScreen;
 const styles = StyleSheet.create({
   container: { 
     padding: 30,
-    backgroundColor: "#bbdbfaff", 
+    backgroundColor: "#ffffffff", 
     flexGrow: 1, 
   },
   heading: { fontSize: 24, marginBottom: 15, fontWeight: "bold" },
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     marginBottom: 15,
-    backgroundColor: "#fff", 
+    backgroundColor: "#faebebff", 
   },
   label: { fontWeight: "bold", marginBottom: 5 },
   radio: {
@@ -379,12 +379,12 @@ const styles = StyleSheet.create({
   buttonText: { color: "#fff", fontWeight: "bold" },
 
   noticeCard: {
-    backgroundColor: "#f0f8ff",
+    backgroundColor: "#faebebff",
     padding: 15,
     borderRadius: 8,
     marginBottom: 15,
     borderLeftWidth: 4,
-    borderLeftColor: "#007bff",
+    borderLeftColor: "#c01e12ff",
   },
   noticeTitle: { fontWeight: "bold", fontSize: 16 },
   noticeMessage: { marginVertical: 5 },

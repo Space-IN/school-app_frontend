@@ -109,7 +109,7 @@ export default function DeletedStudentsScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#ffffffff',
     // paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   heading: {
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   card: {
-    backgroundColor: '#ffe4e6',
+    backgroundColor: '#faebebff',
     padding: 16,
     borderRadius: 10,
     marginBottom: 12,

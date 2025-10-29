@@ -463,7 +463,7 @@ export default function FacultyChaptersScreen({ route }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#ffffffff',
   },
   customHeader: {
     paddingVertical: 15,
@@ -523,10 +523,10 @@ const styles = StyleSheet.create({
   container: { 
     flex: 1, 
     padding: 16, 
-    backgroundColor: "#bbdbfaff" 
+    backgroundColor: "#fdfdfdff" 
   },
   uploadButton: {
-    backgroundColor: "#4a90e2",
+    backgroundColor: "#b61b10ff",
     padding: 14,
     borderRadius: 8,
     marginBottom: 16,
@@ -549,7 +549,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#fff",
+    backgroundColor: "#faebebff",
     padding: 12,
     marginBottom: 10,
     borderRadius: 8,
@@ -585,7 +585,7 @@ const styles = StyleSheet.create({
   noteBox: {
     marginTop: 20,
     padding: 12,
-    backgroundColor: "#eef2ff",
+    backgroundColor: "#faebebff",
     borderRadius: 8,
   },
   noteTitle: { 

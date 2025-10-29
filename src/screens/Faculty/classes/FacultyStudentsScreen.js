@@ -125,7 +125,7 @@ export default function FacultyStudentsScreen() {
     return (
       <SafeAreaProvider>
         <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
-          <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
+          <StatusBar backgroundColor="#c01e12ff" barStyle="light-content" />
           <View style={[styles.header, { paddingTop: insets.top + 15 }]}>
             <View style={styles.headerTopRow}>
               <TouchableOpacity 
@@ -156,7 +156,7 @@ export default function FacultyStudentsScreen() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
-        <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
+        <StatusBar backgroundColor="#c01e12ff" barStyle="light-content" />
         
         {/* Custom Header with Back Button and Manual Top Safe Area */}
         <View style={[styles.header, { paddingTop: insets.top + 15 }]}>
@@ -261,11 +261,11 @@ export default function FacultyStudentsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#f1f1f1ff',
   },
   header: {
     paddingVertical: 15,
-    backgroundColor: '#4a90e2',
+    backgroundColor: '#c01e12ff',
     borderBottomLeftRadius: 15,
     borderBottomRightRadius: 15,
     paddingHorizontal: 10,
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     paddingHorizontal: 15,
     paddingVertical: 12,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#eeeeeeff',
   },
   searchInputContainer: {
     flexDirection: 'row',

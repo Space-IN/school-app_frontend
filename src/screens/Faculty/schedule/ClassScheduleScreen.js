@@ -101,7 +101,7 @@ export default function ClassScheduleScreen({ route }) {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
-        <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
+        <StatusBar backgroundColor="#c01e12ff" barStyle="light-content" />
         <View style={styles.container}>
           {/* Header with Manual Top Safe Area */}
           <View style={[styles.header, { paddingTop: insets.top + 15 }]}>
@@ -165,15 +165,15 @@ export default function ClassScheduleScreen({ route }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#ffffffff',
   },
   container: {
     flex: 1,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#ffffffff',
   },
   header: {
     paddingVertical: 15,
-    backgroundColor: '#4a90e2',
+    backgroundColor: '#c01e12ff',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     paddingHorizontal: 10,
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   dayCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#faebebff',
     borderRadius: 12,
     marginBottom: 20,
     padding: 16,

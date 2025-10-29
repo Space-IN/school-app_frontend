@@ -110,12 +110,12 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     paddingVertical: 30,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#ffffffff',
   },
   form: {
     width: width > 400 ? 350 : '90%',
     alignSelf: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#faebebff',
     padding: 20,
     borderRadius: 10,
     elevation: 3,

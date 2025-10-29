@@ -41,6 +41,9 @@ export default function AdminNavigator() {
             screenOptions={{
                 headerShown: true,
                 headerBackTitleVisible: false,
+                headerStyle: { backgroundColor: '#9c1006' },
+                headerTintColor: '#fff',
+                headerTitleStyle: { fontWeight: 'bold' },
             }}
         >
             <Stack.Screen name="AdminDashboard" component={AdminDashboard} />

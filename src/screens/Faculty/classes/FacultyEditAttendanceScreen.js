@@ -116,9 +116,9 @@ export default function FacultyEditAttendanceScreen({ route }) {
       console.log('ℹ️ No attendance data found');
     }
   } catch (error) {
-    console.error('❌ Error loading attendance data:', error);
-    console.error('Error details:', error.response?.data);
-    Alert.alert('Error', 'Failed to load attendance data');
+    // console.error('❌ Error loading attendance data:', error);
+    // console.error('Error details:', error.response?.data);
+    Alert.alert('Error', 'No attendance found for this date');
   } finally {
     setLoading(false);
   }
@@ -279,7 +279,7 @@ export default function FacultyEditAttendanceScreen({ route }) {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
-        <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
+        <StatusBar backgroundColor="#c01e12ff" barStyle="light-content" />
 
         <View style={[styles.header, { paddingTop: insets.top + 15 }]}>
           <View style={styles.headerTopRow}>
@@ -507,9 +507,9 @@ export default function FacultyEditAttendanceScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#bbdbfaff' },
+  safeArea: { flex: 1, backgroundColor: '#fafcffff' },
   header: {
-    paddingVertical: 15, backgroundColor: '#4a90e2', borderBottomLeftRadius: 15, borderBottomRightRadius: 15,
+    paddingVertical: 15, backgroundColor: '#c01e12ff', borderBottomLeftRadius: 15, borderBottomRightRadius: 15,
     paddingHorizontal: 10, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1, shadowRadius: 4,
   },
