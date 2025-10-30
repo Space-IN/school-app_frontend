@@ -8,7 +8,7 @@ export const StudentContext = createContext()
 export const StudentProvider = ({ children }) => {
     const { decodedToken } = useAuth()
     const [studentData, setStudentData] = useState(null)
-    const [studentLoading, setStudentLoading] = useState(false)
+    const [studentLoading, setStudentLoading] = useState(true)
     const [studentErr, setStudentErr] = useState(null)
 
     useEffect(() => {
