@@ -38,6 +38,9 @@ import StudentSubjectMarksScreen from "../../screens/Faculty/classes/performance
 
 
 import LectureRecordingScreen from "../../screens/Faculty/classes/LectureRecordingScreen";
+import PastRecordingsScreen from "../../screens/Faculty/classes/PastRecordingsScreen";
+
+
 import FacultyChaptersScreen from "../../screens/Faculty/classes/FacultyChaptersScreen";
 import StudentProfileScreen from "../../screens/Faculty/classes/StudentProfileScreen"; 
 
@@ -122,6 +125,19 @@ export default function FacultyNavigator() {
                 component={LectureRecordingScreen} 
                 options={{ title: 'Lecture Recording' }}
             />
+
+            <Stack.Screen 
+  name="PastRecordingsScreen" 
+  component={PastRecordingsScreen}
+  options={{
+    title: 'Past Recordings',
+    headerStyle: { backgroundColor: '#c01e12ff' },
+    headerTintColor: '#fff',
+  }}
+/>
+
+              
+
             <Stack.Screen 
                 name="FacultyChaptersScreen" 
                 component={FacultyChaptersScreen} 

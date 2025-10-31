@@ -1,12 +1,12 @@
 // src/screens/faculty/facultyHomeScreen.jsx
-import { ScrollView, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import FacultyBanner from "../../../components/faculty/facultyBanner";
 import FacultyAnnouncements from "../../../components/faculty/facultyAnnouncements";
 import FacultyTodaySchedule from "../../../components/faculty/facultyTodaySchedule";
 
 export default function FacultyHomeScreen({ navigation }) {
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.bannerContainer}>
         <FacultyBanner navigation={navigation} />
       </View>
@@ -18,7 +18,7 @@ export default function FacultyHomeScreen({ navigation }) {
       <View style={styles.scheduleContainer}>
         <FacultyTodaySchedule />
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
