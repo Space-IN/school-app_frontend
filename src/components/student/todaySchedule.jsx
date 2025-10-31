@@ -77,6 +77,7 @@ export default function TodaySchedule({ studentId, studentLoading }) {
           renderItem={renderItem}
           keyExtractor={(item) => item._id}
           contentContainerStyle={{ padding: 12 }}
+          scrollEnabled={false}
         />
       )}
     </View>

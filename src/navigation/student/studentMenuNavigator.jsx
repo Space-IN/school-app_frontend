@@ -4,7 +4,7 @@ import AttendanceScreen from '../../screens/StudentParent/menuscreen/attendanceS
 import SettingsScreen from '../../screens/StudentParent/menuscreen/settings/SettingsScreen';
 import TimetableScreen from '../../screens/StudentParent/menuscreen/timetableScreen'
 import AssessmentScreen from '../../screens/StudentParent/menuscreen/assessmentScreen';
-import AcademicCalendarScreen from '../../screens/StudentParent/menuscreen/academicCalendar';
+import AcademicCalendarScreen from '../../screens/StudentParent/menuscreen/academicCalendarScreen';
 import FeesScreen from '../../screens/StudentParent/menuscreen/feesScreen';
 import PrivacyPolicyScreen from '../../screens/StudentParent/menuscreen/settings/PrivacyPolicyScreen';
 import TermsScreen from '../../screens/StudentParent/menuscreen/settings/TermsScreen';

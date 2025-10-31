@@ -197,7 +197,7 @@ export default function TimetableScreen() {
       <View style={styles.centerContainer}>
         <Animatable.View animation="pulse" iterationCount="infinite">
           <View style={styles.loaderCircle}>
-            <ActivityIndicator size="large" color="#667eea" />
+            <ActivityIndicator size="large" color="#c01e12" />
           </View>
         </Animatable.View>
         <Text style={styles.loadingText}>Loading your timetable...</Text>
