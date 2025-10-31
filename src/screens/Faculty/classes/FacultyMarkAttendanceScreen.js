@@ -302,7 +302,7 @@ export default function FacultyMarkAttendanceScreen({ route }) {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
-        <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
+        <StatusBar backgroundColor="#c01e12ff" barStyle="light-content" />
 
         <View style={[styles.header, { paddingTop: insets.top + 15 }]}>
           <View style={styles.headerTopRow}>
@@ -432,9 +432,9 @@ export default function FacultyMarkAttendanceScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#bbdbfaff' },
+  safeArea: { flex: 1, backgroundColor: '#ffffffff' },
   header: {
-    paddingVertical: 15, backgroundColor: '#4a90e2', borderBottomLeftRadius: 15, borderBottomRightRadius: 15,
+    paddingVertical: 15, backgroundColor: '#c01e12ff', borderBottomLeftRadius: 15, borderBottomRightRadius: 15,
     paddingHorizontal: 10, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1, shadowRadius: 4,
   },
@@ -513,13 +513,13 @@ const styles = StyleSheet.create({
   statusAbsent: { color: '#f44336' },
   emptyContainer: { alignItems: 'center', padding: 20 },
   emptyText: { fontSize: 16, color: '#666', textAlign: 'center' },
-  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#bbdbfaff', padding: 16, borderTopWidth: 1, borderTopColor: '#ddd' },
-  submitButton: { backgroundColor: '#4a90e2', padding: 16, borderRadius: 12, alignItems: 'center', elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4 },
+  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#fafafaff', padding: 16, borderTopWidth: 1, borderTopColor: '#ddd' },
+  submitButton: { backgroundColor: '#c01e12ff', padding: 16, borderRadius: 12, alignItems: 'center', elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4 },
   submitButtonDisabled: { backgroundColor: '#a0a0a0' },
   submitText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
   summaryContainer: { marginTop: 12, padding: 12, backgroundColor: '#e8f5e8', borderRadius: 8, alignItems: 'center', borderWidth: 1, borderColor: '#4caf50' },
   summaryText: { fontSize: 14, fontWeight: '600', color: '#2e7d32' },
-  authorizedContainer: { marginTop: 6, padding: 4, backgroundColor: 'rgba(76, 175, 80, 0.2)', borderRadius: 6 },
+  authorizedContainer: { marginTop: 6, padding: 4, backgroundColor: '#c01e12ff(76, 175, 80, 0.2)', borderRadius: 6 },
   authorizedText: { fontSize: 12, color: '#4caf50', fontWeight: '600' },
   unauthorizedContainer: { marginTop: 6, padding: 4, backgroundColor: 'rgba(255, 152, 0, 0.2)', borderRadius: 6 },
   unauthorizedText: { fontSize: 12, color: '#ff9800', fontWeight: '600' },

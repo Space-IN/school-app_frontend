@@ -86,7 +86,7 @@ const AssignSubjectScreen = () => {
   };
 
   return (
-  <View style={{ flex: 1, backgroundColor: '#bbdbfaff' }}>
+  <View style={{ flex: 1, backgroundColor: '#ffffffff' }}>
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.label}>Select Subject</Text>
       <RNPickerSelect
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 35,
     paddingBottom: 60,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#ffffffff',
   },
   label: {
     fontWeight: '600',
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     color: '#1e3a8a',
   },
   pair: {
-    backgroundColor: '#d1d5db',
+    backgroundColor: '#faebebff',
     padding: 8,
     marginVertical: 4,
     borderRadius: 4,
@@ -183,7 +183,7 @@ const pickerSelectStyles = {
     borderWidth: 1,
     borderColor: '#aaa',
     borderRadius: 8,
-    backgroundColor: '#fff',
+    backgroundColor: '#faebebff',
     color: 'black',
     marginBottom: 15,
   },
@@ -194,7 +194,7 @@ const pickerSelectStyles = {
     borderWidth: 1,
     borderColor: '#aaa',
     borderRadius: 8,
-    backgroundColor: '#fff',
+    backgroundColor: '#faebebff',
     color: 'black',
     marginBottom: 15,
   },

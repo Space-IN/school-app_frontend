@@ -115,7 +115,7 @@ const FacultyListScreen = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#bbdbfaff" },
+  container: { flex: 1, padding: 16, backgroundColor: "#ffffffff" },
 
   headerBox: {
     flexDirection: "row",
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20,
     marginTop: 10,
-    backgroundColor: "#e6f0ff",
+    backgroundColor: "#faebebff",
     paddingVertical: 12,
     borderRadius: 12,
   },
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: "#faebebff",
     padding: 14,
     marginBottom: 12,
     borderRadius: 10,

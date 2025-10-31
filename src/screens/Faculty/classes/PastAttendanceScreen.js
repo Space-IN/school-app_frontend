@@ -121,11 +121,11 @@ export default function PastAttendanceScreen({ route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#ffffffff',
     // paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   header: {
-    backgroundColor: '#4a90e2',
+    backgroundColor: '#c01e12ff',
     padding: 16,
     alignItems: 'center',
     borderBottomLeftRadius: 20,

@@ -227,9 +227,9 @@ const getRelevanceIcon = (isRelevant) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#bbdbfaff", paddingHorizontal: 16 },
+  container: { flex: 1, backgroundColor: "#ffffffff", paddingHorizontal: 16 },
   lectureCard: {
-    backgroundColor: "#fff",
+    backgroundColor: "#faebebff",
     margin: 12,
     borderRadius: 12,
     padding: 16,

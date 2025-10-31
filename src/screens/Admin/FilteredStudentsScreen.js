@@ -31,7 +31,7 @@ export default function FilteredStudentsScreen({ route, navigation }) {
       const encodedSection = encodeURIComponent(section);
 
       const res = await axios.get(
-        `http://10.221.34.140:5000/api/admin/students/grade/${encodedGrade}/section/${encodedSection}`
+        `http://10.221.34.142:5000/api/admin/students/grade/${encodedGrade}/section/${encodedSection}`
       );
       setStudents(res.data || []);
     } catch (err) {
@@ -48,7 +48,7 @@ export default function FilteredStudentsScreen({ route, navigation }) {
 
   const handleSoftDelete = async (userId) => {
     try {
-      await axios.patch(`http://10.221.34.140:5000/api/admin/students/delete/${userId}`);
+      await axios.patch(`http://10.221.34.142:5000/api/admin/students/delete/${userId}`);
       Alert.alert('Deleted', 'Student soft deleted.');
       fetchFilteredStudents();
     } catch (err) {
@@ -117,7 +117,7 @@ export default function FilteredStudentsScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#bbdbfaff' },
+  container: { flex: 1, backgroundColor: '#ffffffff' },
   topPadding: { height: 10 },
   heading: {
     fontSize: 18,

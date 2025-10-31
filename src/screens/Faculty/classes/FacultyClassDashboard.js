@@ -524,6 +524,7 @@ export default function FacultyClassDashboard({ route }) {
     redirectedFromHome,
     scheduleItem 
   } = route.params || {};
+  console.log("class dashboard route params: ", route.params)
 
   const [loading, setLoading] = useState(false);
   const [classInfo, setClassInfo] = useState(null);
@@ -637,7 +638,7 @@ export default function FacultyClassDashboard({ route }) {
       title: 'Performance', 
       icon: 'bar-chart', 
       screen: 'FacultyPerformanceScreen',
-      requiredParams: ['grade', 'section', 'subjectId']
+      requiredParams: ['grade', 'section', 'subjectId', 'subjectName']
     },
     { 
       title: 'This Class Schedule', 
@@ -685,6 +686,7 @@ export default function FacultyClassDashboard({ route }) {
       facultyId,
       subjectId,
       subjectName,
+      year: new Date().getFullYear(),
       ...route.params
     };
 

@@ -1,67 +1,109 @@
-// import React from 'react';
-// import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-// import ManagePerformanceTab from './ManagePerformanceTab';
-// import ViewPerformanceTab from './ViewPerformanceTab';
-
-// const Tab = createMaterialTopTabNavigator();
-
-// export default function ManagePerformanceTabs({ route }) {
-//   const { grade, section, student } = route.params; 
-//   const studentId = student?.userId || null;
-
-//   return (
-//     <Tab.Navigator
-//       screenOptions={{
-//         tabBarActiveTintColor: '#007AFF',
-//         tabBarLabelStyle: { fontSize: 14, fontWeight: 'bold' },
-//         tabBarIndicatorStyle: { backgroundColor: '#007AFF' },
-//       }}
-//     >
-//       <Tab.Screen
-//         name="ManagePerformanceTab"
-//         component={ManagePerformanceTab}
-//         initialParams={{ grade, section }}
-//         options={{ title: 'Manage Performance' }}
-//       />
-//       <Tab.Screen
-//         name="ViewPerformanceTab"
-//         component={ViewPerformanceTab}
-//         initialParams={{ 
-//           studentId,
-//           classAssigned: grade, 
-//           section 
-//         }}
-//         options={{ title: 'View Performance' }}
-//       />
-//     </Tab.Navigator>
-//   );
-// }
-
-// screens/Faculty/classes/performance/ManagePerformanceTabs.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
   StatusBar,
   TouchableOpacity,
-  Text
+  Text,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
-// ✅ FIXED IMPORTS — make sure file names match exactly in your folder:
+
 import ManagePerformanceTab from './ManagePerformanceTab';
 import ViewPerformanceTab from './ViewPerformanceTab';
+import { fetchAssessments } from '../../../../controllers/studentDataController';
 
 const Tab = createMaterialTopTabNavigator();
 
 export default function ManagePerformanceTabs({ route, navigation }) {
-  const { grade, section, student } = route.params || {};
-  const studentId = student?.userId || null;
+  const { grade, section, subjectName, year } = route.params || {};
+  console.log("ManagePerformanceTabs route params: ", route.params)
   const insets = useSafeAreaInsets();
 
-  // Set header with back button
+  const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear()));
+  const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedTestName, setSelectedTestName] = useState('');
+
+  const [availableYears, setAvailableYears] = useState([]);
+  const [availableSubjects, setAvailableSubjects] = useState([]);
+  const [availableTestNames, setAvailableTestNames] = useState([]);
+
+  const [loadingAssessments, setLoadingAssessments] = useState(true);
+  const [errorAssessments, setErrorAssessments] = useState(null);
+
+  const [allAssessmentsData, setAllAssessmentsData] = useState([]);
+
+
+  // Effect to fetch all assessments initially
+  useEffect(() => {
+    const fetchAllAssessments = async () => {
+      if (!grade || !section) {
+        setErrorAssessments('Missing grade or section.');
+        setLoadingAssessments(false);
+        return;
+      }
+      try {
+        const response = await fetchAssessments(grade, section, year); // Fetch all years
+        const data = response.data || [];
+        console.log("response from manageperformance tabs: ", response)
+        setAllAssessmentsData(response);
+
+        const years = [...new Set(data.map(item => String(new Date(item.date).getFullYear())))].sort((a, b) => b - a);
+        setAvailableYears(years);
+        if (years.length > 0) {
+          setSelectedYear(years[0]);
+        } else {
+          setSelectedYear('');
+        }
+
+      } catch (err) {
+        setErrorAssessments('Failed to fetch assessments.');
+        console.error(err);
+      } finally {
+        setLoadingAssessments(false);
+      }
+    };
+
+    fetchAllAssessments();
+  }, [grade, section]);
+
+  // Effect to update subjects and test names based on selected year
+  useEffect(() => {
+    console.log("allAssessmentData: ", allAssessmentsData)
+    if (allAssessmentsData.length === 0) {
+      setAvailableSubjects([]);
+      setAvailableTestNames([]);
+      setSelectedSubject('');
+      setSelectedTestName('');
+      return;
+    }
+
+    const filteredByYear = allAssessmentsData.exams.filter(item => String(new Date(item.date).getFullYear()) === year);
+
+    const subjects = [...new Set(filteredByYear.map(item => item.subject))];
+    setAvailableSubjects(subjects);
+    if (subjects.length > 0) {
+      console.log("subjects: ", subjects)
+      setSelectedSubject(subjects[0]);
+    } else {
+      setSelectedSubject('');
+    }
+
+    const testNames = [...new Set(filteredByYear.map(item => item.test_name))];
+    setAvailableTestNames(testNames);
+    if (testNames.length > 0) {
+      setSelectedTestName(testNames[0]);
+    } else {
+      setSelectedTestName('');
+    }
+
+  }, [allAssessmentsData, selectedYear]);
+
+  // Header Back Button
   React.useLayoutEffect(() => {
     navigation.setOptions({
       headerLeft: () => (
@@ -76,14 +118,51 @@ export default function ManagePerformanceTabs({ route, navigation }) {
     });
   }, [navigation]);
 
-  const handleBackPress = () => {
-    navigation.goBack();
-  };
+  const handleBackPress = () => navigation.goBack();
+
+  if (loadingAssessments) {
+    return (
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
+          <StatusBar backgroundColor="#c01e12ff" barStyle="light-content" />
+          <View style={[styles.customHeader, { paddingTop: insets.top + 15 }]}>
+            <Text style={styles.headerTitle}>📊 Performance Management</Text>
+            <Text style={styles.classInfo}>
+              Class {grade} - Section {section}
+            </Text>
+          </View>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#007AFF" />
+            <Text style={styles.loadingText}>Loading assessments...</Text>
+          </View>
+        </SafeAreaView>
+      </SafeAreaProvider>
+    );
+  }
+
+  if (errorAssessments) {
+    return (
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
+          <StatusBar backgroundColor="#c01e12ff" barStyle="light-content" />
+          <View style={[styles.customHeader, { paddingTop: insets.top + 15 }]}>
+            <Text style={styles.headerTitle}>📊 Performance Management</Text>
+            <Text style={styles.classInfo}>
+              Class {grade} - Section {section}
+            </Text>
+          </View>
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{errorAssessments}</Text>
+          </View>
+        </SafeAreaView>
+      </SafeAreaProvider>
+    );
+  }
 
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
-        <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
+        <StatusBar backgroundColor="#c01e12ff" barStyle="light-content" />
 
         {/* Custom Header */}
         <View style={[styles.customHeader, { paddingTop: insets.top + 15 }]}>
@@ -100,8 +179,8 @@ export default function ManagePerformanceTabs({ route, navigation }) {
           <Text style={styles.headerTitle}>📊 Performance Management</Text>
           <Text style={styles.classInfo}>
             Class {grade} - Section {section}
-            {student && ` | Student: ${student.name}`}
           </Text>
+
         </View>
 
         <Tab.Navigator
@@ -118,13 +197,16 @@ export default function ManagePerformanceTabs({ route, navigation }) {
             initialParams={{ grade, section, navigation }}
             options={{ title: 'Manage Performance' }}
           />
+
           <Tab.Screen
             name="ViewPerformanceTab"
             component={ViewPerformanceTab}
             initialParams={{
-              studentId,
               grade,
               section,
+              // test_name: "Midterm",
+              year: year,
+              subjectName: subjectName,
             }}
             options={{ title: 'View Performance' }}
           />
@@ -135,13 +217,10 @@ export default function ManagePerformanceTabs({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#bbdbfaff',
-  },
+  safeArea: { flex: 1, backgroundColor: '#ffffffff' },
   customHeader: {
     paddingVertical: 15,
-    backgroundColor: '#4a90e2',
+    backgroundColor: '#c01e12ff',
     borderBottomLeftRadius: 15,
     borderBottomRightRadius: 15,
     paddingHorizontal: 10,
@@ -192,6 +271,43 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     opacity: 0.9,
+    textAlign: 'center',
+  },
+  pickerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 10,
+    marginBottom: 5,
+  },
+  picker: {
+    flex: 1,
+    color: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 8,
+    marginHorizontal: 5,
+    height: 40,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#333',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: 'red',
     textAlign: 'center',
   },
 });

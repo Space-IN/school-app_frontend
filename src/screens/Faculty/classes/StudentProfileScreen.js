@@ -232,11 +232,11 @@ const DetailRow = ({ label, value }) => (
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#ffffffff',
   },
   header: {
     paddingVertical: 15, 
-    backgroundColor: '#4a90e2',
+    backgroundColor: '#c01e12ff',
     borderBottomLeftRadius: 15,
     borderBottomRightRadius: 15,
     paddingHorizontal: 10,
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   profileCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f0e8e8ff',
     borderRadius: 16,
     padding: 20,
     elevation: 4,

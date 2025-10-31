@@ -92,21 +92,27 @@ export default function AdminDashboard({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* ✅ Custom Header Row */}
-      <View style={styles.headerRow}>
-        <Text style={styles.headerTitle}>Admin Dashboard</Text>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={18} color="#fdfdfdff" />
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
+    {/* ✅ Status Bar */}
+    <StatusBar
+      translucent
+      backgroundColor="transparent"
+      barStyle="light-content"
+    />
+
+    {/* ✅ Custom Header */}
+    <View style={[styles.headerRow, { paddingTop: StatusBar.currentHeight }]}>
+      <Text style={styles.headerTitle}>Admin Dashboard</Text>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Ionicons name="log-out-outline" size={18} color="#fff" />
+        <Text style={styles.logoutText}>Logout</Text>
+      </TouchableOpacity>
+    </View>
+
+    <ScrollView contentContainerStyle={styles.scrollContent}>
+      <View style={styles.profileCard}>
+        <Text style={styles.greeting}>Hello, {userId} 👋</Text>
+        <Text style={styles.subtitle}>Welcome to the Admin Dashboard</Text>
       </View>
-
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.profileCard}>
-          <Text style={styles.greeting}>Hello, {userId} 👋</Text>
-          <Text style={styles.subtitle}>Welcome to the Admin Dashboard</Text>
-        </View>
-
         {/* <PosterCarousel /> */}
 
         {/* ---------------- Sections ---------------- */}
@@ -198,19 +204,20 @@ export default function AdminDashboard({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#bbdbfaff',  //#bbdbfaff
+    backgroundColor: '#ffffffff',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#9c1006',
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-  },
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  paddingHorizontal: 16,
+  paddingBottom: 12,
+  backgroundColor: '#ac1d1dff',
+  borderBottomWidth: 1,
+  borderBottomColor: '#ddd',
+},
+
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
@@ -240,7 +247,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   profileCard: {
-    backgroundColor: '#237ec9ff',
+    backgroundColor: '#9c1006',
     borderRadius: 12,
     padding: 16,
     marginTop: 10,
@@ -269,7 +276,7 @@ const styles = StyleSheet.create({
   },
   tileButton: {
     flex: 1,
-    backgroundColor: '#ffffffff',
+    backgroundColor: '#faebebff',
     paddingVertical: 20,
     marginHorizontal: 6,
     borderRadius: 12,
