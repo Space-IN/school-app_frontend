@@ -1,201 +1,199 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
-  FlatList,
   StyleSheet,
   SafeAreaView,
   ActivityIndicator,
   Alert,
+  Modal,
   TouchableOpacity,
-  RefreshControl,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Calendar } from 'react-native-calendars';
+import * as Animatable from 'react-native-animatable';
+import { useAuth } from '../../../context/authContext';
 import BASE_URL from '../../../config/baseURL';
 import { useStudent } from '../../../context/student/studentContext';
 
-const SESSIONS_PER_DAY = 8; // Assuming 8 sessions per day
 
-const AttendanceScreen = ({ route }) => {
+const AttendanceScreen = () => {
   const { studentData } = useStudent()
+  const { decodedToken } = useAuth();
   const [attendanceData, setAttendanceData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [stats, setStats] = useState({ present: 0, absent: 0, percentage: 0 });
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchAttendance = async () => {
+      if (!decodedToken?.userId) {
+        Alert.alert('Error', 'Could not identify student.');
+        setLoading(false);
+        return;
+      }
+
       try {
-        if (!studentData?.userId) {
-          Alert.alert('Error', 'Student ID is missing.');
-          setLoading(false);
-          return;
+        const response = await fetch(`${BASE_URL}/api/attendance/student/${decodedToken.userId}`);
+        const data = await response.json();
+
+        if (response.ok) {
+          setAttendanceData(data);
+        } else {
+          Alert.alert('Error', data.message || 'Failed to fetch attendance.');
         }
-
-        const res = await fetch(`${BASE_URL}/api/attendance/student/${studentData?.userId}`);
-        const data = await res.json();
-
-        console.log('📦 Attendance response:', data);
-
-        if (!Array.isArray(data)) {
-          console.error('Unexpected data format:', data);
-          Alert.alert('Error', data.message || 'Could not fetch attendance.');
-          return;
-        }
-
-        setAttendanceData(data);
-        calculateStats(data, studentData?.userId);
       } catch (error) {
-        console.error('❌ Error fetching attendance:', error);
-        Alert.alert('Error', 'Something went wrong while fetching attendance.');
+        console.error('Error fetching attendance:', error);
+        Alert.alert('Error', 'An unexpected error occurred.');
       } finally {
         setLoading(false);
       }
     };
 
     fetchAttendance();
-  }, []);
+  }, [decodedToken]);
 
-  const calculateStats = (data, studentId) => {
-    let totalPresent = 0;
-    let totalSessions = 0;
+  const { markedDates, attendanceStats } = useMemo(() => {
+    const dates = {};
+    let presentSessions = 0;
+    let absentSessions = 0;
 
-    data.forEach(day => {
-      const studentRecord = day.records.find(record => 
-        record.student.toString() === studentId
-      );
+    attendanceData.forEach(record => {
+      const date = record.date.split('T')[0];
+      let dailyPresent = 0;
+      let dailyAbsent = 0;
 
-      if (studentRecord) {
-        studentRecord.sessions.forEach(session => {
-          totalSessions++;
-          if (session.status === 'present') {
-            totalPresent++;
-          }
-        });
+      record.sessions.forEach(session => {
+        if (session.status === 'present') {
+          presentSessions++;
+          dailyPresent++;
+        } else {
+          absentSessions++;
+          dailyAbsent++;
+        }
+      });
+
+      if (dailyAbsent > 0) {
+        dates[date] = { marked: true, dotColor: '#ef4444', activeOpacity: 0.5 };
+      } else if (dailyPresent > 0) {
+        dates[date] = { marked: true, dotColor: '#22c55e', activeOpacity: 0.5 };
       }
     });
 
-    const percentage = totalSessions > 0 ? (totalPresent / totalSessions) * 100 : 0;
+    const totalSessions = presentSessions + absentSessions;
+    const percentage = totalSessions > 0 ? (presentSessions / totalSessions) * 100 : 0;
 
-    setStats({
-      present: totalPresent,
-      absent: totalSessions - totalPresent,
-      percentage: percentage.toFixed(1)
-    });
+    return {
+      markedDates: dates,
+      attendanceStats: {
+        present: presentSessions,
+        absent: absentSessions,
+        total: totalSessions,
+        percentage: percentage.toFixed(1),
+      },
+    };
+  }, [attendanceData]);
+
+  const onDayPress = day => {
+    setSelectedDate(day.dateString);
+    setIsModalVisible(true);
   };
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    try {
-      const res = await fetch(`${BASE_URL}/api/attendance/student/${studentData?.userId}`);
-      const data = await res.json();
-      setAttendanceData(data);
-      calculateStats(data, studentData?.userId);
-    } catch (error) {
-      console.error('Error refreshing attendance:', error);
-      Alert.alert('Error', 'Failed to refresh attendance data');
+  const renderSessionDetails = () => {
+    if (!selectedDate) return null;
+
+    const record = attendanceData.find(r => r.date.startsWith(selectedDate));
+    if (!record) {
+      return <Text style={styles.modalText}>No attendance recorded for this day.</Text>;
     }
-    setRefreshing(false);
+
+    return record.sessions.map((session, index) => (
+      <View key={index} style={styles.sessionRow}>
+        <Text style={styles.sessionText}>Session {session.session_number}</Text>
+        <Text
+          style={[
+            styles.statusText,
+            { color: session.status === 'present' ? '#22c55e' : '#ef4444' },
+          ]}
+        >
+          {session.status}
+        </Text>
+      </View>
+    ));
   };
 
-  const renderItem = ({ item }) => {
-    const studentRecord = item.records.find(
-      record => record.student.toString() === studentData?.userId
-    );
-
-    if (!studentRecord) return null;
-
-    const date = new Date(item.date).toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    });
-
+  if (loading) {
     return (
-      <View style={styles.card}>
-        <Text style={styles.dateLabel}>📅 {date}</Text>
-        <Text style={styles.gradeSection}>Grade {item.grade}-{item.section}</Text>
-        <View style={styles.sessionsContainer}>
-          {Array.from({ length: SESSIONS_PER_DAY }).map((_, index) => {
-            const session = studentRecord.sessions.find(
-              s => s.session_number === index + 1
-            );
-            const status = session?.status || 'NA';
-            
-            return (
-              <View
-                key={index}
-                style={[
-                  styles.sessionBadge,
-                  status === 'present' && styles.presentBadge,
-                  status === 'absent' && styles.absentBadge
-                ]}
-              >
-                <Text style={styles.sessionNumber}>{index + 1}</Text>
-                <Text style={[
-                  styles.statusText,
-                  status === 'present' && styles.presentText,
-                  status === 'absent' && styles.absentText
-                ]}>
-                  {status === 'present' ? 'P' : status === 'absent' ? 'A' : '-'}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
+      <View style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" color="#c01e12" />
       </View>
     );
-  };
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.statsContainer}>
-        <View style={styles.statsRow}>
+      <Animatable.View animation="fadeInDown" style={styles.statsContainer}>
+        <View style={styles.statBox}>
+          <Text style={styles.statValue}>{studentData?.attendancePercentage}%</Text>
+          <Text style={styles.statLabel}>Overall Attendance</Text>
+        </View>
+        <View style={styles.statRow}>
           <View style={styles.statBox}>
-            <Text style={styles.statNumber}>{stats.present}</Text>
-            <Text style={styles.statLabel}>Present</Text>
+            <Text style={styles.statValue}>{attendanceStats.present}</Text>
+            <Text style={styles.statLabel}> Sessions Present</Text>
           </View>
           <View style={styles.statBox}>
-            <Text style={styles.statNumber}>{stats.absent}</Text>
-            <Text style={styles.statLabel}>Absent</Text>
+            <Text style={styles.statValue}>{attendanceStats.absent}</Text>
+            <Text style={styles.statLabel}> Sessions Absent</Text>
           </View>
         </View>
-        <View style={styles.statsRow}>
-          <View style={styles.statBox}>
-            <Text style={styles.statNumber}>{studentData?.attendancePercentage}%</Text>
-            <Text style={styles.statLabel}>Present %</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statNumber}>{(100 - studentData?.attendancePercentage).toFixed(1)}%</Text>
-            <Text style={styles.statLabel}>Absent %</Text>
-          </View>
-        </View>
-      </View>
+      </Animatable.View>
 
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#c01e12ff" />
-        </View>
-      ) : (
-        <FlatList
-          data={attendanceData}
-          keyExtractor={(item) => item._id}
-          renderItem={renderItem}
-          contentContainerStyle={styles.list}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={["#c01e12ff"]}
-            />
-          }
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No attendance records found</Text>
-            </View>
-          }
+      <Animatable.View animation="fadeInUp" delay={300}>
+        <Calendar
+          onDayPress={onDayPress}
+          markedDates={markedDates}
+          theme={{
+            backgroundColor: '#ffffff',
+            calendarBackground: '#ffffff',
+            textSectionTitleColor: '#b6c1cd',
+            selectedDayBackgroundColor: '#c01e12',
+            selectedDayTextColor: '#ffffff',
+            todayTextColor: '#c01e12',
+            dayTextColor: '#2d4150',
+            arrowColor: '#c01e12',
+            monthTextColor: '#c01e12',
+            indicatorColor: 'blue',
+            textDayFontWeight: '300',
+            textMonthFontWeight: 'bold',
+            textDayHeaderFontWeight: '300',
+            textDayFontSize: 16,
+            textMonthFontSize: 16,
+            textDayHeaderFontSize: 14,
+          }}
         />
-      )}
+      </Animatable.View>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+              Attendance for {selectedDate}
+            </Text>
+            {renderSessionDetails()}
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setIsModalVisible(false)}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -203,117 +201,98 @@ const AttendanceScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f4f4f8',
   },
-  loadingContainer: {
-    flex: 1,
+  centered: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   statsContainer: {
-    padding: 16,
-    backgroundColor: '#ffffff',
-    marginBottom: 8,
-    elevation: 2,
+    padding: 20,
+    backgroundColor: '#fff',
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    marginBottom: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  statsRow: {
+  statRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 16,
+    marginTop: 15,
   },
   statBox: {
     alignItems: 'center',
-    flex: 1,
-    margin: 8,
-    padding: 16,
-    backgroundColor: '#f8fafc',
-    borderRadius: 8,
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 1,
   },
-  statNumber: {
-    fontSize: 24,
+  statValue: {
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#c01e12ff',
+    color: '#c01e12',
   },
   statLabel: {
     fontSize: 14,
-    color: '#64748b',
-    marginTop: 4,
+    color: '#6b7280',
+    marginTop: 5,
   },
-  list: {
-    padding: 16,
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  dateLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1e293b',
-    marginBottom: 4,
-  },
-  gradeSection: {
-    fontSize: 14,
-    color: '#64748b',
-    marginBottom: 12,
-  },
-  sessionsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  sessionBadge: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#e2e8f0',
+  modalOverlay: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  presentBadge: {
-    backgroundColor: '#dcfce7',
+  modalContent: {
+    width: '85%',
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 25,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
-  absentBadge: {
-    backgroundColor: '#fee2e2',
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
   },
-  sessionNumber: {
-    fontSize: 12,
-    color: '#64748b',
+  sessionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  sessionText: {
+    fontSize: 16,
+    color: '#374151',
   },
   statusText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  presentText: {
-    color: '#16a34a',
-  },
-  absentText: {
-    color: '#dc2626',
-  },
-  emptyContainer: {
-    padding: 32,
-    alignItems: 'center',
-  },
-  emptyText: {
     fontSize: 16,
-    color: '#64748b',
+    fontWeight: 'bold',
+    textTransform: 'capitalize',
+  },
+  closeButton: {
+    marginTop: 25,
+    backgroundColor: '#c01e12',
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    elevation: 2,
+  },
+  closeButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
     textAlign: 'center',
+    fontSize: 16,
   },
 });
 

@@ -176,6 +176,8 @@ const StudentProfileScreen = () => {
                       <Text style={{ color: "black", fontWeight: "400", fontSize: 16, }}>{profile.fatherEmail || "N/A"}</Text>
                     </View>
                   </View>
+
+                  
                 </View>
               </View>
 
