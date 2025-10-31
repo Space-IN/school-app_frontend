@@ -34,7 +34,7 @@ const AddNoticeScreen = () => {
 
   const fetchNotices = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/notices/`);
+      const res = await axios.get(`${BASE_URL}/api/announcements/`);
       setNotices(res.data || []);
     } catch (error) {
       console.error("Error fetching notices:", error);
@@ -105,7 +105,7 @@ const AddNoticeScreen = () => {
   try {
     console.log("Selected file:", selectedFile);
 
-    await axios.post(`${BASE_URL}/api/notices/add`, formData, {
+    await axios.post(`${BASE_URL}/api/announcement/add`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       },
@@ -132,7 +132,7 @@ const AddNoticeScreen = () => {
         style: "destructive",
         onPress: async () => {
           try {
-            await axios.delete(`${BASE_URL}/api/notices/delete/${id}`);
+            await axios.delete(`${BASE_URL}/api/announcement/delete/${id}`);
             fetchNotices(); 
             Alert.alert("Deleted", "Notice deleted successfully");
           } catch (error) {
@@ -255,7 +255,7 @@ const pickFile = async () => {
       <TouchableOpacity
         onPress={() => {
           const filename = notice.fileUrl.split('/').pop();
-          setPreviewUrl(`${BASE_URL}/api/notices/preview/${filename}`);
+          setPreviewUrl(`${BASE_URL}/api/announcement/preview/${filename}`);
 
           setPreviewVisible(true);
         }}

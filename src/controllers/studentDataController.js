@@ -37,9 +37,9 @@ export const fetchOverallCPGA = async (studentId) => {
     }
 }
 
-export const fetchAnnouncements = async () => {
+export const fetchActiveAnnouncements = async (from, to) => {
     try {
-        const res = await axios.get(`${BASE_URL}/api/notices/`)
+        const res = await axios.get(`${BASE_URL}/api/announcements/active/`)
         return res.data
     } catch(err) {
         console.error("failed to fetch student's announcements: ", err.response?.data)

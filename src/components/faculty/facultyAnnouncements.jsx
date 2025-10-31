@@ -11,7 +11,7 @@ export default function FacultyAnnouncements() {
   useEffect(() => {
     const fetchNotices = async () => {
       try {
-        const res = await axios.get(`${BASE_URL}/api/notices/`);
+        const res = await axios.get(`${BASE_URL}/api/announcement/`);
         // Filter for faculty or all
         const facultyNotices = res.data.filter(
           (notice) => notice.target === "all" || notice.target === "faculty"

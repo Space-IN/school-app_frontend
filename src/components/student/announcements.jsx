@@ -3,8 +3,7 @@ import Foundation from "@expo/vector-icons/Foundation"
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5"
 import { LinearGradient } from "expo-linear-gradient"
 import { useEffect, useState } from "react"
-import { fetchAnnouncements } from "../../controllers/studentDataController"
-import { endOfWeek, parseISO, startOfWeek, isWithinInterval } from "date-fns"
+import { fetchActiveAnnouncements } from "../../controllers/studentDataController"
 
 
 export default function StudentAnnouncements() {
@@ -16,21 +15,9 @@ export default function StudentAnnouncements() {
     const loadAnnouncements = async () => {
       setLoading(true)
       try {
-        const response = await fetchAnnouncements()
-        
-        if(response) {
-          const filteredAnnouncements = response.filter((item) => {
-            const announcementDate = parseISO(item.date)
-            const now = new Date()
-            return isWithinInterval(announcementDate, {
-              start: startOfWeek(now, { weekStartsOn: 1 }),
-              end: endOfWeek(now, { weekStartsOn: 1 }),
-            })
-          })
-
-          setAnnouncements(filteredAnnouncements)
-        }
-
+        const response = await fetchActiveAnnouncements()
+        console.log("response: ", response)
+        if(response) setAnnouncements(response)
       } catch (err) {
         setErr(err.message || "An error occurred while fetching announcements.")
       } finally {
@@ -63,7 +50,7 @@ export default function StudentAnnouncements() {
             </View>
             ) : (
             announcements.map((item) => (
-                <View style={styles.card} key={item.id}>
+                <View style={styles.card} key={item._id}>
                   <View style={styles.cardHeader}>
                     <FontAwesome5 name="calendar-day" size={12} color="#64748b" />
                     <Text style={styles.date}>
