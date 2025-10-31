@@ -140,7 +140,6 @@ export default function FacultyProfileScreen() {
       <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
       
       {/* Standard Centered Header */}
-    /
       
       <ScrollView 
         style={styles.container} 
@@ -157,7 +156,7 @@ export default function FacultyProfileScreen() {
             <Text style={styles.userId}>ID: {faculty.userId || 'N/A'}</Text>
           </View>
 
-          Quick Actions
+         
           <View style={styles.actionsSection}>
             {/* <TouchableOpacity style={styles.actionButton} onPress={handleGoToNotices}>
               <Ionicons name="megaphone-outline" size={24} color="#4a90e2" />

@@ -8,30 +8,22 @@ import {
   Alert,
   TouchableOpacity,
   TextInput,
-  FlatList,
-  RefreshControl,
   Dimensions,
   AppState,
   StatusBar
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import * as Audio from 'expo-audio';
+import { Audio } from 'expo-av';
 import axios from 'axios';
-import { TabView } from 'react-native-tab-view';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { BASE_URL } from "@env";;
-
-const { width: screenWidth } = Dimensions.get('window');
+import { BASE_URL } from "@env";
 
 export default function LectureRecordingScreen({ route }) {
   const { facultyId } = route.params || {};
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-
-  // ----- Tab Management -----
-  const [activeTab, setActiveTab] = useState(0); // 0 = Recording, 1 = Past Recordings
 
   // ----- schedule/class/subject states -----
   const [scheduleData, setScheduleData] = useState([]);
@@ -45,10 +37,6 @@ export default function LectureRecordingScreen({ route }) {
 
   const [loading, setLoading] = useState(false);
 
-  // ----- existing recordings states -----
-  const [existingRecordings, setExistingRecordings] = useState([]);
-  const [fetchingRecordings, setFetchingRecordings] = useState(false);
-
   // ----- recording states -----
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -61,7 +49,7 @@ export default function LectureRecordingScreen({ route }) {
   const startTsRef = useRef(null);
   const pausedDurationRef = useRef(0);
 
-  // Set header with back button
+  // Set header with back button and Past Recordings button
   React.useLayoutEffect(() => {
     navigation.setOptions({
       headerLeft: () => (
@@ -78,6 +66,21 @@ export default function LectureRecordingScreen({ route }) {
 
   const handleBackPress = () => {
     navigation.goBack();
+  };
+
+  const navigateToPastRecordings = () => {
+    if (!selectedClass || !selectedSubject) {
+      Alert.alert('Selection Required', 'Please select a class and subject first to view past recordings.');
+      return;
+    }
+
+    const classInfo = classes.find((c) => c.id === selectedClass);
+    navigation.navigate('PastRecordingsScreen', {
+      facultyId,
+      grade: classInfo.classAssigned,
+      section: classInfo.section,
+      subjectId: selectedSubject,
+    });
   };
 
   // AppState listener for call interruptions
@@ -124,28 +127,11 @@ export default function LectureRecordingScreen({ route }) {
   }, [isRecording, recordingObj, isPaused]);
 
   useEffect(() => {
-    if (facultyId) fetchSchedule();
-    return () => clearInterval(timerRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [facultyId]);
-
-  // Auto-fetch recordings if route params are provided
-  useEffect(() => {
-    if (
-      facultyId &&
-      route.params?.grade &&
-      route.params?.section &&
-      route.params?.subjectMasterId
-    ) {
-      fetchExistingRecordings();
+    if (facultyId) {
+      fetchSchedule();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => clearInterval(timerRef.current);
   }, [facultyId]);
-
-  // Tab Navigation Functions
-  const handleTabPress = (tabIndex) => {
-    setActiveTab(tabIndex);
-  };
 
   // Fetch faculty schedule
   const fetchSchedule = async () => {
@@ -163,43 +149,6 @@ export default function LectureRecordingScreen({ route }) {
           }
         });
         setClasses(uniqueClasses);
-
-        // If route params included grade/section/subject, auto-select them
-        const { grade, section, subjectMasterId } = route.params || {};
-        if (grade && section) {
-          const matchingClass = uniqueClasses.find(
-            (c) => c.classAssigned === grade && c.section === section
-          );
-          if (matchingClass) {
-            setSelectedClass(matchingClass.id);
-
-            // Build subjects for that class and auto-select subject if provided
-            const subjectsForClass = [];
-            res.data.schedule
-              .filter((item) => item.classAssigned === matchingClass.classAssigned && item.section === matchingClass.section)
-              .forEach((item) => {
-                if (Array.isArray(item.periods)) {
-                  item.periods.forEach((period) => {
-                    if (
-                      period.subjectMasterId &&
-                      !subjectsForClass.find((s) => s.subjectMasterId === period.subjectMasterId._id)
-                    ) {
-                      subjectsForClass.push({
-                        subjectMasterId: period.subjectMasterId._id,
-                        subjectName: period.subjectMasterId.name,
-                      });
-                    }
-                  });
-                }
-              });
-
-            setSubjects(subjectsForClass);
-
-            if (subjectMasterId && subjectsForClass.find((s) => s.subjectMasterId === subjectMasterId)) {
-              setSelectedSubject(subjectMasterId);
-            }
-          }
-        }
       } else {
         Alert.alert('No schedule found for this faculty.');
       }
@@ -211,75 +160,170 @@ export default function LectureRecordingScreen({ route }) {
     }
   };
 
-  const fetchExistingRecordings = async () => {
-    const { grade, section, subjectMasterId } = route.params || {};
+  // Auto-select class and subject when classes/scheduleData are available
+  useEffect(() => {
+    const autoSelectClassAndSubject = () => {
+      const { grade, section, subjectId, scheduleItem, subjectName } = route.params || {};
+      const effectiveSubjectId = subjectId || scheduleItem?.subjectId;
+      
+      console.log('🔄 Auto-select started:', { grade, section, effectiveSubjectId, subjectName });
+      console.log('📋 Available classes:', classes);
+      console.log('📚 Available schedule data count:', scheduleData.length);
 
-    try {
-      setFetchingRecordings(true);
+      if (!grade || !section) return;
 
-      let apiUrl;
-      if (grade && section && subjectMasterId) {
-        // Use route params
-        apiUrl = `${BASE_URL}/api/lecture-recordings/faculty/${facultyId}/class/${grade}/section/${section}?subjectMasterId=${subjectMasterId}`;
-      } else if (selectedClass && selectedSubject) {
-        // Use picker selections
-        const classInfo = classes.find((c) => c.id === selectedClass);
-        apiUrl = `${BASE_URL}/api/lecture-recordings/faculty/${facultyId}/class/${classInfo.classAssigned}/section/${classInfo.section}?subjectMasterId=${selectedSubject}`;
-      } else {
-        Alert.alert('Please select class and subject first');
+      // Find matching class
+      const classId = `${grade}${section}`;
+      const matchingClass = classes.find((c) => c.id === classId);
+      
+      if (!matchingClass) {
+        console.log('❌ No matching class found for:', classId);
         return;
       }
 
-      const response = await axios.get(apiUrl);
-      setExistingRecordings(response.data || []);
+      console.log('✅ Matching class found:', matchingClass);
 
-      // Auto-switch to Past Recordings tab when fetching
-      handleTabPress(1);
-    } catch (err) {
-      console.error('❌ Error fetching recordings:', err);
-      Alert.alert('Error', 'Failed to fetch lecture recordings.');
-    } finally {
-      setFetchingRecordings(false);
+      // Build subjects for the class
+      const subjectsForClass = [];
+      scheduleData
+        .filter((item) => 
+          item.classAssigned === matchingClass.classAssigned && 
+          item.section === matchingClass.section
+        )
+        .forEach((item) => {
+          console.log('📖 Processing schedule item:', item.classAssigned, item.section);
+          if (Array.isArray(item.periods)) {
+            item.periods.forEach((period, index) => {
+              console.log(`   Period ${index}:`, period);
+              if (period.subjectMasterId) {
+                let subjId;
+                let subjName;
+
+                // Handle different subjectMasterId structures
+                if (typeof period.subjectMasterId === 'string') {
+                  subjId = period.subjectMasterId;
+                  subjName = period.subjectName || 'Unknown Subject';
+                } else {
+                  // Object case - try multiple possible property names
+                  subjId = period.subjectMasterId._id || period.subjectMasterId.id || period.subjectMasterId.subjectMasterId;
+                  subjName = period.subjectMasterId.name || period.subjectMasterId.subjectName || 'Unknown Subject';
+                }
+
+                if (subjId && !subjectsForClass.find((s) => s.subjectMasterId === subjId)) {
+                  subjectsForClass.push({
+                    subjectMasterId: subjId,
+                    subjectName: subjName,
+                  });
+                  console.log(`   ✅ Added subject: ${subjName} (${subjId})`);
+                }
+              }
+            });
+          }
+        });
+
+      // Update subjects state
+      setSubjects(subjectsForClass);
+      
+      // Set selected class
+      setSelectedClass(matchingClass.id);
+      console.log('🎯 Selected class set to:', matchingClass.id);
+
+      // If we have a subject ID from params, try to match it
+      if (effectiveSubjectId) {
+        const foundSubject = subjectsForClass.find((s) => 
+          s.subjectMasterId === effectiveSubjectId
+        );
+
+        if (foundSubject) {
+          setSelectedSubject(foundSubject.subjectMasterId);
+          console.log('✅ Auto-selected subject by ID:', foundSubject.subjectName, foundSubject.subjectMasterId);
+        } else {
+          console.log('❌ Subject ID not found. Trying to match by name...');
+          
+          // If ID doesn't match, try to match by subject name
+          const foundByName = subjectsForClass.find((s) => 
+            s.subjectName === subjectName || 
+            s.subjectName === scheduleItem?.subjectName
+          );
+
+          if (foundByName) {
+            setSelectedSubject(foundByName.subjectMasterId);
+            console.log('✅ Auto-selected subject by name:', foundByName.subjectName, foundByName.subjectMasterId);
+          } else {
+            console.log('❌ Subject not found by name either. Available subjects:', subjectsForClass);
+            setSelectedSubject(null);
+          }
+        }
+      } else {
+        console.log('ℹ️ No subject ID provided in params');
+        setSelectedSubject(null);
+      }
+    };
+
+    // Only run when we have all required data
+    if (classes.length > 0 && scheduleData.length > 0) {
+      autoSelectClassAndSubject();
     }
-  };
+  }, [classes, scheduleData, route.params]);
 
   const handleClassChange = (classId) => {
     setSelectedClass(classId);
-    setSelectedSubject(null);
     setRecordingUri(null);
-    setExistingRecordings([]);
 
     const classInfo = classes.find((c) => c.id === classId);
     if (!classInfo) {
       setSubjects([]);
+      setSelectedSubject(null);
       return;
     }
 
+    // Build subjects for the selected class
     const subjectsForClass = [];
     scheduleData
-      .filter((item) => item.classAssigned === classInfo.classAssigned && item.section === classInfo.section)
+      .filter((item) => 
+        item.classAssigned === classInfo.classAssigned && 
+        item.section === classInfo.section
+      )
       .forEach((item) => {
         if (Array.isArray(item.periods)) {
           item.periods.forEach((period) => {
-            if (
-              period.subjectMasterId &&
-              !subjectsForClass.find((s) => s.subjectMasterId === period.subjectMasterId._id)
-            ) {
-              subjectsForClass.push({
-                subjectMasterId: period.subjectMasterId._id,
-                subjectName: period.subjectMasterId.name,
-              });
+            if (period.subjectMasterId) {
+              let subjId;
+              let subjName;
+
+              if (typeof period.subjectMasterId === 'string') {
+                subjId = period.subjectMasterId;
+                subjName = period.subjectName || 'Unknown Subject';
+              } else {
+                subjId = period.subjectMasterId._id || period.subjectMasterId.id || period.subjectMasterId.subjectMasterId;
+                subjName = period.subjectMasterId.name || period.subjectMasterId.subjectName || 'Unknown Subject';
+              }
+
+              if (subjId && !subjectsForClass.find((s) => s.subjectMasterId === subjId)) {
+                subjectsForClass.push({
+                  subjectMasterId: subjId,
+                  subjectName: subjName,
+                });
+              }
             }
           });
         }
       });
 
     setSubjects(subjectsForClass);
+    
+    // Only reset subject if it doesn't belong to the new class
+    const currentSubjectStillValid = subjectsForClass.some(
+      s => s.subjectMasterId === selectedSubject
+    );
+    
+    if (!currentSubjectStillValid) {
+      setSelectedSubject(null);
+    }
   };
 
   const handleSubjectChange = (subjectId) => {
     setSelectedSubject(subjectId);
-    setExistingRecordings([]);
   };
 
   // Enhanced timer function
@@ -439,14 +483,10 @@ export default function LectureRecordingScreen({ route }) {
       const data = await resp.json();
 
       if (resp.ok) {
-        Alert.alert('Uploaded', 'Recording uploaded with topic.');
+        Alert.alert('Uploaded', 'Recording uploaded successfully with topic.');
         // reset local state
         setRecordingUri(null);
         setTopicName('');
-        // Optionally refresh recordings and switch to Past Recordings tab
-        if (selectedClass && selectedSubject) {
-          fetchExistingRecordings();
-        }
       } else {
         console.error('Upload error', data);
         Alert.alert('Upload failed', data.message || 'Server error');
@@ -457,62 +497,6 @@ export default function LectureRecordingScreen({ route }) {
     } finally {
       setUploading(false);
     }
-  };
-
-  // Render individual recording item
-  const renderRecordingItem = ({ item }) => {
-    const createdDate = new Date(item.createdAt).toLocaleDateString();
-    const createdTime = new Date(item.createdAt).toLocaleTimeString();
-
-    const getStatusColor = (status) => {
-      switch (status) {
-        case 'done':
-          return '#28a745';
-        case 'processing':
-          return '#ffc107';
-        case 'failed':
-          return '#dc3545';
-        default:
-          return '#6c757d';
-      }
-    };
-
-    const getRelevanceColor = (isRelevant) => {
-      switch (isRelevant) {
-        case 'relevant':
-          return '#28a745';
-        case 'not_relevant':
-          return '#dc3545';
-        case 'partially_relevant':
-          return '#ffc107';
-        default:
-          return '#6c757d';
-      }
-    };
-
-    return (
-      <View style={styles.recordingItem}>
-        <View style={styles.recordingHeader}>
-          <Text style={styles.recordingTopic}>{item.topicName}</Text>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
-            <Text style={styles.statusText}>{item.status}</Text>
-          </View>
-        </View>
-
-        <Text style={styles.recordingInfo}>📅 {createdDate} at {createdTime}</Text>
-
-        {item.score !== null && item.score !== undefined && (
-          <Text style={styles.recordingInfo}>
-            📊 Relevance Score: {item.score}%
-            <Text style={[styles.relevanceLabel, { color: getRelevanceColor(item.isRelevant) }]}> ({item.isRelevant?.replace('_', ' ')})</Text>
-          </Text>
-        )}
-
-        {item.modelVersion && (
-          <Text style={styles.recordingInfo}>🤖 Model: {item.modelVersion}</Text>
-        )}
-      </View>
-    );
   };
 
   // Enhanced recording controls
@@ -584,138 +568,12 @@ export default function LectureRecordingScreen({ route }) {
     );
   };
 
-  // Render Recording Tab Content
-  const renderRecordingTab = () => (
-    <View style={styles.tabContent}>
-      {loading ? (
-        <ActivityIndicator size="large" />
-      ) : (
-        <>
-          <Text style={styles.label}>Select Class:</Text>
-          <View style={styles.pickerWrapper}>
-            <Picker selectedValue={selectedClass} onValueChange={handleClassChange}>
-              <Picker.Item label="-- Select Class --" value={null} />
-              {classes.map((cls) => (
-                <Picker.Item key={cls.id} label={`${cls.classAssigned}${cls.section}`} value={cls.id} />
-              ))}
-            </Picker>
-          </View>
-
-          {selectedClass && (
-            <>
-              <Text style={styles.label}>Select Subject:</Text>
-              <View style={styles.pickerWrapper}>
-                <Picker selectedValue={selectedSubject} onValueChange={handleSubjectChange}>
-                  <Picker.Item label="-- Select Subject --" value={null} />
-                  {subjects.map((s) => (
-                    <Picker.Item key={s.subjectMasterId} label={s.subjectName} value={s.subjectMasterId} />
-                  ))}
-                </Picker>
-              </View>
-            </>
-          )}
-
-          {selectedSubject && (
-            <>
-              <Text style={styles.label}>Enter Topic Name:</Text>
-              <TextInput
-                style={styles.input}
-                value={topicName}
-                onChangeText={setTopicName}
-                placeholder="Enter today's topic"
-              />
-            </>
-          )}
-
-          {/* Use enhanced recording controls */}
-          {renderRecordingControls()}
-        </>
-      )}
-    </View>
-  );
-
-  // Render Past Recordings Tab Content
-  const renderPastRecordingsTab = () => (
-    <View style={styles.tabContent}>
-      <View style={styles.recordingsHeader}>
-        <Text style={styles.sectionTitle}>📚 Past Recordings ({existingRecordings.length})</Text>
-
-        {selectedClass && selectedSubject && (
-          <TouchableOpacity
-            style={[styles.refreshButton]}
-            onPress={fetchExistingRecordings}
-            disabled={fetchingRecordings}
-          >
-            {fetchingRecordings ? (
-              <ActivityIndicator size="small" color="#4b4bfa" />
-            ) : (
-              <Text style={styles.refreshButtonText}>🔄 Refresh</Text>
-            )}
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {fetchingRecordings ? (
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#4b4bfa" />
-          <Text style={styles.loadingText}>Loading recordings...</Text>
-        </View>
-      ) : existingRecordings.length === 0 ? (
-        <View style={styles.centerContainer}>
-          <Text style={styles.noRecordings}>📝 No recordings found</Text>
-          <Text style={styles.noRecordingsSubtext}>
-            {selectedClass && selectedSubject
-              ? 'No recordings for this class and subject yet.'
-              : 'Please select a class and subject to view recordings.'}
-          </Text>
-          {!selectedClass || !selectedSubject ? (
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: '#4b4bfa', marginTop: 20 }]}
-              onPress={() => handleTabPress(0)}
-            >
-              <Text style={styles.buttonText}>🎤 Go to Recording</Text>
-            </TouchableOpacity>
-          ) : null}
-        </View>
-      ) : (
-        <FlatList
-          data={existingRecordings}
-          keyExtractor={(item) => item._id}
-          renderItem={renderRecordingItem}
-          style={styles.recordingsList}
-          refreshControl={
-            <RefreshControl refreshing={fetchingRecordings} onRefresh={fetchExistingRecordings} />
-          }
-          showsVerticalScrollIndicator={false}
-        />
-      )}
-    </View>
-  );
-
-  // TabView routes
-  const routes = [
-    { key: 'record', title: 'Record Lecture' },
-    { key: 'past', title: 'Past Recordings' },
-  ];
-
-  // renderScene uses our existing render functions
-  const renderScene = ({ route }) => {
-    switch (route.key) {
-      case 'record':
-        return renderRecordingTab();
-      case 'past':
-        return renderPastRecordingsTab();
-      default:
-        return null;
-    }
-  };
-
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
         <StatusBar style="light" backgroundColor="#9c1006" />
         
-        {/* Custom Header with Back Button and Manual Top Safe Area */}
+        {/* Custom Header with Back Button and Past Recordings Button */}
         <View style={[styles.customHeader, { paddingTop: insets.top + 15 }]}>
           <View style={styles.headerTopRow}>
             <TouchableOpacity 
@@ -725,10 +583,18 @@ export default function LectureRecordingScreen({ route }) {
               <Ionicons name="arrow-back" size={24} color="#fff" />
               <Text style={styles.backButtonText}>Back</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity 
+              onPress={navigateToPastRecordings}
+              style={styles.pastRecordingsButton}
+            >
+              <Text style={styles.pastRecordingsButtonText}>Past Recordings</Text>
+              <Ionicons name="arrow-forward" size={24} color="#fff" />
+            </TouchableOpacity>
           </View>
           
           <Text style={styles.headerTitle}>
-             Lecture Recording
+            🎤 Lecture Recording
           </Text>
           <Text style={styles.headerSubtitle}>
             Record and manage your lecture audio
@@ -736,31 +602,51 @@ export default function LectureRecordingScreen({ route }) {
         </View>
 
         <View style={styles.container}>
-          {/* Keep original tab headers for visual consistency */}
-          <View style={styles.tabContainer}>
-            <TouchableOpacity
-              style={[styles.tab, activeTab === 0 && styles.activeTab]}
-              onPress={() => handleTabPress(0)}
-            >
-              <Text style={[styles.tabText, activeTab === 0 && styles.activeTabText]}>🎤 Record Lecture</Text>
-            </TouchableOpacity>
+          {loading ? (
+            <View style={styles.centerContainer}>
+              <ActivityIndicator size="large" color="#4b4bfa" />
+            </View>
+          ) : (
+            <>
+              <Text style={styles.label}>Select Class:</Text>
+              <View style={styles.pickerWrapper}>
+                <Picker selectedValue={selectedClass} onValueChange={handleClassChange}>
+                  <Picker.Item label="-- Select Class --" value={null} />
+                  {classes.map((cls) => (
+                    <Picker.Item key={cls.id} label={`${cls.classAssigned}${cls.section}`} value={cls.id} />
+                  ))}
+                </Picker>
+              </View>
 
-            <TouchableOpacity
-              style={[styles.tab, activeTab === 1 && styles.activeTab]}
-              onPress={() => handleTabPress(1)}
-            >
-              <Text style={[styles.tabText, activeTab === 1 && styles.activeTabText]}>📚 Past Recordings</Text>
-            </TouchableOpacity>
-          </View>
+              {selectedClass && (
+                <>
+                  <Text style={styles.label}>Select Subject:</Text>
+                  <View style={styles.pickerWrapper}>
+                    <Picker selectedValue={selectedSubject} onValueChange={handleSubjectChange}>
+                      <Picker.Item label="-- Select Subject --" value={null} />
+                      {subjects.map((s) => (
+                        <Picker.Item key={s.subjectMasterId} label={s.subjectName} value={s.subjectMasterId} />
+                      ))}
+                    </Picker>
+                  </View>
+                </>
+              )}
 
-          <TabView
-            navigationState={{ index: activeTab, routes }}
-            renderScene={renderScene}
-            onIndexChange={setActiveTab}
-            initialLayout={{ width: screenWidth }}
-            style={styles.tabView}
-            renderTabBar={() => null}
-          />
+              {selectedSubject && (
+                <>
+                  <Text style={styles.label}>Enter Topic Name:</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={topicName}
+                    onChangeText={setTopicName}
+                    placeholder="Enter today's topic"
+                  />
+                </>
+              )}
+
+              {renderRecordingControls()}
+            </>
+          )}
         </View>
       </SafeAreaView>
     </SafeAreaProvider>
@@ -786,6 +672,7 @@ const styles = StyleSheet.create({
   },
   headerTopRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
   },
@@ -814,6 +701,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  pastRecordingsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 5,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  pastRecordingsButtonText: {
+    color: '#fff',
+    marginRight: 5,
+    fontSize: 16,
+    fontWeight: '600',
+  },
   headerTitle: {
     color: '#fff',
     fontSize: 22,
@@ -832,46 +732,10 @@ const styles = StyleSheet.create({
     padding: 18,
     backgroundColor: '#fff',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: 18,
-    textAlign: 'center',
-    color: '#222',
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    marginBottom: 12,
-    borderRadius: 8,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  tab: {
+  centerContainer: {
     flex: 1,
-    paddingVertical: 12,
-    backgroundColor: '#f2f2f2',
+    justifyContent: 'center',
     alignItems: 'center',
-  },
-  activeTab: {
-    backgroundColor: '#4b4bfa',
-  },
-  tabText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#555',
-  },
-  activeTabText: {
-    color: '#fff',
-  },
-  tabView: {
-    flex: 1,
-  },
-  tabPage: {
-    flex: 1,
-  },
-  tabContent: {
-    padding: 16,
   },
   label: {
     marginTop: 8,
@@ -923,88 +787,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#28a745',
     fontWeight: '600',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 10,
-    color: '#222',
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 30,
-  },
-  loadingText: {
-    marginTop: 10,
-    color: '#555',
-  },
-  noRecordings: {
-    fontSize: 16,
-    color: '#555',
-    marginBottom: 4,
-  },
-  noRecordingsSubtext: {
-    fontSize: 14,
-    color: '#777',
-    textAlign: 'center',
-    marginHorizontal: 20,
-  },
-  refreshButton: {
-    backgroundColor: '#f2f2f2',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 5,
-  },
-  refreshButtonText: {
-    color: '#4b4bfa',
-    fontWeight: '600',
-  },
-  recordingsList: {
-    marginTop: 10,
-  },
-  recordingItem: {
-    backgroundColor: '#f9f9f9',
-    padding: 14,
-    borderRadius: 8,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  recordingHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  recordingTopic: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  recordingInfo: {
-    fontSize: 14,
-    color: '#555',
-    marginTop: 2,
-  },
-  statusBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  statusText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 12,
-  },
-  relevanceLabel: {
-    fontWeight: '700',
-  },
-  recordingsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
   },
 });

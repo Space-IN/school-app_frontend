@@ -138,7 +138,7 @@ const StudentProfileScreen = () => {
               <View style={styles.detailRow}>
                 <View style={{ width: "100%", display: "flex", flexDirection: "row", }}>
                   <MaterialIcons name="email" size={20} color="#fff" style={{ marginRight: 5, width: "45%" }} />
-                  <Text style={styles.value}>{profile.fatherEmail || "N/A"}</Text>
+                  <Text style={styles.value}>{profile.studentEmail || "N/A"}</Text>
                 </View>
               </View>
 
@@ -149,7 +149,7 @@ const StudentProfileScreen = () => {
             </View>
 
             {/* parent's profile cards */}
-            <View style={{ width: "100%", display: "flex", justifyContent: "center", marginTop: 25, gap: 10 }}>
+            <View style={{ width: "100%", display: "flex", justifyContent: "center", marginTop: 25, gap: 10 ,flexWrap:"wrap"}}>
               <View style={styles.parentCard}>
                 <Text style={styles.parentRole}>FATHER'S PROFILE</Text>
 
@@ -173,7 +173,7 @@ const StudentProfileScreen = () => {
                   <View style={[styles.detailRow, { marginBottom: 4, }]}>
                     <View style={{ width: "100%", display: "flex", flexDirection: "row",  }}>
                       <Text style={{ fontWeight: "500", color: "black", fontSize: 16, marginRight: 5, width: "45%"}}>EMail: </Text>
-                      <Text style={{ color: "black", fontWeight: "400", fontSize: 16, }}>{profile.fatherEmail || "N/A"}</Text>
+                      <Text style={{ color: "black", fontWeight: "400", fontSize: 16,flexShrink:1,flexWrap:"wrap" }}>{profile.parentEmail || "N/A"}</Text>
                     </View>
                   </View>
 
@@ -204,7 +204,7 @@ const StudentProfileScreen = () => {
                   <View style={[styles.detailRow, { marginBottom: 4, }]}>
                     <View style={{ width: "100%", display: "flex", flexDirection: "row",  }}>
                       <Text style={{ fontWeight: "500", color: "black", fontSize: 16, marginRight: 5, width: "45%"}}>EMail: </Text>
-                      <Text style={{ color: "black", fontWeight: "400", fontSize: 16, }}>{profile.motherEmail || "N/A"}</Text>
+                      <Text style={{ color: "black", fontWeight: "400", fontSize: 16,flexShrink:1,flexWrap:"wrap" }}>{profile.parentEmail || "N/A"}</Text>
                     </View>
                   </View>
                 </View>
