@@ -19,7 +19,6 @@ export default function StudentAnnouncements() {
       setLoading(true)
       try {
         const response = await fetchAnnouncements()
-        console.log("announcements response: ", response)
         if (response) setAnnouncements(response)
         
         thisWeekAnnouncements = announcements.filter((item) => {

@@ -48,7 +48,6 @@ export default function TimetableScreen() {
     try {
       const keys = await AsyncStorage.getAllKeys();
       const result = await AsyncStorage.multiGet(keys);
-      console.log('🔍 All AsyncStorage data:', result);
     } catch (err) {
       console.error('Debug error:', err);
     }
@@ -62,15 +61,12 @@ export default function TimetableScreen() {
       let userData = studentData
 
       if (!userData) {
-        console.log("user data: ", studentData)
         throw new Error('No user data found. Please try again later');
       }
 
       const studentUserId = userData?.userId || userData?.studentId || userData?.id;
       const grade = userData?.classAssigned || userData?.className || userData?.grade;
       const section = userData?.section;
-
-      console.log('📚 Student Info:', { studentUserId, grade, section });
 
       if (!studentUserId) {
         throw new Error('Student ID not found in user data');
@@ -94,7 +90,6 @@ export default function TimetableScreen() {
           }
 
           const classData = await classResponse.json();
-          console.log('📊 Class schedule response:', classData);
           setSchedule(classData);
         } else {
           throw new Error('Class and section information not found');
@@ -109,7 +104,6 @@ export default function TimetableScreen() {
           throw new Error('Failed to parse server response.');
         }
 
-        console.log('📊 Student schedule response:', data);
         setSchedule(data);
       }
     } catch (err) {

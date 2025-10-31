@@ -63,7 +63,7 @@ const SettingsItem = ({ icon, title, screen, isLogout = false }) => {
         onPress={onPress}
         style={[styles.itemContainer, isLogout && styles.logoutButton]}
       >
-        <Ionicons name={icon} size={24} color={isLogout ? '#fff' : '#1e3a8a'} />
+        <Ionicons name={icon} size={24} color={isLogout ? '#fff' : '#c01e12'} />
         <Text style={[styles.itemText, isLogout && styles.logoutText]}>{title}</Text>
         {!isLogout && <Ionicons name="chevron-forward-outline" size={22} color="#9ca3af" />}
       </Pressable>
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#1e3a8a',
+    color: '#c01e12',
   },
   subHeaderText: {
     fontSize: 16,

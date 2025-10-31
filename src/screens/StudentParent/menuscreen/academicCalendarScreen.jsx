@@ -36,14 +36,15 @@ LocaleConfig.defaultLocale = 'en';
 
 // --- UI CONSTANTS ---
 const COLORS = {
-  background: '#F9FAFB',
-  heading: '#1e3a8a',
-  primary: '#00adf5',
-  holiday: '#10b981',
-  deepBlue: '#1e40af',
-  textPrimary: '#1e293b',
-  textSecondary: '#f8fafc',
+  background: '#FDF4F3',      
+  heading: '#7a0f09',        
+  primary: '#c01e12',        
+  holiday: '#d33f2f',        
+  deepBlue: '#590905',        
+  textPrimary: '#2b0a08',     
+  textSecondary: '#fff5f5',   
 };
+
 
 // --- MAIN COMPONENT ---
 export default function AcademicCalendarScreen() {
