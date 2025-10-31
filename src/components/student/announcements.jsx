@@ -12,24 +12,25 @@ export default function StudentAnnouncements() {
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState(null)
 
-  let thisWeekAnnouncements = []
-
   useEffect(() => {
     const loadAnnouncements = async () => {
       setLoading(true)
       try {
         const response = await fetchAnnouncements()
-        if (response) setAnnouncements(response)
         
-        thisWeekAnnouncements = announcements.filter((item) => {
+        if(response) {
+          const filteredAnnouncements = response.filter((item) => {
             const announcementDate = parseISO(item.date)
             const now = new Date()
-
             return isWithinInterval(announcementDate, {
-                start: startOfWeek(now, { weekStartsOn: 1 }),
-                end: endOfWeek(now, { weekStartsOn: 1 }),
+              start: startOfWeek(now, { weekStartsOn: 1 }),
+              end: endOfWeek(now, { weekStartsOn: 1 }),
             })
-        })
+          })
+
+          setAnnouncements(filteredAnnouncements)
+        }
+
       } catch (err) {
         setErr(err.message || "An error occurred while fetching announcements.")
       } finally {
@@ -56,14 +57,14 @@ export default function StudentAnnouncements() {
             <View style={styles.errorCard}>
                 <Text style={styles.errorText}>{err}</Text>
             </View>
-            ) : thisWeekAnnouncements.length === 0 ? (
+            ) : announcements.length === 0 ? (
             <View style={styles.noDataCard}>
                 <Text style={styles.noData}>No new announcements</Text>
             </View>
             ) : (
-            thisWeekAnnouncements.map((item) => (
+            announcements.map((item) => (
                 <View style={styles.card} key={item.id}>
-                <View style={styles.cardHeader}>
+                  <View style={styles.cardHeader}>
                     <FontAwesome5 name="calendar-day" size={12} color="#64748b" />
                     <Text style={styles.date}>
                     {new Date(item.date).toLocaleString("en-IN", {
@@ -75,9 +76,9 @@ export default function StudentAnnouncements() {
                         hour12: true,
                     })}
                     </Text>
-                </View>
-                <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.description}>{item.message}</Text>
+                  </View>
+                  <Text style={styles.title}>{item.title}</Text>
+                  <Text style={styles.description}>{item.message}</Text>
                 </View>
             ))
             )}
@@ -118,7 +119,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8f8f8",
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
-    paddingTop: 5
+    paddingTop: 10
   },
   card: {
     backgroundColor: "#f5f5f5ff",
