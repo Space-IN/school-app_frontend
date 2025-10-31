@@ -1,5 +1,5 @@
 import { createStackNavigator } from '@react-navigation/stack';
-import MenuScreen from '../../screens/StudentParent/menuscreen/MenuScreen';
+import MenuScreen from '../../screens/StudentParent/menuscreen/menuScreen'
 import AttendanceScreen from '../../screens/StudentParent/menuscreen/attendanceScreen';
 import SettingsScreen from '../../screens/StudentParent/menuscreen/settings/SettingsScreen';
 import TimetableScreen from '../../screens/StudentParent/menuscreen/timetableScreen'
@@ -10,6 +10,7 @@ import PrivacyPolicyScreen from '../../screens/StudentParent/menuscreen/settings
 import TermsScreen from '../../screens/StudentParent/menuscreen/settings/TermsScreen';
 import AboutScreen from '../../screens/StudentParent/menuscreen/settings/AboutScreen';
 import StudentHeader from '../../components/student/header';
+import ChangePasswordScreen from '../../screens/StudentParent/menuscreen/settings/ChangePasswordScreen';
 
 const Stack = createStackNavigator();
 
@@ -31,6 +32,7 @@ export default function StudentMenuNavigator() {
       <Stack.Screen name="privacyPolicyScreen" component={PrivacyPolicyScreen} />
       <Stack.Screen name="termsScreen" component={TermsScreen} />
       <Stack.Screen name="aboutScreen" component={AboutScreen} />
+      <Stack.Screen name="changePasswordScreen" component={ChangePasswordScreen} />
     </Stack.Navigator>
   );
 }

@@ -71,11 +71,12 @@ const styles = StyleSheet.create({
   },
   announcementsContainer: {
     padding: 2,
-    marginTop: 15
+    marginTop: 5
   },
   scheduleContainer: {
     padding: 1,
-    marginTop: 30
+    marginVertical: 15,
+    marginBottom: 25,
   },
   eventsContainer: {
     marginBottom: 10

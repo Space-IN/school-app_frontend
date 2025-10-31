@@ -12,11 +12,12 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BASE_URL from '../../../config/baseURL';
+import { useStudent } from '../../../context/student/studentContext';
 
 const SESSIONS_PER_DAY = 8; // Assuming 8 sessions per day
 
 const AttendanceScreen = ({ route }) => {
-  const { studentData } = route.params || {}
+  const { studentData } = useStudent()
   const [attendanceData, setAttendanceData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);

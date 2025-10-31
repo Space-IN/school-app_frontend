@@ -1,181 +1,344 @@
-//src\screens\Faculty\classes\performance\ViewPerformanceTab.js
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert, ActivityIndicator, ScrollView } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import axios from 'axios';
-import { BASE_URL } from '@env';
+// import React, { useEffect, useState } from "react";
+// import { View, Text, ActivityIndicator, StyleSheet, FlatList } from "react-native";
+// import axios from "axios";
+// import { BASE_URL } from "@env";
 
-const ViewPerformanceTab = ({ route }) => {
-  const { grade, section } = route.params || {};
-  const [loading, setLoading] = useState(true);
-  const [examTypes, setExamTypes] = useState([]);
-  const [selectedExamType, setSelectedExamType] = useState('');
-  const [allPerformances, setAllPerformances] = useState({});
-  const [error, setError] = useState(null);
+// const FacultyAssessmentScoreScreen = ({ route }) => {
+//   const { grade, section, test_name, year, subjectName } = route.params || {};
 
-  useEffect(() => {
-    const fetchExamTypesAndData = async () => {
-      try {
-        const typesRes = await axios.get(
-          `${BASE_URL}/api/performance/types/all/class/${grade}/section/${section}`
-        );
+//   const [scores, setScores] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState("");
+//   console.log("🧩 Received params:", route.params);
 
-        const types = typesRes.data.examTypes;
-        setExamTypes(types);
-        setSelectedExamType(types[0] || '');
+//   useEffect(() => {
+//     const fetchAssessmentScores = async () => {
+//   try {
+//     console.log("📡 Fetching:", `${BASE_URL}/api/performance/faculty/assessmentScore`, {
+//       grade,
+//       section,
+//       test_name,
+//       year,
+//       subjectName,
+//     });
 
-        const performanceResults = {};
+//     const response = await axios.get(`${BASE_URL}/api/assessment/faculty/assessmentScore?grade=${grade}&section=${section}&test_name=${test_name}&year=${year}&subject=${subjectName}`, {
+//       params: {
+//         grade,
+//         section,
+//         test_name,
+//         year,
+//         subjectName,
+//       },
+//     });
 
-        for (const examType of types) {
-          const encodedType = encodeURIComponent(examType.trim());
-          const res = await axios.get(
-            `${BASE_URL}/api/performance/class/${grade}/section/${section}/exam/${encodedType}`
-          );
 
-          performanceResults[examType] = res.data.performances || [];
-        }
+//     console.log("✅ Response:", response.data);
 
-        setAllPerformances(performanceResults);
-      } catch (err) {
-        console.error('❌ Error:', err);
-        setError('Failed to fetch performance data.');
-      } finally {
-        setLoading(false);
+//     if (response.data.success) {
+//       setScores(response.data.data.scores);
+//     } else {
+//       setError(response.data.message || "Failed to load data.");
+//     }
+//   } catch (err) {
+//     console.error(
+//       "❌ Error fetching assessment scores:",
+//       err?.response?.data || err.message || err
+//     );
+//     setError(err?.response?.data?.message || "Error fetching assessment scores");
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+
+//     if (grade && section && test_name && year && subjectName) {
+//       fetchAssessmentScores();
+//     } else {
+//       setError("Missing required parameters");
+//       setLoading(false);
+//     }
+//   }, [grade, section, test_name, year, subjectName]);
+
+//   if (loading) {
+//     return <ActivityIndicator size="large" color="#007bff" style={{ marginTop: 40 }} />;
+//   }
+
+//   if (error) {
+//     return <Text style={styles.errorText}>{error}</Text>;
+//   }
+
+//   const renderItem = ({ item }) => (
+//     <View style={styles.card}>
+//       <Text style={styles.studentName}>🎓 {item.student.name} ({item.student.userId})</Text>
+//       <Text style={styles.subText}>SubjectName: {item.subjectName}</Text>
+//       <Text style={styles.subText}>
+//         Marks: {item.marks_obtained} / {item.max_marks}
+//       </Text>
+//       <Text style={styles.subText}>Grade: {item.grade_obtained}</Text>
+//       <Text
+//         style={[
+//           styles.subText,
+//           { color: item.status === "Pass" ? "green" : "red", fontWeight: "bold" },
+//         ]}
+//       >
+//         Status: {item.status}
+//       </Text>
+//       <Text style={styles.subText}>Marked By: {item.marked_by?.name}</Text>
+//     </View>
+//   );
+
+//   return (
+//     <View style={styles.container}>
+//       <Text style={styles.header}>
+//         {test_name} – {subjectName} ({grade}{section})
+//       </Text>
+//       <FlatList
+//         data={scores}
+//         renderItem={renderItem}
+//         keyExtractor={(item, index) => index.toString()}
+//         ListEmptyComponent={<Text style={styles.errorText}>No scores found</Text>}
+//       />
+//     </View>
+//   );
+// };
+
+// const styles = StyleSheet.create({
+//   container: { flex: 1, backgroundColor: "#fff", padding: 16 },
+//   header: { fontSize: 18, fontWeight: "bold", marginBottom: 12, color: "#333" },
+//   card: {
+//     backgroundColor: "#f4f7fb",
+//     padding: 16,
+//     marginBottom: 12,
+//     borderRadius: 8,
+//     shadowColor: "#000",
+//     shadowOpacity: 0.1,
+//     shadowRadius: 3,
+//     shadowOffset: { width: 0, height: 2 },
+//   },
+//   studentName: { fontSize: 16, fontWeight: "bold", marginBottom: 4 },
+//   subText: { fontSize: 14, color: "#444", marginBottom: 2 },
+//   errorText: { textAlign: "center", color: "red", marginTop: 20, fontSize: 16 },
+// });
+
+// export default FacultyAssessmentScoreScreen;
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Modal,
+} from "react-native";
+import axios from "axios";
+import { BASE_URL } from "@env";
+import { Ionicons } from "@expo/vector-icons";
+
+const FacultyAssessmentScoreScreen = ({ route }) => {
+  const { grade, section, year, subjectName } = route.params || {};
+
+  const [assessments, setAssessments] = useState([]);
+  const [selectedTest, setSelectedTest] = useState(null);
+  const [scores, setScores] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
+
+  // Fetch available test names
+  const fetchAssessments = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        `${BASE_URL}/api/assessment/assessmentName?grade=${grade}&section=${section}&year=${year}`
+      );
+      console.log("📘 Assessments:", response.data);
+      if (response.data.exams?.length) {
+        setAssessments(response.data.exams);
+      } else {
+        setError("No assessments found.");
       }
-    };
-
-    if (grade && section) {
-      fetchExamTypesAndData();
-    } else {
-      setError('Missing class or section');
+    } catch (err) {
+      console.error("❌ Error fetching assessments:", err);
+      setError("Failed to load assessments.");
+    } finally {
       setLoading(false);
     }
-  }, [grade, section]);
+  };
 
-  const renderPerformanceCard = (item) => (
-    <View key={item._id} style={styles.card}>
-      <Text style={styles.studentName}>🎓 {item.studentName || item.studentId}</Text>
-      <Text style={styles.subText}>Max Marks: {item.maxMarks}</Text>
-      {item.marks.map((mark, idx) => (
-        <Text key={idx} style={styles.markItem}>
-          📘 {mark.subject}: {mark.marksObtained} / {item.maxMarks}
-        </Text>
-      ))}
-      {/* Updated percentage, grade, and status check */}
-      {item.percentage !== undefined && item.percentage !== null ? (
-        <>
-          <Text style={styles.subText}>📊 Percentage: {item.percentage.toFixed(2)}%</Text>
-          <Text style={styles.subText}>🎖️ Grade: {item.grade || 'N/A'}</Text>
-          <Text
-            style={[
-              styles.subText,
-              { color: item.status === 'Pass' ? 'green' : 'red', fontWeight: 'bold' },
-            ]}
-          >
-            ✅ Status: {item.status || 'N/A'}
-          </Text>
-        </>
-      ) : (
-        <Text style={styles.subText}>📊 Percentage, grade, and status not available</Text>
-      )}
+  // Fetch performance for selected test
+  const fetchAssessmentScores = async (test_name) => {
+    try {
+      setLoading(true);
+      setError("");
+      console.log("📡 Fetching:", `${BASE_URL}/api/assessment/faculty/assessmentScore`, {
+        grade,
+        section,
+        test_name,
+        year,
+        subjectName,
+      });
+
+      const response = await axios.get(
+        `${BASE_URL}/api/assessment/faculty/assessmentScore?grade=${grade}&section=${section}&test_name=${test_name}&year=${year}&subject=${subjectName}`
+      );
+
+      console.log("✅ Response:", response.data);
+
+      if (response.data.success) {
+        setScores(response.data.data.scores);
+      } else {
+        setScores([]);
+        setError(response.data.message || "Failed to load scores.");
+      }
+    } catch (err) {
+      console.error("❌ Error fetching scores:", err?.response?.data || err.message);
+      setError(err?.response?.data?.message || "Error fetching scores");
+      setScores([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAssessments();
+  }, []);
+
+  const handleSelectTest = (test) => {
+    setSelectedTest(test);
+    setModalVisible(false);
+    fetchAssessmentScores(test.test_name);
+  };
+
+  const renderItem = ({ item }) => (
+    <View style={styles.card}>
+      <Text style={styles.studentName}>🎓 {item.student.name} ({item.student.userId})</Text>
+      <Text style={styles.subText}>Subject: {item.subjectName}</Text>
+      <Text style={styles.subText}>
+        Marks: {item.marks_obtained} / {item.max_marks}
+      </Text>
+      <Text style={styles.subText}>Grade: {item.grade_obtained}</Text>
+      <Text
+        style={[
+          styles.subText,
+          { color: item.status === "Pass" ? "green" : "red", fontWeight: "bold" },
+        ]}
+      >
+        Status: {item.status}
+      </Text>
+      <Text style={styles.subText}>Marked By: {item.marked_by?.name}</Text>
     </View>
   );
 
-  if (loading) {
-    return <ActivityIndicator size="large" color="#007bff" style={{ marginTop: 40 }} />;
-  }
-
-  if (error) {
-    return <Text style={styles.emptyText}>{error}</Text>;
-  }
-
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.examHeader}>Select Exam Type</Text>
-      <View style={styles.pickerWrapper}>
-        <Picker
-          selectedValue={selectedExamType}
-          onValueChange={(value) => setSelectedExamType(value)}
-          style={styles.picker}
-        >
-          {examTypes.map((type) => (
-            <Picker.Item key={type} label={type} value={type} />
-          ))}
-        </Picker>
-      </View>
+    <View style={styles.container}>
+      <TouchableOpacity
+        style={styles.dropdown}
+        onPress={() => setModalVisible(true)}
+      >
+        <Text style={styles.dropdownText}>
+          {selectedTest ? selectedTest.test_name : "Select Assessment"}
+        </Text>
+        <Ionicons name="caret-down" size={20} color="#000" />
+      </TouchableOpacity>
 
-      {selectedExamType ? (
-        <>
-          <Text style={styles.examHeader}>{selectedExamType}</Text>
-          {allPerformances[selectedExamType] && allPerformances[selectedExamType].length > 0 ? (
-            allPerformances[selectedExamType].map((item) => renderPerformanceCard(item))
-          ) : (
-            <Text style={styles.emptyText}>No data for {selectedExamType}</Text>
-          )}
-        </>
+      <Modal visible={modalVisible} transparent animationType="fade">
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          onPress={() => setModalVisible(false)}
+        >
+          <View style={styles.modalBox}>
+            <FlatList
+              data={assessments}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.modalItem}
+                  onPress={() => handleSelectTest(item)}
+                >
+                  <Text style={styles.modalText}>{item.test_name}</Text>
+                  <Text style={styles.modalSubText}>{item.test_type}</Text>
+                  <Text style={styles.modalSubText}>
+                    {new Date(item.date).toISOString().split("T")[0]}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              ListEmptyComponent={
+                <Text style={styles.errorText}>No assessments found.</Text>
+              }
+            />
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {loading ? (
+        <ActivityIndicator size="large" color="#007bff" style={{ marginTop: 40 }} />
+      ) : error ? (
+        <Text style={styles.errorText}>{error}</Text>
       ) : (
-        <Text style={styles.emptyText}>Please select an exam type</Text>
+        <FlatList
+          data={scores}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => index.toString()}
+          ListEmptyComponent={
+            selectedTest ? (
+              <Text style={styles.errorText}>No scores found.</Text>
+            ) : (
+              <Text style={styles.errorText}>Select an assessment to view results.</Text>
+            )
+          }
+        />
       )}
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    backgroundColor: '#ffffffff',
+  container: { flex: 1, backgroundColor: "#fff", padding: 16 },
+  dropdown: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#f0f0f0",
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  dropdownText: { fontSize: 16, color: "#000", fontWeight: "600" },
+  modalOverlay: {
     flex: 1,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "center",
+    alignItems: "center",
   },
-  pickerWrapper: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    marginBottom: 16,
-    overflow: 'hidden',
-    borderColor: '#ccc',
-    borderWidth: 1,
+  modalBox: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    width: "80%",
+    padding: 10,
+    maxHeight: "70%",
   },
-  picker: {
-    height: 50,
-    width: '100%',
+  modalItem: {
+    borderBottomWidth: 0.5,
+    borderColor: "#ccc",
+    paddingVertical: 10,
   },
-  examHeader: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginVertical: 12,
-  },
+  modalText: { fontSize: 18, fontWeight: "bold", textAlign: "center" },
+  modalSubText: { fontSize: 14, color: "#555", textAlign: "center" },
   card: {
-    backgroundColor: '#faebebff',
+    backgroundColor: "#f4f7fb",
     padding: 16,
     marginBottom: 12,
-    borderRadius: 10,
-    elevation: 3,
-    shadowColor: '#000',
+    borderRadius: 8,
+    shadowColor: "#000",
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 3,
     shadowOffset: { width: 0, height: 2 },
   },
-  studentName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 6,
-  },
-  subText: {
-    fontSize: 14,
-    color: '#444',
-    marginBottom: 4,
-  },
-  markItem: {
-    fontSize: 14,
-    color: '#333',
-    marginLeft: 10,
-  },
-  emptyText: {
-    textAlign: 'center',
-    fontSize: 16,
-    color: '#666',
-    marginVertical: 10,
-  },
+  studentName: { fontSize: 16, fontWeight: "bold", marginBottom: 4 },
+  subText: { fontSize: 14, color: "#444", marginBottom: 2 },
+  errorText: { textAlign: "center", color: "red", marginTop: 20, fontSize: 16 },
 });
 
-export default ViewPerformanceTab;
+export default FacultyAssessmentScoreScreen;
