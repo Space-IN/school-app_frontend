@@ -22,8 +22,16 @@ export default function LoginScreen() {
     const handleLogin = async () => {
         try {
           await login(userId, password)
+          Toast.show({
+            type: "success",
+            text1: "Login Successful."
+          })
         } catch(err) {
-          Toast.show({ type: "error", text1: err })
+          Toast.show({
+            type: "error",
+            text1: "Login Error",
+            text2: err.message || "Something went wrong. Try again."
+          })
         }
     }
 
