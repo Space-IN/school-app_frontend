@@ -14,7 +14,10 @@ export const loginUser = async (userId, password) => {
         await SecureStore.setItemAsync("token", token)
         return token
     } catch(err) {
-        console.error("Login error: ", err)
-        throw err || { message: "Something went wrong" }
+        console.error("Login error: ", err.response?.data || err.message)
+        const message =
+            err.response?.data?.message || "Unable to Login. Please try again later."
+        
+        throw new Error(message)
     }
 }

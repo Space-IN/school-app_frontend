@@ -6,7 +6,8 @@ import {
     ActivityIndicator,
     Keyboard, KeyboardAvoidingView,
     TouchableWithoutFeedback, ScrollView,
-    Platform
+    Platform,
+    StatusBar
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -22,71 +23,81 @@ export default function LoginScreen() {
     const handleLogin = async () => {
         try {
           await login(userId, password)
+          Toast.show({
+            type: "success",
+            text1: "Login Successful."
+          })
         } catch(err) {
-          Toast.show({ type: "error", text1: err })
+          Toast.show({
+            type: "error",
+            text1: "Login Error",
+            text2: err.message || "Something went wrong. Try again."
+          })
         }
     }
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
-            <ImageBackground
-                source={require('../../assets/school.webp')}
-                style={styles.background}
-                resizeMode="cover"
-            >
-                <Image
-                    source={require('../../assets/logo.png')}
-                    style={styles.logo}
-                    resizeMode="contain"
-                />
+          <StatusBar style="light" backgroundColor="#ac1d1dff" />
+          
+          <ImageBackground
+              source={require('../../assets/school.webp')}
+              style={styles.background}
+              resizeMode="cover"
+          >
+              <Image
+                  source={require('../../assets/logo.png')}
+                  style={styles.logo}
+                  resizeMode="contain"
+              />
 
-                <KeyboardAvoidingView
-                    style={styles.container}
-                    behavior={Platform.OS === "ios" ? "padding" : "height"}
-                >
-                    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                        <ScrollView
-                            contentContainerStyle={styles.scrollContainer}
-                            keyboardShouldPersistTaps="handled"
-                        >
-                            <View style={styles.loginBox}>
-                                <Text style={styles.title}>Login with your User ID</Text>
-                                <View style={styles.divider} />
+              <KeyboardAvoidingView
+                  style={styles.container}
+                  behavior={Platform.OS === "ios" ? "padding" : "height"}
+              >
+                  <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                      <ScrollView
+                          contentContainerStyle={styles.scrollContainer}
+                          keyboardShouldPersistTaps="handled"
+                      >
+                          <View style={styles.loginBox}>
+                              <Text style={styles.title}>Login with your User ID</Text>
+                              <View style={styles.divider} />
 
-                                <TextInput
-                                    placeholder="User ID"
-                                    value={userId}
-                                    onChangeText={setUserId}
-                                    style={styles.input}
-                                    autoCapitalize="none"
-                                />
-                                <TextInput
-                                    placeholder="Password"
-                                    value={password}
-                                    onChangeText={setPassword}
-                                    secureTextEntry
-                                    style={styles.input}
-                                />
+                              <TextInput
+                                  placeholder="User ID"
+                                  value={userId}
+                                  onChangeText={setUserId}
+                                  style={styles.input}
+                                  autoCapitalize="none"
+                              />
+                              <TextInput
+                                  placeholder="Password"
+                                  value={password}
+                                  onChangeText={setPassword}
+                                  secureTextEntry
+                                  style={styles.input}
+                              />
 
-                                {loading ? (
-                                    <ActivityIndicator size="large" color="#9c1006ff" style={{ marginTop: 10 }} />
-                                ) : (
-                                    <TouchableOpacity style={{ width: '100%' }} onPress={handleLogin}>
-                                        <LinearGradient
-                                            colors={['#9c1006', '#b71c1c']}
-                                            start={{ x: 0, y: 0 }}
-                                            end={{ x: 1, y: 1 }}
-                                            style={styles.loginButton}
-                                        >
-                                            <Text style={styles.loginButtonText}>Login</Text>
-                                        </LinearGradient>
-                                    </TouchableOpacity>
-                                )}
-                            </View>
-                        </ScrollView>
-                    </TouchableWithoutFeedback>
-                </KeyboardAvoidingView>
-            </ImageBackground>
+                              {loading ? (
+                                  <ActivityIndicator size="large" color="#9c1006ff" style={{ marginTop: 10 }} />
+                              ) : (
+                                  <TouchableOpacity style={{ width: '100%' }} onPress={handleLogin}>
+                                      <LinearGradient
+                                          colors={['#9c1006', '#b71c1c']}
+                                          start={{ x: 0, y: 0 }}
+                                          end={{ x: 1, y: 1 }}
+                                          style={styles.loginButton}
+                                      >
+                                          <Text style={styles.loginButtonText}>Login</Text>
+                                      </LinearGradient>
+                                  </TouchableOpacity>
+                              )}
+                          </View>
+                      </ScrollView>
+                  </TouchableWithoutFeedback>
+              </KeyboardAvoidingView>
+          </ImageBackground>
         </SafeAreaView>
     )
 }
