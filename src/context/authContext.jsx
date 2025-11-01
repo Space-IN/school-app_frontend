@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [token, setToken] = useState(null)
     const [decodedToken, setDecodedToken] = useState(null)
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
 
     const login = async (userId, password) => {
         setLoading(true)
