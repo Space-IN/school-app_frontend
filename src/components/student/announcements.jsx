@@ -16,7 +16,6 @@ export default function StudentAnnouncements() {
       setLoading(true)
       try {
         const response = await fetchActiveAnnouncements()
-        console.log("response: ", response)
         if(response) setAnnouncements(response)
       } catch (err) {
         setErr(err.message || "An error occurred while fetching announcements.")

@@ -22,9 +22,9 @@ export default function UserBanner({ studentData, loading, err }) {
 
 
   useEffect(() => {
-    const interval = setInterval(() => setGreeting(getGreeting()), 60 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
+    const interval = setInterval(() => setGreeting(getGreeting()), 60 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [])
 
   const handlePress = () => {
     Animated.sequence([
