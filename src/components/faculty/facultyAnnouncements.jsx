@@ -11,7 +11,7 @@ export default function FacultyAnnouncements() {
   useEffect(() => {
     const fetchNotices = async () => {
       try {
-        const res = await axios.get(`${BASE_URL}/api/announcement/`);
+        const res = await axios.get(`${BASE_URL}/api/notices/`);
         // Filter for faculty or all
         const facultyNotices = res.data.filter(
           (notice) => notice.target === "all" || notice.target === "faculty"
@@ -68,12 +68,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   noticeCard: {
-    backgroundColor: "#fff",
+    backgroundColor: '#faebebff',
     padding: 12,
     borderRadius: 12,
     marginBottom: 10,
     borderLeftWidth: 4,
-    borderLeftColor: "#4e54c8",
+    borderLeftColor: "#9c1006",
   },
   noticeTitle: {
     fontSize: 15,

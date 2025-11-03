@@ -118,7 +118,9 @@ const StudentSubjectMarksScreen = ({ route }) => {
 
       console.log("PAYLOAD SENT:", JSON.stringify(payload1, null, 2));
 
-      const response = await axios.post(`${BASE_URL}/api/assessment/submit`, payload1);
+      const response = await axios.post(`${BASE_URL}/api/assessment/faculty/submit`, payload1);
+      console.log("Submit Response:", response.data);
+
 
       Toast.show({
         type: 'success',
@@ -238,4 +240,3 @@ const styles = StyleSheet.create({
   },
   submitText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
 });
-

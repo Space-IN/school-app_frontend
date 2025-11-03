@@ -1,98 +1,3 @@
-// //src/screens/Faculty/classes/FacultyClassesScreen.js
-// import React, { useEffect, useState, useRef } from 'react';
-// import { View, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Text } from 'react-native';
-// import axios from 'axios';
-// import { useAuth } from "../../../context/authContext";
-// import { useScrollToTop } from '@react-navigation/native';
-// import {BASE_URL} from '@env'
-
-
-// export default function FacultyClassesScreen({ navigation, route }) {
-//   const { userId } = route.params || {};
-//   const [assignedClasses, setAssignedClasses] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-//   const listRef = useRef(null);
-//   useScrollToTop(listRef);
-
-//   useEffect(() => {
-//     fetchAssignedClasses();
-//   }, []);
-
-//   const fetchAssignedClasses = async () => {
-//     try {
-//       const { data } = await axios.get(`${BASE_URL}/api/schedule/faculty/${userId}`);
-//       const schedule = data.schedule;
-//       const uniqueClasses = [];
-//       const seen = new Set();
-
-//       schedule.forEach(item => {
-//         const key = `${item.classAssigned}-${item.section}`;
-//         if (!seen.has(key)) {
-//           seen.add(key);
-//           uniqueClasses.push(item);
-//         }
-//       });
-
-//       setAssignedClasses(uniqueClasses);
-//     } catch (err) {
-//       console.error('Error fetching assigned classes:', err);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const handlePress = (item) => {
-//     navigation.navigate('FacultyClassDashboard', {
-//       grade: item.classAssigned,
-//       section: item.section,
-//       scheduleItem: item,
-//       facultyId: userId,
-//     });
-//   };
-
-//   if (loading) {
-//     return (
-//       <View style={styles.container}>
-//         <ActivityIndicator size="large" color="#4b4bfa" />
-//       </View>
-//     );
-//   }
-
-//   return (
-//     <View style={styles.container}>
-//       <FlatList
-//         ref={listRef}
-//         data={assignedClasses}
-//         keyExtractor={(item, i) => `${item.classAssigned}-${item.section}-${i}`}
-//         renderItem={({ item }) => (
-//           <TouchableOpacity onPress={() => handlePress(item)} style={styles.card}>
-//             <Text style={styles.cardText}>{`${item.classAssigned} – ${item.section}`}</Text>
-//           </TouchableOpacity>
-//         )}
-//       />
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: { flex: 1, padding: 20, backgroundColor: '#bbdbfaff' },
-//   card: {
-//     padding: 20,
-//     backgroundColor: '#fff',
-//     borderRadius: 10,
-//     marginBottom: 10,
-//     alignItems: 'center',
-//     shadowColor: '#000',
-//     shadowOpacity: 0.1,
-//     shadowOffset: { width: 0, height: 2 },
-//     shadowRadius: 4,
-//     elevation: 3,
-//   },
-//   cardText: { color: '#000', fontSize: 16, fontWeight: '600' },
-// });
-
-
 // src/screens/Faculty/classes/FacultyClassesScreen.js
 import React, { useEffect, useState, useRef } from 'react';
 import { 
@@ -305,11 +210,11 @@ const styles = StyleSheet.create({
   },
   card: {
     padding: 16,
-    backgroundColor: '#e3e9ff',
+    backgroundColor: '#faebebff',
     borderRadius: 12,
     marginBottom: 12,
     borderLeftWidth: 4,
-    borderLeftColor: '#4b4bfa',
+    borderLeftColor: '#9c1006',
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },

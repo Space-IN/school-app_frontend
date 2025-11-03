@@ -95,7 +95,7 @@ export default function FacultyTodaySchedule({ navigation }) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#fff",
+    backgroundColor: '#faebebff',
     marginHorizontal: 16,
     borderRadius: 12,
     padding: 16,
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     paddingVertical: 30,
   },
   card: {
-    backgroundColor: "#f1f5f9",
+    backgroundColor: "#e0f2fe",
     borderRadius: 10,
     padding: 14,
     marginVertical: 6,
