@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "VISHWACHETANA VIDYANIKETANA",
-    "slug": "VISHWACHETANA VIDYANIKETANA",
+    "slug": "vishwachetana_vidyaniketana",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./src/assets/school.icon.png",
@@ -24,7 +24,9 @@
       "package": "com.anonymous.SchoolManagementSystem",
       "permissions": [
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ]
     },
     "web": {
@@ -34,6 +36,11 @@
       "expo-font",
       "expo-av",
       "expo-audio"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "97768c73-4ade-48f1-a521-2fd56978b689"
+      }
+    }
   }
 }
