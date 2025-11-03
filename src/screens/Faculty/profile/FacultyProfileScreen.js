@@ -105,12 +105,12 @@ export default function FacultyProfileScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
+        <StatusBar backgroundColor="#9c1006" barStyle="light-content" />
         <View style={styles.header}>
           <Text style={styles.headerTitle}>👨‍🏫 Faculty Profile</Text>
         </View>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#4b4bfa" />
+          <ActivityIndicator size="large" color="#9c1006" />
           <Text style={styles.loadingText}>Loading faculty profile...</Text>
         </View>
       </SafeAreaView>
@@ -120,7 +120,7 @@ export default function FacultyProfileScreen() {
   if (!faculty) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
+        <StatusBar backgroundColor="#9c1006" barStyle="light-content" />
         <View style={styles.header}>
           <Text style={styles.headerTitle}>👨‍🏫 Faculty Profile</Text>
         </View>
@@ -137,7 +137,7 @@ export default function FacultyProfileScreen() {
 
  return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
+      <StatusBar backgroundColor="#9c1006" barStyle="light-content" />
       
       {/* Standard Centered Header */}
       
@@ -150,7 +150,7 @@ export default function FacultyProfileScreen() {
           {/* Faculty Basic Info */}
           <View style={styles.avatarSection}>
             <View style={styles.avatar}>
-              <Ionicons name="person" size={40} color="#4b4bfa" />
+              <Ionicons name="person" size={40} color="#9c1006" />
             </View>
             <Text style={styles.name}>{faculty.name || 'N/A'}</Text>
             <Text style={styles.userId}>ID: {faculty.userId || 'N/A'}</Text>
@@ -171,7 +171,7 @@ export default function FacultyProfileScreen() {
           {/* Personal Information */}
           <View style={styles.detailsSection}>
             <Text style={styles.sectionTitle}>
-              <Ionicons name="person-outline" size={18} color="#4a90e2" /> Personal Information
+              <Ionicons name="person-outline" size={18} color="#9c1006" /> Personal Information
             </Text>
             
             <DetailRow label="Email" value={faculty.email} />
@@ -184,7 +184,7 @@ export default function FacultyProfileScreen() {
           {/* Professional Information */}
           <View style={styles.detailsSection}>
             <Text style={styles.sectionTitle}>
-              <Ionicons name="briefcase-outline" size={18} color="#4a90e2" /> Professional Information
+              <Ionicons name="briefcase-outline" size={18} color="#9c1006" /> Professional Information
             </Text>
             
             <DetailRow label="Faculty ID" value={faculty.userId} />
@@ -219,7 +219,7 @@ const DetailRow = ({ label, value }) => (
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#bbdbfaff',
+    backgroundColor: '#ffffffff',
   },
   // Standard Header style (used for main screen and loading/error states)
   header: {
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   profileCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#faebebff',
     borderRadius: 16,
     padding: 20,
     elevation: 4,
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
     borderWidth: 3,
-    borderColor: '#4b4bfa',
+    borderColor: '#9c1006',
   },
   name: {
     fontSize: 24,

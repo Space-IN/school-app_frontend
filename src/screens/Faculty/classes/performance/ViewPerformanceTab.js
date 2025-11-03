@@ -1,128 +1,4 @@
-// import React, { useEffect, useState } from "react";
-// import { View, Text, ActivityIndicator, StyleSheet, FlatList } from "react-native";
-// import axios from "axios";
-// import { BASE_URL } from "@env";
-
-// const FacultyAssessmentScoreScreen = ({ route }) => {
-//   const { grade, section, test_name, year, subjectName } = route.params || {};
-
-//   const [scores, setScores] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState("");
-//   console.log("🧩 Received params:", route.params);
-
-//   useEffect(() => {
-//     const fetchAssessmentScores = async () => {
-//   try {
-//     console.log("📡 Fetching:", `${BASE_URL}/api/performance/faculty/assessmentScore`, {
-//       grade,
-//       section,
-//       test_name,
-//       year,
-//       subjectName,
-//     });
-
-//     const response = await axios.get(`${BASE_URL}/api/assessment/faculty/assessmentScore?grade=${grade}&section=${section}&test_name=${test_name}&year=${year}&subject=${subjectName}`, {
-//       params: {
-//         grade,
-//         section,
-//         test_name,
-//         year,
-//         subjectName,
-//       },
-//     });
-
-
-//     console.log("✅ Response:", response.data);
-
-//     if (response.data.success) {
-//       setScores(response.data.data.scores);
-//     } else {
-//       setError(response.data.message || "Failed to load data.");
-//     }
-//   } catch (err) {
-//     console.error(
-//       "❌ Error fetching assessment scores:",
-//       err?.response?.data || err.message || err
-//     );
-//     setError(err?.response?.data?.message || "Error fetching assessment scores");
-//   } finally {
-//     setLoading(false);
-//   }
-// };
-
-
-//     if (grade && section && test_name && year && subjectName) {
-//       fetchAssessmentScores();
-//     } else {
-//       setError("Missing required parameters");
-//       setLoading(false);
-//     }
-//   }, [grade, section, test_name, year, subjectName]);
-
-//   if (loading) {
-//     return <ActivityIndicator size="large" color="#007bff" style={{ marginTop: 40 }} />;
-//   }
-
-//   if (error) {
-//     return <Text style={styles.errorText}>{error}</Text>;
-//   }
-
-//   const renderItem = ({ item }) => (
-//     <View style={styles.card}>
-//       <Text style={styles.studentName}>🎓 {item.student.name} ({item.student.userId})</Text>
-//       <Text style={styles.subText}>SubjectName: {item.subjectName}</Text>
-//       <Text style={styles.subText}>
-//         Marks: {item.marks_obtained} / {item.max_marks}
-//       </Text>
-//       <Text style={styles.subText}>Grade: {item.grade_obtained}</Text>
-//       <Text
-//         style={[
-//           styles.subText,
-//           { color: item.status === "Pass" ? "green" : "red", fontWeight: "bold" },
-//         ]}
-//       >
-//         Status: {item.status}
-//       </Text>
-//       <Text style={styles.subText}>Marked By: {item.marked_by?.name}</Text>
-//     </View>
-//   );
-
-//   return (
-//     <View style={styles.container}>
-//       <Text style={styles.header}>
-//         {test_name} – {subjectName} ({grade}{section})
-//       </Text>
-//       <FlatList
-//         data={scores}
-//         renderItem={renderItem}
-//         keyExtractor={(item, index) => index.toString()}
-//         ListEmptyComponent={<Text style={styles.errorText}>No scores found</Text>}
-//       />
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: { flex: 1, backgroundColor: "#fff", padding: 16 },
-//   header: { fontSize: 18, fontWeight: "bold", marginBottom: 12, color: "#333" },
-//   card: {
-//     backgroundColor: "#f4f7fb",
-//     padding: 16,
-//     marginBottom: 12,
-//     borderRadius: 8,
-//     shadowColor: "#000",
-//     shadowOpacity: 0.1,
-//     shadowRadius: 3,
-//     shadowOffset: { width: 0, height: 2 },
-//   },
-//   studentName: { fontSize: 16, fontWeight: "bold", marginBottom: 4 },
-//   subText: { fontSize: 14, color: "#444", marginBottom: 2 },
-//   errorText: { textAlign: "center", color: "red", marginTop: 20, fontSize: 16 },
-// });
-
-// export default FacultyAssessmentScoreScreen;
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -135,8 +11,9 @@ import {
 import axios from "axios";
 import { BASE_URL } from "@env";
 import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 
-const FacultyAssessmentScoreScreen = ({ route }) => {
+const ViewPerformanceTab = ({ route }) => {
   const { grade, section, year, subjectName } = route.params || {};
 
   const [assessments, setAssessments] = useState([]);
@@ -201,9 +78,11 @@ const FacultyAssessmentScoreScreen = ({ route }) => {
     }
   };
 
-  useEffect(() => {
-    fetchAssessments();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchAssessments();
+    }, [])
+  );
 
   const handleSelectTest = (test) => {
     setSelectedTest(test);
@@ -341,4 +220,4 @@ const styles = StyleSheet.create({
   errorText: { textAlign: "center", color: "red", marginTop: 20, fontSize: 16 },
 });
 
-export default FacultyAssessmentScoreScreen;
+export default ViewPerformanceTab;
