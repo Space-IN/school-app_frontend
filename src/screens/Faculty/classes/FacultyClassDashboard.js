@@ -136,7 +136,7 @@ export default function FacultyClassDashboard({ route }) {
     { 
       title: 'Attendance', 
       icon: 'clipboard', 
-      screen: 'FacultyMarkAttendanceScreen',
+      screen: 'FacultyAttendanceMenuScreen',
       requiredParams: ['grade', 'section', 'subjectId', 'subjectName']
     },
     { 

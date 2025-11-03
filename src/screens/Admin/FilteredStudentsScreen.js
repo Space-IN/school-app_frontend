@@ -1,3 +1,5 @@
+
+
 import React, { useEffect, useState } from 'react';
 import {
   Platform,
@@ -10,8 +12,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  
 } from 'react-native';
 import axios from 'axios';
+import { BASE_URL } from '@env';
 
 export default function FilteredStudentsScreen({ route, navigation }) {
   const { grade, section } = route.params;
@@ -21,17 +25,32 @@ export default function FilteredStudentsScreen({ route, navigation }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    // Set up a navigation listener to check for refresh triggers
+    const unsubscribe = navigation.addListener('focus', () => {
+      // Always refresh when screen comes into focus
+      fetchFilteredStudents();
+    });
+
+    // Initial fetch
     fetchFilteredStudents();
-  }, []);
+
+    // Cleanup subscription
+    return unsubscribe;
+  }, [navigation]);
 
   const fetchFilteredStudents = async () => {
     try {
-      const className = grade.replace('Grade ', '').trim();
+      if (!grade || !section) {
+        setError('Grade and section are required');
+        setLoading(false);
+        return;
+      }
+      const className = (grade || '').replace('Grade ', '').trim();
       const encodedGrade = encodeURIComponent(className);
       const encodedSection = encodeURIComponent(section);
 
       const res = await axios.get(
-        `http://10.221.34.142:5000/api/admin/students/grade/${encodedGrade}/section/${encodedSection}`
+        `${BASE_URL}/api/admin/students/grade/${encodedGrade}/section/${encodedSection}`
       );
       setStudents(res.data || []);
     } catch (err) {
@@ -43,12 +62,15 @@ export default function FilteredStudentsScreen({ route, navigation }) {
   };
 
   const handleEdit = (student) => {
-    navigation.navigate('EditStudentScreen', { student });
+    navigation.navigate('EditStudentScreen', { 
+      student, 
+      onGoBack: fetchFilteredStudents 
+    });
   };
 
   const handleSoftDelete = async (userId) => {
     try {
-      await axios.patch(`http://10.221.34.142:5000/api/admin/students/delete/${userId}`);
+      await axios.patch(`${BASE_URL}/api/admin/students/delete/${userId}`);
       Alert.alert('Deleted', 'Student soft deleted.');
       fetchFilteredStudents();
     } catch (err) {
@@ -76,10 +98,10 @@ export default function FilteredStudentsScreen({ route, navigation }) {
       </Text>
       <View style={styles.actionRow}>
         <TouchableOpacity onPress={() => handleEdit(item)}>
-          <Text style={styles.editBtn}>✏️</Text>
+          <Text style={styles.editBtn}>Edit Data</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => handleSoftDelete(item.userId)}>
-          <Text style={styles.softDeleteBtn}>⚠️</Text>
+          <Text style={styles.softDeleteBtn}>Soft delete</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -90,7 +112,7 @@ export default function FilteredStudentsScreen({ route, navigation }) {
     <SafeAreaView style={styles.container}>
       <View style={styles.topPadding} />
       <Text style={styles.heading}>
-        👨‍🎓 Students of Grade {grade.replace('Grade ', '')} - Section {section}
+        👨‍🎓 Students of Grade {(grade || '').replace('Grade ', '')} - Section {section || ''}
       </Text>
 
       {/* Button to view attendance */}

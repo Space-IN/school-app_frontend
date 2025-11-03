@@ -18,7 +18,7 @@ import { BASE_URL } from '@env';
 import * as SecureStore from 'expo-secure-store';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView, SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAuth } from '../../../context/authContext';
+import { useAuth } from '../../../../context/authContext';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -100,7 +100,7 @@ export default function FacultyEditAttendanceScreen({ route }) {
     
     const response = await axios.get(`${BASE_URL}/api/attendance`, {
       params: {
-        classAssigned: grade,  // This should work now with fixed backend
+        classAssigned: grade,
         section: section,
         date: dateStr
       }
@@ -110,15 +110,26 @@ export default function FacultyEditAttendanceScreen({ route }) {
     
     if (response.data && response.data.length > 0) {
       setAttendanceData(response.data[0]);
-      console.log('✅ Loaded attendance data:', response.data[0]);
+      console.log('✅ Loaded attendance data for date:', dateStr);
     } else {
+      // ✅ FIX: Clear attendance data when no records found
       setAttendanceData(null);
-      console.log('ℹ️ No attendance data found');
+      console.log('ℹ️ No attendance data found for date:', dateStr);
     }
   } catch (error) {
-    // console.error('❌ Error loading attendance data:', error);
-    // console.error('Error details:', error.response?.data);
-    Alert.alert('Error', 'No attendance found for this date');
+    // ✅ FIX: Clear attendance data and show proper error
+    console.error('❌ Error loading attendance data:', error);
+    console.error('Error details:', error.response?.data);
+    
+    // Clear previous attendance data
+    setAttendanceData(null);
+    
+    // Only show alert for network errors, not for 404 (no data found)
+    if (error.response?.status !== 404) {
+      Alert.alert('Error', 'Failed to load attendance data');
+    } else {
+      console.log('ℹ️ No attendance records found for selected date');
+    }
   } finally {
     setLoading(false);
   }
@@ -134,15 +145,15 @@ export default function FacultyEditAttendanceScreen({ route }) {
 
 
 
-
-
-  const handleDateChange = (event, selectedDate) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      setSelectedDate(selectedDate);
-      loadAttendanceData(selectedDate);
-    }
-  };
+ const handleDateChange = (event, selectedDate) => {
+  setShowDatePicker(false);
+  if (selectedDate) {
+    // Clear previous data immediately when date changes
+    setAttendanceData(null);
+    setSelectedDate(selectedDate);
+    loadAttendanceData(selectedDate);
+  }
+};
 
  const openEditModal = (sessionNumber) => {
   if (!attendanceData) {

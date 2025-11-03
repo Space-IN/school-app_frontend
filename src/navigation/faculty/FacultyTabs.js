@@ -23,7 +23,7 @@ import FacultyProfileScreen from '../../screens/Faculty/profile/FacultyProfileSc
 import ViewPerformanceTab from '../../screens/Faculty/classes/performance/ViewPerformanceTab';
 import LectureRecordingScreen from '../../screens/Faculty/classes/LectureRecordingScreen';
 import FacultyChaptersScreen from '../../screens/Faculty/classes/FacultyChaptersScreen';
-import FacultyAttendanceScreen from '../../screens/Faculty/classes/FacultyMarkAttendanceScreen';
+ 
 import FacultyAssignmentsScreen from '../../screens/Faculty/classes/FacultyAssignmentsScreen';
 import FacultyTestsScreen from '../../screens/Faculty/classes/FacultyTestsScreen';
 import ManagePerformanceTabs from '../../screens/Faculty/classes/performance/ManagePerformanceTabs';
