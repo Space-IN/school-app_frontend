@@ -407,13 +407,13 @@ export default function AllFacultyScreen({ navigation }) {
                 navigation.navigate('EditFacultyScreen', { faculty: fac })
               }
             >
-              ✏️ Edit
-            </Text>
+               Edit  Data
+             </Text>
             <Text
               style={styles.softDeleteBtn}
               onPress={() => handleSoftDelete(fac.userId)}
             >
-              🗑️ Soft Delete
+              Soft Delete
             </Text>
           </>
         ) : (
@@ -422,13 +422,13 @@ export default function AllFacultyScreen({ navigation }) {
               style={styles.restoreBtn}
               onPress={() => handleRestore(fac.userId)}
             >
-              🔁 Restore
+               Restore
             </Text>
             <Text
               style={styles.deleteBtn}
               onPress={() => handleHardDelete(fac.userId)}
             >
-              ❌ Delete
+               Delete
             </Text>
           </>
         )}

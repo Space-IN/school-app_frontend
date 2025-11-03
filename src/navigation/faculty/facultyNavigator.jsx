@@ -9,10 +9,11 @@ import FacultyClassDashboard from '../../screens/Faculty/classes/FacultyClassDas
 import FacultyStudentsScreen from '../../screens/Faculty/classes/FacultyStudentsScreen';
 
 
-
-import FacultyMarkAttendanceScreen from '../../screens/Faculty/classes/FacultyMarkAttendanceScreen';
-import FacultyEditAttendanceScreen from '../../screens/Faculty/classes/FacultyEditAttendanceScreen';
-
+import FacultyAttendanceMenuScreen from "../../screens/Faculty/classes/Attendance/FacultyAttendanceMenuScreen";
+ 
+import FacultyEditAttendanceScreen from '../../screens/Faculty/classes/Attendance/FacultyEditAttendanceScreen';
+import FacultyMarkSession1Screen from "../../screens/Faculty/classes/Attendance/FacultyMarkSession1Screen";
+import FacultyMarkSession2Screen from "../../screens/Faculty/classes/Attendance/FacultyMarkSession2Screen";
 
 
 
@@ -94,14 +95,35 @@ export default function FacultyNavigator() {
             
 
 
-            <Stack.Screen 
+            {/* <Stack.Screen 
                 name="FacultyMarkAttendanceScreen" 
                 component={FacultyMarkAttendanceScreen} 
                 options={{ title: 'Attendance' }}
+            /> */}
+
+
+              <Stack.Screen 
+                name="FacultyAttendanceMenuScreen" 
+                component={FacultyAttendanceMenuScreen} 
+                options={{ title: 'Attendance' }}
             />
+
 
             <Stack.Screen name="FacultyEditAttendanceScreen"
             component={FacultyEditAttendanceScreen}/>
+
+
+             {/* <Stack.Screen name="FacultyMarkAttendanceScreen"
+            component={FacultyMarkAttendanceScreen}/> */}
+            
+             <Stack.Screen name="FacultyMarkSession1Screen"
+            component={FacultyMarkSession1Screen}/>
+
+            <Stack.Screen name="FacultyMarkSession2Screen"
+            component={FacultyMarkSession2Screen}/>
+
+
+                
 
 
 
