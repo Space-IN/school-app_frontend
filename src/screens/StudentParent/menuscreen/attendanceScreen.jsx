@@ -11,14 +11,13 @@ import {
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import * as Animatable from 'react-native-animatable';
-import { useAuth } from '../../../context/authContext';
-import BASE_URL from '../../../config/baseURL';
 import { useStudent } from '../../../context/student/studentContext';
+import { BASE_URL } from '@env'
+import axios from 'axios'
 
 
 const AttendanceScreen = () => {
   const { studentData } = useStudent()
-  const { decodedToken } = useAuth();
   const [attendanceData, setAttendanceData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -26,17 +25,19 @@ const AttendanceScreen = () => {
 
   useEffect(() => {
     const fetchAttendance = async () => {
-      if (!decodedToken?.userId) {
+      if (!studentData?.userId) {
         Alert.alert('Error', 'Could not identify student.');
         setLoading(false);
         return;
       }
 
       try {
-        const response = await fetch(`${BASE_URL}/api/attendance/student/${decodedToken.userId}`);
-        const data = await response.json();
+        const response = await axios.get(
+          `${BASE_URL}/api/attendance/student/${studentData?.userId}?grade=${studentData?.className}&section=${studentData?.section}`
+        )
+        const data = await response.data
 
-        if (response.ok) {
+        if (response.status===200) {
           setAttendanceData(data);
         } else {
           Alert.alert('Error', data.message || 'Failed to fetch attendance.');
@@ -50,7 +51,7 @@ const AttendanceScreen = () => {
     };
 
     fetchAttendance();
-  }, [decodedToken]);
+  }, [studentData]);
 
   const { markedDates, attendanceStats } = useMemo(() => {
     const dates = {};
