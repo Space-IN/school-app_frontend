@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   loadingBox: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 30,
+    paddingVertical: 15,
   },
   loadingText: {
     color: "#64748b",

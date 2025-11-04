@@ -55,7 +55,7 @@ const StudentProfileScreen = () => {
 
   useEffect(() => {
     fetchProfile();
-  }, []);
+  }, [studentData]);
 
   return (
     <View style={styles.safeArea}>
