@@ -13,19 +13,17 @@ import {
 import { Picker } from '@react-native-picker/picker';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
-import XLSX from 'xlsx';
 import axios from 'axios';
 import { BASE_URL } from '@env';
 
 export default function ClassScheduleXLSXUpload() {
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedSection, setSelectedSection] = useState('');
-  const [excelData, setExcelData] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [allSchedules, setAllSchedules] = useState([]);
   const [expandedSchedules, setExpandedSchedules] = useState({});
   const [showFormat, setShowFormat] = useState(false);
-
 
   const CLASS_OPTIONS = Array.from({ length: 10 }, (_, i) => `${i + 1}`);
   const SECTION_OPTIONS = ['A', 'B', 'C', 'D'];
@@ -36,8 +34,6 @@ export default function ClassScheduleXLSXUpload() {
       [key]: !prev[key],
     }));
   };
-
-
 
   const fetchAll = async () => {
     try {
@@ -85,27 +81,20 @@ export default function ClassScheduleXLSXUpload() {
 
       if (result?.assets?.[0]?.uri) {
         const fileUri = result.assets[0].uri;
-        const base64 = await FileSystem.readAsStringAsync(fileUri, {
-          encoding: FileSystem.EncodingType.Base64,
+        const fileName = result.assets[0].name;
+        
+        // Store file info for upload
+        setSelectedFile({
+          uri: fileUri,
+          name: fileName,
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         });
 
-        const workbook = XLSX.read(base64, { type: 'base64' });
-        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-        const cleanedData = jsonData.map((row) => ({
-          day: row.day,
-          periodNumber: Number(row.periodNumber),
-          timeSlot: row.timeSlot,
-          subjectName: row.subjectName?.trim() || null,
-          facultyId: typeof row.facultyId === 'string' ? row.facultyId.trim() : '',
-        }));
-
-        setExcelData(cleanedData);
+        Alert.alert('Success', `File "${fileName}" selected successfully!`);
       }
     } catch (err) {
-      console.error('❌ Error reading Excel file:', err);
-      Alert.alert('Error', 'Failed to read Excel file');
+      console.error('❌ Error selecting Excel file:', err);
+      Alert.alert('Error', 'Failed to select Excel file');
     }
   };
 
@@ -114,55 +103,43 @@ export default function ClassScheduleXLSXUpload() {
       return Alert.alert('Validation', 'Please select class and section');
     }
 
-    if (excelData.length === 0) {
-      return Alert.alert('No Data', 'Please select an Excel file first');
+    if (!selectedFile) {
+      return Alert.alert('No File', 'Please select an Excel file first');
     }
 
     try {
       setUploading(true);
-      const groupedByDay = {};
 
-      for (const row of excelData) {
-        const day = row.day;
-        if (!groupedByDay[day]) groupedByDay[day] = [];
+      // Create FormData
+      const formData = new FormData();
+      formData.append('classAssigned', selectedClass);
+      formData.append('section', selectedSection);
+      
+      // Append file - React Native FormData handles this automatically
+      formData.append('file', {
+        uri: selectedFile.uri,
+        name: selectedFile.name,
+        type: selectedFile.type,
+      });
 
-        const subjectName =
-          typeof row.subjectName === 'string' ? row.subjectName.trim() : null;
-
-        const rawFacultyId =
-          typeof row.facultyId === 'string' ? row.facultyId.trim() : '';
-        if (rawFacultyId === '') {
-          console.warn(`⚠️ Skipping row: Missing facultyId on day ${day}`);
-          continue;
+      // Upload with multipart/form-data
+      const res = await axios.post(
+        `${BASE_URL}/api/schedule/admin/set`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
         }
-
-        groupedByDay[day].push({
-          periodNumber: Number(row.periodNumber),
-          timeSlot: row.timeSlot,
-          subjectName,
-          facultyId: rawFacultyId,
-        });
-      }
-
-      const weeklySchedule = Object.entries(groupedByDay).map(([day, periods]) => ({
-        day,
-        periods,
-      }));
-
-      const payload = {
-        classAssigned: selectedClass,
-        section: selectedSection,
-        weeklySchedule,
-      };
-
-      const res = await axios.post(`${BASE_URL}/api/schedule/set`, payload);
+      );
 
       Alert.alert('Success', 'Schedule uploaded and saved successfully!');
-      setExcelData([]);
+      setSelectedFile(null);
       fetchAll(); // Refresh list after upload
     } catch (err) {
       console.error('❌ Upload error:', err.response?.data || err.message);
-      Alert.alert('Error', err.response?.data?.message || 'Upload failed');
+      const errorMessage = err.response?.data?.message || 'Upload failed';
+      Alert.alert('Error', errorMessage);
     } finally {
       setUploading(false);
     }
@@ -228,8 +205,10 @@ export default function ClassScheduleXLSXUpload() {
             <Text style={styles.buttonText}>📁 Choose Excel File</Text>
           </TouchableOpacity>
 
-          {excelData.length > 0 && (
-            <Text style={{ marginVertical: 10 }}>✅ {excelData.length} rows parsed</Text>
+          {selectedFile && (
+            <Text style={{ marginVertical: 10, color: '#10b981' }}>
+              ✅ Selected: {selectedFile.name}
+            </Text>
           )}
 
           <TouchableOpacity
@@ -242,84 +221,69 @@ export default function ClassScheduleXLSXUpload() {
             </Text>
           </TouchableOpacity>
 
-
-
           <TouchableOpacity
-  style={[styles.button, { backgroundColor: '#f59e0b' }]}
-  onPress={() => setShowFormat((prev) => !prev)}
->
-  <Text style={styles.buttonText}>
-    {showFormat ? "❌ Hide Format" : "👀 View Format"}
-  </Text>
-</TouchableOpacity>
+            style={[styles.button, { backgroundColor: '#f59e0b' }]}
+            onPress={() => setShowFormat((prev) => !prev)}
+          >
+            <Text style={styles.buttonText}>
+              {showFormat ? "❌ Hide Format" : "👀 View Format"}
+            </Text>
+          </TouchableOpacity>
 
-{showFormat && (
-  <View style={styles.formatBox}>
-    <Text style={{ fontWeight: 'bold', marginBottom: 8 }}>
-      📑 Required Excel Format: 
-    </Text>
+          {showFormat && (
+            <View style={styles.formatBox}>
+              <Text style={{ fontWeight: 'bold', marginBottom: 8 }}>
+                📑 Required Excel Format: 
+              </Text>
 
-    <Text style={{ fontWeight: 'bold', marginBottom: 8 }}>
-      📑 NOTE :
-    </Text>
+              <Text style={{ fontWeight: 'bold', marginBottom: 8, color: '#dc2626' }}>
+                📑 NOTE:
+              </Text>
 
- 
-     <Text>The following format should be followed while creating the  schedule if not schedule will not be accepted by the App.</Text>
+              <Text style={{ marginBottom: 12 }}>
+                The following format should be followed while creating the schedule. 
+                The backend will validate faculty IDs and subject assignments automatically.
+              </Text>
 
-    {/* Table Header */}
-    <View style={styles.tableRow}>
-      <Text style={[styles.tableCell, styles.tableHeader]}>day</Text>
-      <Text style={[styles.tableCell, styles.tableHeader]}>periodNumber</Text>
-      <Text style={[styles.tableCell, styles.tableHeader]}>timeSlot</Text>
-      <Text style={[styles.tableCell, styles.tableHeader]}>subjectName</Text>
-      <Text style={[styles.tableCell, styles.tableHeader]}>facultyId</Text>
-    </View>
+              {/* Table Header */}
+              <View style={styles.tableRow}>
+                <Text style={[styles.tableCell, styles.tableHeader]}>day</Text>
+                <Text style={[styles.tableCell, styles.tableHeader]}>periodNumber</Text>
+                <Text style={[styles.tableCell, styles.tableHeader]}>timeSlot</Text>
+                <Text style={[styles.tableCell, styles.tableHeader]}>subjectName</Text>
+                <Text style={[styles.tableCell, styles.tableHeader]}>facultyId</Text>
+              </View>
 
-    {/* Sample Rows */}
-    <View style={styles.tableRow}>
-      <Text style={styles.tableCell}>Monday</Text>
-      <Text style={styles.tableCell}>1</Text>
-      <Text style={styles.tableCell}>09:00–09:45</Text>
-      <Text style={styles.tableCell}>Mathematics</Text>
-      <Text style={styles.tableCell}>FAC123</Text>
-    </View>
+              {/* Sample Rows */}
+              <View style={styles.tableRow}>
+                <Text style={styles.tableCell}>Monday</Text>
+                <Text style={styles.tableCell}>1</Text>
+                <Text style={styles.tableCell}>09:00–09:45</Text>
+                <Text style={styles.tableCell}>Mathematics</Text>
+                <Text style={styles.tableCell}>FAC123</Text>
+              </View>
 
-    <View style={styles.tableRow}>
-      <Text style={styles.tableCell}>Monday</Text>
-      <Text style={styles.tableCell}>2</Text>
-      <Text style={styles.tableCell}>09:45–10:30</Text>
-      <Text style={styles.tableCell}>English</Text>
-      <Text style={styles.tableCell}>FAC456</Text>
-    </View>
+              <View style={styles.tableRow}>
+                <Text style={styles.tableCell}>Monday</Text>
+                <Text style={styles.tableCell}>2</Text>
+                <Text style={styles.tableCell}>09:45–10:30</Text>
+                <Text style={styles.tableCell}>English</Text>
+                <Text style={styles.tableCell}>FAC456</Text>
+              </View>
 
-    <View style={styles.tableRow}>
-      <Text style={styles.tableCell}>Tuesday</Text>
-      <Text style={styles.tableCell}>1</Text>
-      <Text style={styles.tableCell}>09:00–09:45</Text>
-      <Text style={styles.tableCell}>Science</Text>
-      <Text style={styles.tableCell}>FAC789</Text>
+              <View style={styles.tableRow}>
+                <Text style={styles.tableCell}>Tuesday</Text>
+                <Text style={styles.tableCell}>1</Text>
+                <Text style={styles.tableCell}>09:00–09:45</Text>
+                <Text style={styles.tableCell}>Science</Text>
+                <Text style={styles.tableCell}>FAC789</Text>
+              </View>
 
-
-      
-    </View>
-
-
-    
-  </View>
-)}
-
-
-
-
-
-
-
-
-
-
-
-
-
+              <Text style={{ marginTop: 12, fontSize: 12, color: '#6b7280' }}>
+                ⚠️ Server validates: Faculty existence, Subject existence, and Faculty-Subject-Class assignments
+              </Text>
+            </View>
+          )}
 
           <Text style={styles.title}>📚 Existing Class Schedules</Text>
 
@@ -343,22 +307,20 @@ export default function ClassScheduleXLSXUpload() {
                           <Text style={styles.dayText}>{dayObj.day}</Text>
                           {dayObj.periods.map((p, j) => (
                             <Text key={j} style={styles.periodText}>
-                              Period {p.periodNumber}: {p.timeSlot} — {} ({p.facultyId})
+                              Period {p.periodNumber}: {p.timeSlot} — {p.subjectName || 'N/A'} ({p.facultyId})
                             </Text>
                           ))}
                         </View>
                       ))}
-
-                      
                     </View>
                   )}
 
                   <TouchableOpacity
-                        style={[styles.button, { backgroundColor: '#dc2626' }]}
-                        onPress={() => handleDelete(schedule.classAssigned, schedule.section)}
-                      >
-                        <Text style={styles.buttonText}>🗑 Delete Schedule</Text>
-                      </TouchableOpacity>
+                    style={[styles.button, { backgroundColor: '#dc2626' }]}
+                    onPress={() => handleDelete(schedule.classAssigned, schedule.section)}
+                  >
+                    <Text style={styles.buttonText}>🗑 Delete Schedule</Text>
+                  </TouchableOpacity>
 
                   <TouchableOpacity
                     style={[styles.button, { backgroundColor: '#6b7280' }]}
@@ -381,7 +343,6 @@ export default function ClassScheduleXLSXUpload() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     backgroundColor: '#fff',
     padding: 16,
   },
@@ -443,29 +404,28 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     color: '#4b5563',
   },
-formatBox: {
-  marginTop: 12,
-  padding: 12,
-  borderWidth: 1,
-  borderColor: '#d1d5db',
-  borderRadius: 8,
-  backgroundColor: '#fefce8',
-},
-tableRow: {
-  flexDirection: "row",
-  borderBottomWidth: 1,
-  borderColor: "#e5e7eb",
-},
-tableCell: {
-  flex: 1,
-  padding: 6,
-  fontSize: 13,
-  color: "#374151",
-},
-tableHeader: {
-  fontWeight: "bold",
-  backgroundColor: "#f3f4f6",
-  color: "#111827",
-},
-
+  formatBox: {
+    marginTop: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    backgroundColor: '#fefce8',
+  },
+  tableRow: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderColor: "#e5e7eb",
+  },
+  tableCell: {
+    flex: 1,
+    padding: 6,
+    fontSize: 13,
+    color: "#374151",
+  },
+  tableHeader: {
+    fontWeight: "bold",
+    backgroundColor: "#f3f4f6",
+    color: "#111827",
+  },
 });
