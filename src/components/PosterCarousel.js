@@ -358,7 +358,7 @@ export default function PosterCarousel() {
                     source={
                       poster.imageUrl
                         ? { uri: poster.imageUrl }
-                        : require('../assets/placeholder.png')
+                        : require('../..//assets/placeholder.png')
                     }
                     style={styles.posterImage}
                     resizeMode="cover"

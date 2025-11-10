@@ -85,7 +85,7 @@ export default function StudentHeader({ navigation, back }) {
                     </TouchableOpacity>
                 ) : (
                     <Image
-                        source={require("../../assets/logo.png")}
+                        source={require("../../../assets/logo.png")}
                         style={styles.logo}
                     />
                 )}

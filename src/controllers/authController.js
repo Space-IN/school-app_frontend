@@ -16,7 +16,7 @@ export const loginUser = async (userId, password) => {
     } catch(err) {
         console.error("Login error: ", err.response?.data || err.message)
         const message =
-            err.response?.data?.message || "Unable to Login. Please try again later."
+            err || "Unable to Login. Please try again later."
         
         throw new Error(message)
     }

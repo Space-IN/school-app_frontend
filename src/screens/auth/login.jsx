@@ -41,12 +41,12 @@ export default function LoginScreen() {
           <StatusBar style="light" backgroundColor="#ac1d1dff" />
           
           <ImageBackground
-              source={require('../../assets/school.webp')}
+              source={require('../../../assets/school.webp')}
               style={styles.background}
               resizeMode="cover"
           >
               <Image
-                  source={require('../../assets/logo.png')}
+                  source={require('../../../assets/logo.png')}
                   style={styles.logo}
                   resizeMode="contain"
               />

@@ -14,7 +14,7 @@ export default function EventsSlider({ events = [] }) {
                 {events.map((event) => (
                     <View key={event._id} style={styles.card}>
                         <Image
-                            source={require("../../assets/image-placeholder.jpg")}
+                            source={require("../../../assets/image-placeholder.jpg")}
                             style={styles.image}
                         />
                         <View style={styles.textContainer}>

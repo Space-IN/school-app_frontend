@@ -13,13 +13,13 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 
 const imageFiles = [
-  require('../assets/schoolbuilding.png'),
-  require('../assets/class.png'),
-  require('../assets/library.png'),
-  require('../assets/sports.png'),
-  require('../assets/computerlab.png'),
-  require('../assets/Science.png'),
-  // require('../assets/boarding.png'),
+  require('../../assets/schoolbuilding.png'),
+  require('../../assets/class.png'),
+  require('../../assets/library.png'),
+  require('../../assets/sports.png'),
+  require('../../assets/computerlab.png'),
+  require('../../assets/Science.png'),
+  // require('../../assets/boarding.png'),
 ];
 
 export default function RoleSelection({ navigation }) {
@@ -50,13 +50,13 @@ export default function RoleSelection({ navigation }) {
 
   return (
     <ImageBackground
-      source={require('../assets/schoolbackgroundd.png')}
+      source={require('../../assets/schoolbackgroundd.png')}
       style={styles.background}
       resizeMode="cover"
     >
       <View style={styles.overlay}>
         {/* 🏫 Logo + School Name */}
-        <Image source={require('../assets/school.icon.png')} style={styles.logo} resizeMode="contain" />
+        <Image source={require('../../assets/schoolIcon.png')} style={styles.logo} resizeMode="contain" />
         <Text style={styles.schoolName}>
           VISHWACHETANA VIDYANIKETANA SCHOOL - DAVANGERE
         </Text>

@@ -130,11 +130,11 @@ export default function LoginScreen({ route, navigation }) {
   const getRoleIcon = () => {
     switch (role) {
       case 'Admin':
-        return require('../assets/admin.png');
+        return require('../../assets/admin.png');
       case 'Faculty':
-        return require('../assets/classroom.png');
+        return require('../../assets/classroom.png');
       case 'Student/Parent':
-        return require('../assets/family.png');
+        return require('../../assets/family.png');
       default:
         return null;
     }
@@ -142,13 +142,13 @@ export default function LoginScreen({ route, navigation }) {
 
   return (
     <ImageBackground
-      source={require('../assets/schoolbackground.png')}
+      source={require('../../assets/schoolbackground.png')}
       style={styles.background}
       resizeMode="cover"
     >
       {/* ✅ Top-right logo */}
       <Image
-        source={require('../assets/logo.png')}
+        source={require('../../assets/logo.png')}
         style={styles.topRightLogo}
         resizeMode="contain"
       />
