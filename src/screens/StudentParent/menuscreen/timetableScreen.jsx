@@ -17,7 +17,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import * as Animatable from 'react-native-animatable';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
-import BASE_URL from '../../../config/baseURL';
+import { BASE_URL } from '@env';
 import { useStudent } from '../../../context/student/studentContext';
 
 const { width } = Dimensions.get('window');

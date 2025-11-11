@@ -129,7 +129,7 @@ const StudentProfileScreen = () => {
                 <View style={{ width: "100%", display: "flex", flexDirection: "row", }}>
                   <View style={{ display: "flex", flexDirection: "row", alignItems: "center", width: "45%" }}>
                     <MaterialIcons name="phone" size={20} color="#fff" style={{ marginRight: 5 }} />
-                    <Text style={{ fontWeight: "500", color: "#fff", fontSize: 16, }}>Phone Number:</Text>
+                    <Text style={{ fontWeight: "500", color: "#fff", fontSize: 16, }}>Phone No:</Text>
                   </View>
                   <Text style={styles.value}>{profile.fatherContact || "N/A"}</Text>
                 </View>
@@ -137,7 +137,10 @@ const StudentProfileScreen = () => {
 
               <View style={styles.detailRow}>
                 <View style={{ width: "100%", display: "flex", flexDirection: "row", }}>
-                  <MaterialIcons name="email" size={20} color="#fff" style={{ marginRight: 5, width: "45%" }} />
+                  <View style={{ display: "flex", flexDirection: "row", alignItems: "center", width: "45%" }}>
+                    <MaterialIcons name="email" size={20} color="#fff" style={{ marginRight: 5, }} />
+                    <Text style={{ fontWeight: "500", color: "#fff", fontSize: 16, }}>E-Mail:</Text>
+                  </View>
                   <Text style={styles.value}>{profile.studentEmail || "N/A"}</Text>
                 </View>
               </View>
@@ -275,6 +278,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "400",
     fontSize: 16,
+    maxWidth: 210
   },
   parentSection: {
     marginTop: 5,

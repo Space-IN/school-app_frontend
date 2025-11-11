@@ -204,7 +204,7 @@ export default function AdminDashboard({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffffff',
+    backgroundColor: '#ac1d1dff',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   headerRow: {
@@ -226,6 +226,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 30,
     paddingHorizontal: 16,
+    backgroundColor: '#ffffffff'
   },
   loadingContainer: {
     flex: 1,

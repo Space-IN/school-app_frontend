@@ -63,16 +63,9 @@ export default function FacultyTodaySchedule({ navigation }) {
           data={periodsToday}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
-            <TouchableOpacity
+            <View
               style={styles.card}
-              onPress={() =>
-                navigation?.navigate("FacultyClassDashboard", {
-                  classAssigned: todaySchedule.classAssigned,
-                  section: todaySchedule.section,
-                  subject: item.subjectMasterId?.name,
-                  timeSlot: item.timeSlot,
-                })
-              }
+             
             >
               <View style={styles.cardContent}>
                 <Text style={styles.subject}>{item.subjectMasterId?.name}</Text>
@@ -81,7 +74,7 @@ export default function FacultyTodaySchedule({ navigation }) {
                   Class {todaySchedule.classAssigned} - {todaySchedule.section}
                 </Text>
               </View>
-            </TouchableOpacity>
+            </View>
           )}
         />
       ) : (

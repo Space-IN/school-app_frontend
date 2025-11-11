@@ -656,11 +656,11 @@ export default function LectureRecordingScreen({ route }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#bbdbfaff',
+    // backgroundColor: '#bbdbfaff',
   },
   customHeader: {
     paddingVertical: 15,
-    backgroundColor: '#c01e12ff',
+    backgroundColor: '#9c1006',
     borderBottomLeftRadius: 15,
     borderBottomRightRadius: 15,
     paddingHorizontal: 10,

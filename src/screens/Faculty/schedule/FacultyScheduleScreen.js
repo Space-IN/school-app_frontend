@@ -106,7 +106,7 @@ export default function FacultySchedulesScreen() {
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <View style={styles.table}>
                   <View style={styles.tableRow}>
-                    <Text style={[styles.cell, styles.headerCell, styles.col1]}>#</Text>
+                    <Text style={[styles.cell, styles.headerCell, styles.col1]}>P.NO</Text>
                     <Text style={[styles.cell, styles.headerCell, styles.col2]}>Time</Text>
                     <Text style={[styles.cell, styles.headerCell, styles.col3]}>Subject </Text>
                     <Text style={[styles.cell, styles.headerCell, styles.col4]}>Class</Text>

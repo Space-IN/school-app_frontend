@@ -10,7 +10,6 @@ import {
     StatusBar
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../context/authContext";
 import Toast from "react-native-toast-message";
 
@@ -37,7 +36,7 @@ export default function LoginScreen() {
     }
 
     return (
-        <SafeAreaView style={{ flex: 1 }}>
+        <View style={{ flex: 1 }}>
           <StatusBar style="light" backgroundColor="#ac1d1dff" />
           
           <ImageBackground
@@ -82,15 +81,8 @@ export default function LoginScreen() {
                               {loading ? (
                                   <ActivityIndicator size="large" color="#9c1006ff" style={{ marginTop: 10 }} />
                               ) : (
-                                  <TouchableOpacity style={{ width: '100%' }} onPress={handleLogin}>
-                                      <LinearGradient
-                                          colors={['#9c1006', '#b71c1c']}
-                                          start={{ x: 0, y: 0 }}
-                                          end={{ x: 1, y: 1 }}
-                                          style={styles.loginButton}
-                                      >
-                                          <Text style={styles.loginButtonText}>Login</Text>
-                                      </LinearGradient>
+                                  <TouchableOpacity style={[styles.loginButton, { width: '100%', backgroundColor: "#9c1006" } ]} onPress={handleLogin}>
+                                    <Text style={styles.loginButtonText}>Login</Text>
                                   </TouchableOpacity>
                               )}
                           </View>
@@ -98,7 +90,7 @@ export default function LoginScreen() {
                   </TouchableWithoutFeedback>
               </KeyboardAvoidingView>
           </ImageBackground>
-        </SafeAreaView>
+        </View>
     )
 }
 
@@ -108,6 +100,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     height: '100%',
+    backgroundColor: "#ac1d1dff"
   },
   container: {
     flex: 1,

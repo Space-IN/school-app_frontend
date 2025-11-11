@@ -34,14 +34,15 @@ const AddNoticeScreen = () => {
 
   const fetchNotices = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/announcements/`);
+      const res = await axios.get(`${BASE_URL}/api/announcement/`);
       setNotices(res.data || []);
     } catch (error) {
       console.error("Error fetching notices:", error);
       Alert.alert("Error", "Failed to load notices");
     }
   };
-
+  
+  
   useEffect(() => {
     fetchNotices();
   }, []);

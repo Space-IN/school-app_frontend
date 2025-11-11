@@ -13,7 +13,7 @@ import {
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
-import BASE_URL from '../../../config/baseURL';
+import {BASE_URL} from '@env';
 
 // --- LOCALE CONFIGURATION ---
 LocaleConfig.locales['en'] = {

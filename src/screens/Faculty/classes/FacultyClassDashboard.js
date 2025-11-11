@@ -263,7 +263,7 @@ export default function FacultyClassDashboard({ route }) {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
-        <StatusBar backgroundColor="#4a90e2" barStyle="light-content" />
+        <StatusBar backgroundColor="#c01e12ff" barStyle="light-content" />
         
         {/* Class Header Info with Back Button */}
         <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
