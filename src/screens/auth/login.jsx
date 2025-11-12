@@ -7,9 +7,9 @@ import {
     Keyboard, KeyboardAvoidingView,
     TouchableWithoutFeedback, ScrollView,
     Platform,
-    StatusBar
+    StatusBar,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../context/authContext";
 import Toast from "react-native-toast-message";
 
@@ -36,7 +36,7 @@ export default function LoginScreen() {
     }
 
     return (
-        <View style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1 }}>
           <StatusBar style="light" backgroundColor="#ac1d1dff" />
           
           <ImageBackground
@@ -90,7 +90,7 @@ export default function LoginScreen() {
                   </TouchableWithoutFeedback>
               </KeyboardAvoidingView>
           </ImageBackground>
-        </View>
+        </SafeAreaView>
     )
 }
 

@@ -42,8 +42,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "97768c73-4ade-48f1-a521-2fd56978b689"
+        "projectId": "964f876d-7f93-4f62-84b3-f2a7ffd0bf9c"
       }
-    }
+    },
+    "owner": "space-energy-systems"
   }
 }
