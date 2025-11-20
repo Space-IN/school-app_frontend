@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from "react"
 import {
     View, Text, TextInput, TouchableOpacity,
     StyleSheet,
@@ -7,17 +7,19 @@ import {
     Keyboard, KeyboardAvoidingView,
     TouchableWithoutFeedback, ScrollView,
     Platform,
-    StatusBar,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useAuth } from "../../context/authContext";
-import Toast from "react-native-toast-message";
+} from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
+import { useAuth } from "../../context/authContext"
+import Toast from "react-native-toast-message"
+import Ionicons from '@expo/vector-icons/Ionicons'
+
 
 
 export default function LoginScreen() {
     const { login, loading } = useAuth()
     const [userId, setUserId] = useState('')
     const [password, setPassword] = useState('')
+    const [showPassword, setShowPassword] = useState(false)
 
     const handleLogin = async () => {
         try {
@@ -36,9 +38,7 @@ export default function LoginScreen() {
     }
 
     return (
-        <SafeAreaView style={{ flex: 1 }}>
-          <StatusBar style="light" backgroundColor="#ac1d1dff" />
-          
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#ac1d1dff"  }}>
           <ImageBackground
               source={require('../../../assets/school.webp')}
               style={styles.background}
@@ -70,13 +70,26 @@ export default function LoginScreen() {
                                   style={styles.input}
                                   autoCapitalize="none"
                               />
-                              <TextInput
-                                  placeholder="Password"
-                                  value={password}
-                                  onChangeText={setPassword}
-                                  secureTextEntry
-                                  style={styles.input}
-                              />
+                              <View style={styles.passwordContainer}>
+                                <TextInput
+                                    placeholder="Password"
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    secureTextEntry={!showPassword}
+                                    style={styles.input}
+                                />
+
+                                <TouchableOpacity
+                                  style={styles.eyeIcon}
+                                  onPress={() => setShowPassword(!showPassword)}
+                                >
+                                  <Ionicons
+                                    name={showPassword ? "eye-sharp" : "eye-off-sharp"}
+                                    size={24}
+                                    color="black"
+                                  />
+                                </TouchableOpacity>
+                              </View>
 
                               {loading ? (
                                   <ActivityIndicator size="large" color="#9c1006ff" style={{ marginTop: 10 }} />
@@ -100,7 +113,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     height: '100%',
-    backgroundColor: "#ac1d1dff"
+    backgroundColor: "#F9FAFB"
   },
   container: {
     flex: 1,
@@ -168,5 +181,15 @@ const styles = StyleSheet.create({
     width: "100%",
     marginTop: 8,
     marginBottom: 35,
-  }
-});
+  },
+  passwordContainer: {
+    width: "100%",
+    position: "relative", 
+    justifyContent: "center",
+  },
+  eyeIcon: {
+    position: "absolute",
+    right: 15,
+    top: 18,
+  },
+})

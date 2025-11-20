@@ -5,6 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/schoolIcon.png",
+    "scheme": "vv.mobile",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -29,7 +30,27 @@
         "android.permission.MODIFY_AUDIO_SETTINGS",
         "INTERNET"
       ],
-      "usesClearTextTraffic": true
+      "usesClearTextTraffic": true,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "vv.mobile",
+              "host": "redirect"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ],
+      "androidStatusBar": {
+        "backgroundColor": "#ac1d1dff",
+        "barStyle": "light-content",
+        "translucent": false
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"

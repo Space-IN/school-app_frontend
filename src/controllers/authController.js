@@ -1,23 +1,50 @@
 import axios from "axios"
-import * as SecureStore from "expo-secure-store"
-import { BASE_URL } from "@env"
+import { KEYCLOAK_SERVER_URL } from "@env"
+import { keycloakConfig } from "../config/keycloak"
 
 
 
-export const loginUser = async (userId, password) => {
+export async function loginUser(username, password) {
     try {
-        const response = await axios.post(`${BASE_URL}/api/auth/login`, {
-            userId,
-            password
-        })
-        const { token } = response.data
-        await SecureStore.setItemAsync("token", token)
-        return token
+        const response = await axios.post(
+            `${KEYCLOAK_SERVER_URL}/realms/vishwachetana-vidyaniketana/protocol/openid-connect/token`,
+            new URLSearchParams({
+                client_id: keycloakConfig.clientId,
+                grant_type: "password",
+                username,
+                password
+            }),
+            {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+            },
+        )
+        return response.data
     } catch(err) {
-        console.error("Login error: ", err.response?.data || err.message)
-        const message =
-            err || "Unable to Login. Please try again later."
-        
-        throw new Error(message)
+        console.error("error logging in: ", err.response?.data || err.message)
+        throw err
+    }
+}
+
+
+export async function logoutUser(refreshToken) {
+    try {
+        const response = await axios.post(
+            `${KEYCLOAK_SERVER_URL}/realms/vishwachetana-vidyaniketana/protocol/openid-connect/logout`,
+            new URLSearchParams({
+                client_id: keycloakConfig.clientId,
+                refresh_token: refreshToken
+            }),
+            {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+            },
+        )
+        return response.data
+    } catch(err) {
+        console.error("error logging out: ", err.response?.data || err.message)
+        throw err
     }
 }
