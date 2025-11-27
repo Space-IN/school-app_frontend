@@ -66,7 +66,7 @@ export default function FacultyChaptersScreen({ route }) {
       setLoading(true);
       // console.log("fetch data from chapters: ", subjectId, grade, section)
       const res = await fetch(
-        `${BASE_URL}/api/chapters?subjectId=${subjectId}&classAssigned=${grade}&section=${section}`
+        `${BASE_URL}/api/faculty/chapters?subjectId=${subjectId}&classAssigned=${grade}&section=${section}`
       );
       const text = await res.text();
       // console.log("FETCH CHAPTERS RESPONSE:", text);
@@ -121,7 +121,7 @@ export default function FacultyChaptersScreen({ route }) {
       formData.append("mode", "replace");
 
       setLoading(true);
-      const res = await fetch(`${BASE_URL}/api/chapters/upload-excel`, {
+      const res = await fetch(`${BASE_URL}/api/faculty/chapters/upload-excel`, {
         method: "POST",
         body: formData,
       });
@@ -169,7 +169,7 @@ export default function FacultyChaptersScreen({ route }) {
       formData.append("type", "pdf");
 
       setLoading(true);
-      const res = await fetch(`${BASE_URL}/api/chapters/${chapterId}/upload-pdf`, {
+      const res = await fetch(`${BASE_URL}/api/faculty/chapters/${chapterId}/upload-pdf`, {
         method: "POST",
         body: formData,
       });
@@ -207,7 +207,7 @@ export default function FacultyChaptersScreen({ route }) {
         onPress: async () => {
           try {
             setLoading(true);
-            const res = await fetch(`${BASE_URL}/api/chapters/${id}`, {
+            const res = await fetch(`${BASE_URL}/api/faculty/chapters/${id}`, {
               method: "DELETE",
             });
             const text = await res.text();
@@ -255,7 +255,7 @@ export default function FacultyChaptersScreen({ route }) {
   const handleUpdate = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${BASE_URL}/api/chapters/${selectedChapter._id}`, {
+      const res = await fetch(`${BASE_URL}/api/faculty/chapters/${selectedChapter._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -301,8 +301,8 @@ export default function AllFacultyScreen({ navigation }) {
     try {
       const endpoint =
         activeTab === 'deleted'
-          ? `${BASE_URL}/api/faculty/deleted`
-          : `${BASE_URL}/api/faculty/all`;
+          ? `${BASE_URL}/api/admin/faculty/deleted`
+          : `${BASE_URL}/api/admin/faculty/all`;
 
       const res = await axios.get(endpoint);
       setFacultyList(res.data || []);
@@ -330,7 +330,7 @@ export default function AllFacultyScreen({ navigation }) {
   const handleSoftDelete = (userId) => {
     confirmAction('Soft Delete', 'Soft delete this faculty?', async () => {
       try {
-        await axios.patch(`${BASE_URL}/api/faculty/delete/${userId}`);
+        await axios.patch(`${BASE_URL}/api/admin/faculty/delete/${userId}`);
         fetchFaculty();
         Alert.alert('Deleted', 'Faculty soft deleted');
       } catch {
@@ -345,7 +345,7 @@ export default function AllFacultyScreen({ navigation }) {
       'This will permanently delete the faculty!',
       async () => {
         try {
-          await axios.delete(`${BASE_URL}/api/faculty/${userId}`);
+          await axios.delete(`${BASE_URL}/api/admin/faculty/${userId}`);
           fetchFaculty();
           Alert.alert('Deleted', 'Faculty permanently deleted');
         } catch {
@@ -358,7 +358,7 @@ export default function AllFacultyScreen({ navigation }) {
   const handleRestore = (userId) => {
     confirmAction('Restore Faculty', 'Restore this faculty?', async () => {
       try {
-        await axios.patch(`${BASE_URL}/api/faculty/restore/${userId}`);
+        await axios.patch(`${BASE_URL}/api/admin/faculty/restore/${userId}`);
         fetchFaculty();
         Alert.alert('Restored', 'Faculty restored successfully');
       } catch {

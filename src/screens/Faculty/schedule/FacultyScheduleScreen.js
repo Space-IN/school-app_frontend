@@ -42,7 +42,7 @@ export default function FacultySchedulesScreen() {
 
       console.log('Fetching schedule for faculty:', facultyId);
       
-      const res = await axios.get(`${BASE_URL}/api/schedule/faculty/${facultyId}`);
+      const res = await axios.get(`${BASE_URL}/api/admin/schedule/faculty/${facultyId}`);
       console.log('Schedule API response:', res.data);
       
       setFacultyName(res.data.facultyName);

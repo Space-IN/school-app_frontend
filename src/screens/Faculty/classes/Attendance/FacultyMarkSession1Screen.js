@@ -73,7 +73,7 @@ export default function FacultyMarkSession1Screen({ route }) {
       const currentFacultyId = decodedToken?.userId || facultyId;
       
       const response = await axios.get(
-        `${BASE_URL}/api/subject/subjects/faculty/${currentFacultyId}`
+        `${BASE_URL}/api/admin/subject/subjects/faculty/${currentFacultyId}`
       );
       
       const assignedSubjects = response.data || [];
@@ -206,7 +206,7 @@ export default function FacultyMarkSession1Screen({ route }) {
 
       console.log('📤 [Session 1] Sending attendance payload:', JSON.stringify(payload, null, 2));
 
-      const response = await axios.post(`${BASE_URL}/api/attendance/mark`, payload, {
+      const response = await axios.post(`${BASE_URL}/api/faculty/attendance/mark`, payload, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'

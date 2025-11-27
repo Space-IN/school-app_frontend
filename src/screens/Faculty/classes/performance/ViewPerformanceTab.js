@@ -28,7 +28,7 @@ const ViewPerformanceTab = ({ route }) => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${BASE_URL}/api/assessment/assessmentName?grade=${grade}&section=${section}&year=${year}`
+        `${BASE_URL}/api/faculty/assessment/assessmentName?grade=${grade}&section=${section}&year=${year}`
       );
       console.log("📘 Assessments:", response.data);
       if (response.data.exams?.length) {
@@ -49,7 +49,7 @@ const ViewPerformanceTab = ({ route }) => {
     try {
       setLoading(true);
       setError("");
-      console.log("📡 Fetching:", `${BASE_URL}/api/assessment/faculty/assessmentScore`, {
+      console.log("📡 Fetching:", `${BASE_URL}/api/faculty/assessment/faculty/assessmentScore`, {
         grade,
         section,
         test_name,
@@ -58,7 +58,7 @@ const ViewPerformanceTab = ({ route }) => {
       });
 
       const response = await axios.get(
-        `${BASE_URL}/api/assessment/faculty/assessmentScore?grade=${grade}&section=${section}&test_name=${test_name}&year=${year}&subject=${subjectName}`
+        `${BASE_URL}/api/faculty/assessment/faculty/assessmentScore?grade=${grade}&section=${section}&test_name=${test_name}&year=${year}&subject=${subjectName}`
       );
 
       console.log("✅ Response:", response.data);

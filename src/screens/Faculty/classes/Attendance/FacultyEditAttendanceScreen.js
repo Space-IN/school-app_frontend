@@ -98,7 +98,7 @@ export default function FacultyEditAttendanceScreen({ route }) {
     
     console.log('📥 Fetching attendance for:', { grade, section, date: dateStr });
     
-    const response = await axios.get(`${BASE_URL}/api/attendance`, {
+    const response = await axios.get(`${BASE_URL}/api/faculty/attendance`, {
       params: {
         classAssigned: grade,
         section: section,
@@ -234,7 +234,7 @@ export default function FacultyEditAttendanceScreen({ route }) {
 
       console.log('📤 Sending edit payload:', payload);
 
-      const response = await axios.post(`${BASE_URL}/api/attendance/mark`, payload, {
+      const response = await axios.post(`${BASE_URL}/api/faculty/attendance/mark`, payload, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'

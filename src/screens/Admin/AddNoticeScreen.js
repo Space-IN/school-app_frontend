@@ -34,7 +34,7 @@ const AddNoticeScreen = () => {
 
   const fetchNotices = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/announcement/`);
+      const res = await axios.get(`${BASE_URL}/api/admin/announcement/`);
       setNotices(res.data || []);
     } catch (error) {
       console.error("Error fetching notices:", error);
@@ -106,7 +106,7 @@ const AddNoticeScreen = () => {
   try {
     console.log("Selected file:", selectedFile);
 
-    await axios.post(`${BASE_URL}/api/announcement/add`, formData, {
+    await axios.post(`${BASE_URL}/api/admin/announcement/add`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       },
@@ -129,11 +129,11 @@ const AddNoticeScreen = () => {
     Alert.alert("Delete", "Are you sure you want to delete this notice?", [
       { text: "Cancel", style: "cancel" },
       {
-        text: "Delete",
+        text: "Delete",   
         style: "destructive",
         onPress: async () => {
           try {
-            await axios.delete(`${BASE_URL}/api/announcement/delete/${id}`);
+            await axios.delete(`${BASE_URL}/api/admin/announcement/delete/${id}`);
             fetchNotices(); 
             Alert.alert("Deleted", "Notice deleted successfully");
           } catch (error) {

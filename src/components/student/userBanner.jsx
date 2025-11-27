@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react"
 import { View, Text, StyleSheet, Pressable, Animated, ActivityIndicator } from "react-native"
 import FontAwesome from "@expo/vector-icons/FontAwesome"

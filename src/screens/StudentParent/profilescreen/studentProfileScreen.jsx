@@ -28,7 +28,7 @@ const StudentProfileScreen = () => {
       if (studentData) {
         const userId = studentData.userId;
         const response = await axios.get(
-          `${BASE_URL}/api/admin/students/${userId}`
+          `${BASE_URL}/api/admin/students/students/${userId}`
         );
         setProfile(response.data);
       }

@@ -37,7 +37,7 @@ export default function ClassScheduleXLSXUpload() {
 
   const fetchAll = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/schedule/all`);
+      const res = await axios.get(`${BASE_URL}/api/admin/schedule/all`);
       setAllSchedules(res.data);
     } catch (err) {
       console.error("Error fetching schedules:", err.message);
@@ -124,7 +124,7 @@ export default function ClassScheduleXLSXUpload() {
 
       // Upload with multipart/form-data
       const res = await axios.post(
-        `${BASE_URL}/api/schedule/admin/set`,
+        `${BASE_URL}/api/admin/schedule/admin/set`,
         formData,
         {
           headers: {
@@ -156,7 +156,7 @@ export default function ClassScheduleXLSXUpload() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await axios.delete(`${BASE_URL}/api/schedule/delete`, {
+              await axios.delete(`${BASE_URL}/api/admin/schedule/delete`, {
                 data: { classAssigned: cls, section },
               });
               Alert.alert('Deleted', 'Schedule deleted successfully.');

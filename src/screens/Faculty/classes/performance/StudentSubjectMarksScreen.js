@@ -39,7 +39,7 @@ const StudentSubjectMarksScreen = ({ route }) => {
   const fetchSubjects = async () => {
     setLoadingSubjects(true);
     try {
-      const res = await axios.get(`${BASE_URL}/api/subject/subjects/faculty/${facultyId}`);
+      const res = await axios.get(`${BASE_URL}/api/admin/subject/subjects/faculty/${facultyId}`);
 
       const filteredSubjects = res.data
         .filter(subj =>
@@ -118,7 +118,7 @@ const StudentSubjectMarksScreen = ({ route }) => {
 
       console.log("PAYLOAD SENT:", JSON.stringify(payload1, null, 2));
 
-      const response = await axios.post(`${BASE_URL}/api/assessment/faculty/submit`, payload1);
+      const response = await axios.post(`${BASE_URL}/api/faculty/assessment/faculty/submit`, payload1);
       console.log("Submit Response:", response.data);
 
 

@@ -31,7 +31,7 @@ export default function AddEventScreen({ navigation }) {
 
   const fetchEvents = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/events`);
+      const res = await axios.get(`${BASE_URL}/api/admin/events`);
       setEvents(res.data);
     } catch (err) {
       console.error('Error fetching events:', err);
@@ -45,7 +45,7 @@ export default function AddEventScreen({ navigation }) {
   const handleAddEvent = async () => {
     try {
 
-      await axios.post(`${BASE_URL}/api/events/add`, {
+      await axios.post(`${BASE_URL}/api/admin/events/add`, {
 
         title,
         description,
@@ -64,7 +64,7 @@ export default function AddEventScreen({ navigation }) {
 
   const handleDelete = async (eventId) => {
     try {
-      await axios.delete(`${BASE_URL}/api/events/delete/${eventId}`);
+      await axios.delete(`${BASE_URL}/api/admin/events/delete/${eventId}`);
       Alert.alert('Deleted', 'Event deleted successfully');
       fetchEvents();
     } catch (err) {

@@ -33,7 +33,7 @@ export default function ClassScheduleViewScreen() {
 
   const fetchAssignedClasses = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/subject/assigned-classes`);
+      const res = await axios.get(`${BASE_URL}/api/admin/subject/assigned-classes`);
       console.log("✅ Class list fetched:", res.data);
       setClassList(res.data || []);
     } catch (err) {
@@ -46,7 +46,7 @@ export default function ClassScheduleViewScreen() {
       setLoading(true);
       const encodedClass = encodeURIComponent(classAssigned.trim());
       const encodedSection = encodeURIComponent(section.trim());
-      const url = `${BASE_URL}/api/schedule/class/${encodedClass}/section/${encodedSection}`;
+      const url = `${BASE_URL}/api/admin/schedule/class/${encodedClass}/section/${encodedSection}`;
       const res = await axios.get(url);
       console.log("📅 Schedule data:", res.data);
       setSchedule(res.data.weeklySchedule || []);

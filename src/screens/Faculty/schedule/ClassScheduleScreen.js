@@ -55,7 +55,7 @@ export default function ClassScheduleScreen({ route }) {
       const facultyId = decodedToken?.userId;
       console.log('🔍 Fetching schedule for faculty:', facultyId);
       
-      const res = await axios.get(`${BASE_URL}/api/schedule/faculty/${facultyId}`);
+      const res = await axios.get(`${BASE_URL}/api/admin/schedule/faculty/${facultyId}`);
       console.log('📦 Full API Response:', JSON.stringify(res.data, null, 2));
       
       // Check different possible response structures

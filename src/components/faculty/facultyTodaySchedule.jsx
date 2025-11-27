@@ -21,7 +21,7 @@ export default function FacultyTodaySchedule({ navigation }) {
     const fetchSchedule = async () => {
       try {
         console.log("Fetching schedule for facultyId:", facultyId);
-        const res = await axios.get(`${BASE_URL}/api/schedule/faculty/${facultyId}`);
+        const res = await axios.get(`${BASE_URL}/api/admin/schedule/faculty/${facultyId}`);
         setSchedule(res.data?.schedule || []);
       } catch (err) {
         console.error("Error fetching schedule:", err?.message || err);

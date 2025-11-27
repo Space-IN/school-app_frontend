@@ -73,7 +73,7 @@ export default function TimetableScreen() {
       }
 
       const response = await fetch(
-        `${BASE_URL}/api/schedule/student/${studentUserId}`
+        `${BASE_URL}/api/admin/schedule/student/${studentUserId}`
       );
 
       if (!response.ok) {
@@ -81,7 +81,7 @@ export default function TimetableScreen() {
 
         if (grade && section) {
           const classResponse = await fetch(
-            `${BASE_URL}/api/schedule/class/${encodeURIComponent(grade)}/section/${encodeURIComponent(section)}`
+            `${BASE_URL}/api/admin/schedule/class/${encodeURIComponent(grade)}/section/${encodeURIComponent(section)}`
           );
 
           if (!classResponse.ok) {

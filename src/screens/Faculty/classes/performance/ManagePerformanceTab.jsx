@@ -42,7 +42,7 @@ const ManagePerformanceTab = ({ route, navigation }) => {
       // console.log('Fetching students for:', { grade, section });
       
       const response = await axios.get(
-        `${BASE_URL}/api/student/students/all/grade/${grade}/section/${section}`
+        `${BASE_URL}/api/admin/students/all/grade/${grade}/section/${section}`
       );
       
       // console.log('Students API response:', response.data);

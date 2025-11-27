@@ -33,7 +33,7 @@ const AttendanceScreen = () => {
 
       try {
         const response = await axios.get(
-          `${BASE_URL}/api/attendance/student/${studentData?.userId}?grade=${studentData?.className}&section=${studentData?.section}`
+          `${BASE_URL}/api/student/attendance/student/${studentData?.userId}?grade=${studentData?.className}&section=${studentData?.section}`
         )
         const data = await response.data
 
