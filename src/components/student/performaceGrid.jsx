@@ -1,19 +1,24 @@
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from "react-native"
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from "react-native"
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6'
 import { useStudent } from "../../context/student/studentContext"
-
-
+import { useNavigation } from '@react-navigation/native' 
 
 export default function PerformanceGrid() {
     const { studentData, studentLoading } = useStudent()
+    const navigation = useNavigation()  
+
     const assignmentsNum = "-"
     const remarks = "-"
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
             <View style={styles.row}>
-                <View style={[styles.card, { backgroundColor: !studentData?.attendancePercentage ? "#909691" : studentData?.attendancePercentage>75 ? "#10b981" : studentData?.attendancePercentage>45 ? "#f59e0b" : "#e23333ff" }]}>
+                
+                <TouchableOpacity 
+                    style={[styles.card, { backgroundColor: !studentData?.attendancePercentage ? "#909691" : studentData?.attendancePercentage>75 ? "#10b981" : studentData?.attendancePercentage>45 ? "#f59e0b" : "#e23333ff" }]}
+                    onPress={() => navigation.navigate('AttendanceScreen')}  
+                >
                     <Text style={styles.cardTitle}>ATTENDANCE</Text>
                     <View style={styles.divider} />
                     <View style={styles.metricContainer}>
@@ -24,10 +29,14 @@ export default function PerformanceGrid() {
                         <Text style={[styles.metricText, { marginLeft: 5 }]}>{!studentData?.attendancePercentage ? "-" : `${studentData?.attendancePercentage}%`}</Text>
                       )}
                     </View>
-                </View>
+                </TouchableOpacity>
 
-                <View style={[styles.card, { backgroundColor: !studentData?.grade?.cgpa ? "#909691" : studentData?.grade>8 ? "#10b981" : studentData?.grade>5 ? "#f59e0b"  : "#DC2626" }]}>
-                    <Text style={styles.cardTitle}>CGPA</Text>
+                
+                <TouchableOpacity 
+                    style={[styles.card, { backgroundColor: !studentData?.grade?.cgpa ? "#909691" : studentData?.grade>8 ? "#10b981" : studentData?.grade>5 ? "#f59e0b"  : "#DC2626" }]}
+                    onPress={() => navigation.navigate('AssessmentScreen')}  
+                >
+                    <Text style={styles.cardTitle}>RESULTS</Text>
                     <View style={styles.divider} />
                     <View style={styles.metricContainer}>
                       <FontAwesome name="graduation-cap" size={22} color="white" />
@@ -37,7 +46,7 @@ export default function PerformanceGrid() {
                         <Text style={[styles.metricText, { marginLeft: 5 }]}>{!studentData?.grade?.cgpa ? "-" : `${(studentData?.grade?.cgpa).toFixed(2)}`}</Text>
                       )}
                     </View>
-                </View>
+                </TouchableOpacity>
             </View>
             
             <View style={styles.row2}>

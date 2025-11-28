@@ -8,16 +8,16 @@ import {
   Alert,
   Modal,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import * as Animatable from 'react-native-animatable';
 import { useStudent } from '../../../context/student/studentContext';
-import { BASE_URL } from '@env'
-import axios from 'axios'
-
+import { BASE_URL } from '@env';
+import axios from 'axios';
 
 const AttendanceScreen = () => {
-  const { studentData } = useStudent()
+  const { studentData } = useStudent();
   const [attendanceData, setAttendanceData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -34,10 +34,10 @@ const AttendanceScreen = () => {
       try {
         const response = await axios.get(
           `${BASE_URL}/api/attendance/student/${studentData?.userId}?grade=${studentData?.className}&section=${studentData?.section}`
-        )
-        const data = await response.data
+        );
+        const data = await response.data;
 
-        if (response.status===200) {
+        if (response.status === 200) {
           setAttendanceData(data);
         } else {
           Alert.alert('Error', data.message || 'Failed to fetch attendance.');
@@ -130,49 +130,79 @@ const AttendanceScreen = () => {
     );
   }
 
+  // Get today's date and record
+  const todayString = new Date().toISOString().split('T')[0];
+  const todaysRecord = attendanceData.find(r => r.date.startsWith(todayString));
+
   return (
     <SafeAreaView style={styles.container}>
-      <Animatable.View animation="fadeInDown" style={styles.statsContainer}>
-        <View style={styles.statBox}>
-          <Text style={styles.statValue}>{studentData?.attendancePercentage}%</Text>
-          <Text style={styles.statLabel}>Overall Attendance</Text>
-        </View>
-        <View style={styles.statRow}>
+      <ScrollView>
+        <Animatable.View animation="fadeInDown" style={styles.statsContainer}>
           <View style={styles.statBox}>
-            <Text style={styles.statValue}>{attendanceStats.present}</Text>
-            <Text style={styles.statLabel}> Sessions Present</Text>
+            <Text style={styles.statValue}>{studentData?.attendancePercentage}%</Text>
+            <Text style={styles.statLabel}>Overall Attendance</Text>
           </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statValue}>{attendanceStats.absent}</Text>
-            <Text style={styles.statLabel}> Sessions Absent</Text>
+          <View style={styles.statRow}>
+            <View style={styles.statBox}>
+              <Text style={styles.statValue}>{attendanceStats.present}</Text>
+              <Text style={styles.statLabel}> Sessions Present</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={styles.statValue}>{attendanceStats.absent}</Text>
+              <Text style={styles.statLabel}> Sessions Absent</Text>
+            </View>
           </View>
-        </View>
-      </Animatable.View>
+        </Animatable.View>
 
-      <Animatable.View animation="fadeInUp" delay={300}>
-        <Calendar
-          onDayPress={onDayPress}
-          markedDates={markedDates}
-          theme={{
-            backgroundColor: '#ffffff',
-            calendarBackground: '#ffffff',
-            textSectionTitleColor: '#b6c1cd',
-            selectedDayBackgroundColor: '#c01e12',
-            selectedDayTextColor: '#ffffff',
-            todayTextColor: '#c01e12',
-            dayTextColor: '#2d4150',
-            arrowColor: '#c01e12',
-            monthTextColor: '#c01e12',
-            indicatorColor: 'blue',
-            textDayFontWeight: '300',
-            textMonthFontWeight: 'bold',
-            textDayHeaderFontWeight: '300',
-            textDayFontSize: 16,
-            textMonthFontSize: 16,
-            textDayHeaderFontSize: 14,
-          }}
-        />
-      </Animatable.View>
+        <Animatable.View animation="fadeInUp" delay={300}>
+          <Calendar
+            onDayPress={onDayPress}
+            markedDates={markedDates}
+            theme={{
+              backgroundColor: '#ffffff',
+              calendarBackground: '#ffffff',
+              textSectionTitleColor: '#b6c1cd',
+              selectedDayBackgroundColor: '#c01e12',
+              selectedDayTextColor: '#ffffff',
+              todayTextColor: '#c01e12',
+              dayTextColor: '#2d4150',
+              arrowColor: '#c01e12',
+              monthTextColor: '#c01e12',
+              indicatorColor: 'blue',
+              textDayFontWeight: '300',
+              textMonthFontWeight: 'bold',
+              textDayHeaderFontWeight: '300',
+              textDayFontSize: 16,
+              textMonthFontSize: 16,
+              textDayHeaderFontSize: 14,
+            }}
+          />
+        </Animatable.View>
+
+        {/* Today's Attendance at the bottom */}
+        <View style={styles.todayContainer}>
+          <Text style={styles.todayTitle}>Today's Attendance</Text>
+          {todaysRecord ? (
+            todaysRecord.sessions.map((session, index) => (
+              <View key={index} style={styles.sessionRow}>
+                <Text style={styles.sessionText}>Session {session.session_number}</Text>
+                <Text
+                  style={[
+                    styles.statusText,
+                    { color: session.status === 'present' ? '#22c55e' : '#ef4444' },
+                  ]}
+                >
+                  {session.status}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text style={{ fontSize: 16, color: '#6b7280' }}>
+              No attendance recorded for today.
+            </Text>
+          )}
+        </View>
+      </ScrollView>
 
       <Modal
         animationType="slide"
@@ -182,9 +212,7 @@ const AttendanceScreen = () => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              Attendance for {selectedDate}
-            </Text>
+            <Text style={styles.modalTitle}>Attendance for {selectedDate}</Text>
             {renderSessionDetails()}
             <TouchableOpacity
               style={styles.closeButton}
@@ -200,14 +228,8 @@ const AttendanceScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f4f4f8',
-  },
-  centered: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  container: { flex: 1, backgroundColor: '#f4f4f8' },
+  centered: { justifyContent: 'center', alignItems: 'center' },
   statsContainer: {
     padding: 20,
     backgroundColor: '#fff',
@@ -220,24 +242,10 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  statRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 15,
-  },
-  statBox: {
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#c01e12',
-  },
-  statLabel: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginTop: 5,
-  },
+  statRow: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 15 },
+  statBox: { alignItems: 'center' },
+  statValue: { fontSize: 28, fontWeight: 'bold', color: '#c01e12' },
+  statLabel: { fontSize: 14, color: '#6b7280', marginTop: 5 },
   modalOverlay: {
     flex: 1,
     justifyContent: 'center',
@@ -251,19 +259,12 @@ const styles = StyleSheet.create({
     padding: 25,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
   },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 20 },
   sessionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -272,15 +273,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
-  sessionText: {
-    fontSize: 16,
-    color: '#374151',
-  },
-  statusText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    textTransform: 'capitalize',
-  },
+  sessionText: { fontSize: 16, color: '#374151' },
+  statusText: { fontSize: 16, fontWeight: 'bold', textTransform: 'capitalize' },
   closeButton: {
     marginTop: 25,
     backgroundColor: '#c01e12',
@@ -289,12 +283,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     elevation: 2,
   },
-  closeButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
-    fontSize: 16,
+  closeButtonText: { color: 'white', fontWeight: 'bold', textAlign: 'center', fontSize: 16 },
+  todayContainer: {
+    marginTop: 20,
+    padding: 15,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginHorizontal: 20,
+    marginBottom: 30,
   },
+  todayTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 10 },
 });
 
 export default AttendanceScreen;

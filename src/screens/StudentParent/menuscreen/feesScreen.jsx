@@ -1,58 +1,42 @@
-
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Card } from 'react-native-paper';
-import { LinearGradient } from 'expo-linear-gradient';
 
 export default function FeesScreen() {
   const feeDetails = {
-    tuition: 'N/A',
-    hostel: 'N/A',
-    transport: 'N/A',
-    other: 'N/A',
-    total: 'N/A'
+    total: "N/A",
+    paid: "N/A",
+    pending: "N/A",
   };
 
   return (
-    <View
-      style={styles.container}
-    >
+    <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <Text style={styles.title}>Fees Details</Text>
-        
-        <Card style={styles.card}>
-          <Card.Content>
-            <View style={styles.feeRow}>
-              <Text style={styles.feeType}>Tuition Fee</Text>
-              <Text style={styles.feeAmount}>{feeDetails.tuition}</Text>
-            </View>
-            <View style={styles.separator} />
-            
-            <View style={styles.feeRow}>
-              <Text style={styles.feeType}>Hostel Fee</Text>
-              <Text style={styles.feeAmount}>{feeDetails.hostel}</Text>
-            </View>
-            <View style={styles.separator} />
-            
-            <View style={styles.feeRow}>
-              <Text style={styles.feeType}>Transport Fee</Text>
-              <Text style={styles.feeAmount}>{feeDetails.transport}</Text>
-            </View>
-            <View style={styles.separator} />
-            
-            <View style={styles.feeRow}>
-              <Text style={styles.feeType}>Other Fees</Text>
-              <Text style={styles.feeAmount}>{feeDetails.other}</Text>
-            </View>
-          </Card.Content>
-        </Card>
+        <Text style={styles.title}>Fees Summary</Text>
 
-        <Card style={[styles.card, styles.totalCard]}>
+        <View style={styles.row}>
+          
+          <Card style={[styles.card, styles.smallCard]}>
+            <Card.Content>
+              <Text style={styles.label}>Amount Paid</Text>
+              <Text style={[styles.value, styles.paid]}>{feeDetails.paid}</Text>
+            </Card.Content>
+          </Card>
+
+          
+          <Card style={[styles.card, styles.smallCard]}>
+            <Card.Content>
+              <Text style={[styles.label, styles.pendingText]}>Pending Amount</Text>
+              <Text style={[styles.value, styles.pendingText]}>{feeDetails.pending}</Text>
+            </Card.Content>
+          </Card>
+        </View>
+
+        
+        <Card style={styles.totalCard}>
           <Card.Content>
-            <View style={styles.feeRow}>
-              <Text style={[styles.feeType, styles.totalText]}>Total Fees</Text>
-              <Text style={[styles.feeAmount, styles.totalText]}>{feeDetails.total}</Text>
-            </View>
+            <Text style={[styles.label, styles.totalLabel]}>Total Fees</Text>
+            <Text style={[styles.value, styles.totalLabel]}>{feeDetails.total}</Text>
           </Card.Content>
         </Card>
 
@@ -71,49 +55,68 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#8f1b1bff',
-    marginBottom: 20,
-    textAlign: 'center',
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#8f1b1bff",
+    marginBottom: 25,
+    textAlign: "center",
   },
+
+  
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+
+  smallCard: {
+    width: "48%",
+  },
+
   card: {
-    backgroundColor: 'white',
-    borderRadius: 10,
+    backgroundColor: "white",
+    borderRadius: 12,
     elevation: 3,
-    marginBottom: 20,
+    paddingVertical: 10,
   },
+
+  label: {
+    fontSize: 15,
+    color: "#475569",
+    marginBottom: 5,
+  },
+
+  value: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#8f1b1bff",
+  },
+
+  paid: {
+    color: "green",
+  },
+
+  pendingText: {
+    color: "red",
+    fontWeight: "bold",
+  },
+
+  
   totalCard: {
-    backgroundColor: '#8f1b1bff',
-    paddingHorizontal: 10
+    backgroundColor: "#8f1b1bff",
+    borderRadius: 12,
+    paddingVertical: 10,
+    elevation: 3,
   },
-  feeRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 15,
+
+  totalLabel: {
+    color: "white",
+    fontWeight: "bold",
   },
-  feeType: {
-    fontSize: 16,
-    color: '#475569',
-  },
-  feeAmount: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#8f1b1bff',
-  },
-  totalText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: '#f0f0f0',
-  },
+
   note: {
-    textAlign: 'center',
-    color: '#475569',
-    marginTop: 20,
+    textAlign: "center",
+    color: "#475569",
+    marginTop: 15,
   },
 });

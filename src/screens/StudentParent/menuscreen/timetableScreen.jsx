@@ -15,7 +15,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import * as Animatable from 'react-native-animatable';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BASE_URL } from '@env';
 import { useStudent } from '../../../context/student/studentContext';
@@ -35,7 +34,7 @@ const SUBJECT_COLORS = [
 ];
 
 export default function TimetableScreen() {
-  const { studentData } = useStudent()
+  const { studentData } = useStudent();
   const route = useRoute();
   const navigation = useNavigation();
   const [schedule, setSchedule] = useState(null);
@@ -44,51 +43,30 @@ export default function TimetableScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
 
-  const debugUserData = async () => {
-    try {
-      const keys = await AsyncStorage.getAllKeys();
-      const result = await AsyncStorage.multiGet(keys);
-    } catch (err) {
-      console.error('Debug error:', err);
-    }
-  };
-
   const fetchSchedule = async () => {
     try {
-      setError(null)
-      setLoading(true)
+      setError(null);
+      setLoading(true);
 
-      let userData = studentData
-
-      if (!userData) {
-        throw new Error('No user data found. Please try again later');
-      }
+      const userData = studentData;
+      if (!userData) throw new Error('No user data found. Please try again later');
 
       const studentUserId = userData?.userId || userData?.studentId || userData?.id;
       const grade = userData?.classAssigned || userData?.className || userData?.grade;
       const section = userData?.section;
 
-      if (!studentUserId) {
-        throw new Error('Student ID not found in user data');
-      }
+      if (!studentUserId) throw new Error('Student ID not found in user data');
 
-      const response = await fetch(
-        `${BASE_URL}/api/schedule/student/${studentUserId}`
-      );
-
+      const response = await fetch(`${BASE_URL}/api/schedule/student/${studentUserId}`);
       if (!response.ok) {
-        console.log(`⚠️ Student schedule fetch failed with status: ${response.status}. Trying class schedule...`);
-
         if (grade && section) {
           const classResponse = await fetch(
             `${BASE_URL}/api/schedule/class/${encodeURIComponent(grade)}/section/${encodeURIComponent(section)}`
           );
-
           if (!classResponse.ok) {
             const errorText = await classResponse.text();
             throw new Error(`Failed to fetch class schedule. Server responded with: ${errorText}`);
           }
-
           const classData = await classResponse.json();
           setSchedule(classData);
         } else {
@@ -100,14 +78,11 @@ export default function TimetableScreen() {
           data = await response.json();
         } catch (jsonError) {
           const rawResponse = await response.text();
-          console.error('🚨 JSON PARSE FAILED. Server response was:', rawResponse);
-          throw new Error('Failed to parse server response.');
+          throw new Error('Failed to parse server response: ' + rawResponse);
         }
-
         setSchedule(data);
       }
     } catch (err) {
-      console.error('❌ Error fetching schedule:', err.message);
       setError(err.message || 'Failed to load timetable');
     } finally {
       setLoading(false);
@@ -115,7 +90,6 @@ export default function TimetableScreen() {
   };
 
   useEffect(() => {
-    debugUserData();
     fetchSchedule();
   }, []);
 
@@ -124,28 +98,17 @@ export default function TimetableScreen() {
     fetchSchedule().finally(() => setRefreshing(false));
   }, []);
 
-  const getColorForPeriod = (index) => {
-    return SUBJECT_COLORS[index % SUBJECT_COLORS.length];
-  };
+  const getColorForPeriod = (index) => SUBJECT_COLORS[index % SUBJECT_COLORS.length];
 
   const renderTimeSlot = (period, index) => {
     if (!period) return null;
 
     const colors = getColorForPeriod(index);
+    const facultyNames = period.facultyIds?.map(f => f.name) || [];
 
     return (
-      <Animatable.View 
-        animation="fadeInUp" 
-        delay={index * 100}
-        duration={600} 
-        style={styles.periodCard}
-      >
-        <LinearGradient
-          colors={colors}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.gradientBorder}
-        >
+      <Animatable.View animation="fadeInUp" delay={index * 100} duration={600} style={styles.periodCard}>
+        <LinearGradient colors={colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.gradientBorder}>
           <View style={styles.periodInner}>
             <View style={styles.periodTop}>
               <View style={styles.periodBadge}>
@@ -161,13 +124,12 @@ export default function TimetableScreen() {
               <Text style={styles.subjectName}>
                 {period.subjectMasterId?.name || period.subjectName || 'Subject Not Assigned'}
               </Text>
-              
               <View style={styles.teacherRow}>
                 <View style={styles.teacherAvatar}>
                   <Ionicons name="person" size={16} color="#ffffff" />
                 </View>
                 <Text style={styles.teacherName}>
-                  {period.facultyId?.name || period.facultyName || period.facultyId || 'Teacher TBD'}
+                  {facultyNames.length > 0 ? facultyNames.join(", ") : "Teacher TBD"}
                 </Text>
               </View>
             </View>
@@ -186,9 +148,7 @@ export default function TimetableScreen() {
 
   const getDaySchedule = () => {
     if (!schedule?.weeklySchedule) return [];
-    const daySchedule = schedule.weeklySchedule.find(
-      (day) => day.day === selectedDay
-    );
+    const daySchedule = schedule.weeklySchedule.find((day) => day.day === selectedDay);
     return daySchedule?.periods || [];
   };
 
@@ -230,13 +190,7 @@ export default function TimetableScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header with Gradient */}
-      <LinearGradient
-        colors={['#d72b2b', '#8b1313']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.header}
-      >
+      <LinearGradient colors={['#d72b2b', '#8b1313']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.header}>
         <View style={styles.headerContent}>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
             <Ionicons name="caret-back-outline" size={30} color="white" />
@@ -247,22 +201,17 @@ export default function TimetableScreen() {
               {schedule?.classAssigned} - Section {schedule?.section}
             </Text>
           </View>
-          {/* This empty view helps center the title correctly */}
-          <View style={styles.headerRightPlaceholder} /> 
-          {/* <View style={styles.headerBadge}>
-            <Ionicons name="calendar" size={20} color="#667eea" />
-          </View> */}
+          <View style={styles.headerRightPlaceholder} />
         </View>
       </LinearGradient>
 
-      {/* Day Selector */}
       <View style={styles.daySelectorWrapper}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.daySelector}
         >
-          {DAYS.map((day, index) => {
+          {DAYS.map((day) => {
             const isSelected = selectedDay === day;
             return (
               <TouchableOpacity
@@ -289,7 +238,6 @@ export default function TimetableScreen() {
         </ScrollView>
       </View>
 
-      {/* Schedule Stats */}
       {totalPeriods > 0 && (
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
@@ -310,12 +258,11 @@ export default function TimetableScreen() {
         </View>
       )}
 
-      {/* Schedule Content */}
       <ScrollView
         contentContainerStyle={styles.scheduleContainer}
         refreshControl={
-          <RefreshControl 
-            refreshing={refreshing} 
+          <RefreshControl
+            refreshing={refreshing}
             onRefresh={onRefresh}
             colors={['#d72b2b']}
             tintColor='#8b1313'
@@ -328,7 +275,7 @@ export default function TimetableScreen() {
             {renderTimeSlot(period, index)}
           </View>
         ))}
-        
+
         {daySchedule.length === 0 && (
           <Animatable.View animation="fadeIn" style={styles.emptyContainer}>
             <View style={styles.emptyIconCircle}>
@@ -344,7 +291,6 @@ export default function TimetableScreen() {
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -652,7 +598,7 @@ const styles = StyleSheet.create({
   },
   teacherName: {
     fontSize: 14,
-    color: '#64748b',
+    color: '#000000ff',
     fontWeight: '500',
   },
   periodFooter: {

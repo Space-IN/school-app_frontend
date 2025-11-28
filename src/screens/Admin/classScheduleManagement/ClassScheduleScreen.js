@@ -305,11 +305,18 @@ export default function ClassScheduleXLSXUpload() {
                       {schedule.weeklySchedule.map((dayObj, i) => (
                         <View key={i} style={{ marginBottom: 4 }}>
                           <Text style={styles.dayText}>{dayObj.day}</Text>
-                          {dayObj.periods.map((p, j) => (
-                            <Text key={j} style={styles.periodText}>
-                              Period {p.periodNumber}: {p.timeSlot} — {p.subjectName || 'N/A'} ({p.facultyId})
+
+                          {dayObj.periods.map((p, j) => {
+                           const facultyDisplay = p.facultyIds && p.facultyIds.length > 0
+                            ? p.facultyIds.join(", ")
+                            : p.facultyId || "N/A";
+
+                            return (
+                            <Text key={j}>
+                               Period {p.periodNumber}: {p.timeSlot} — {p.subjectName || 'N/A'} ({facultyDisplay})
                             </Text>
-                          ))}
+                             );
+                          })}
                         </View>
                       ))}
                     </View>
