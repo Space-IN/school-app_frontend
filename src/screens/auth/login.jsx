@@ -38,7 +38,7 @@ export default function LoginScreen() {
     }
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: "#ac1d1dff"  }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#ac1d1dff" }}>
           <ImageBackground
               source={require('../../../assets/school.webp')}
               style={styles.background}

@@ -22,7 +22,7 @@ export async function loginUser(username, password) {
         )
         return response.data
     } catch(err) {
-        console.error("error logging in: ", err.response?.data || err.message)
+        console.error("error logging in: ", err)
         throw err
     }
 }
@@ -45,6 +45,27 @@ export async function logoutUser(refreshToken) {
         return response.data
     } catch(err) {
         console.error("error logging out: ", err.response?.data || err.message)
+        throw err
+    }
+}
+
+
+export async function refreshUser(refreshToken) {
+    try {
+        const params = new URLSearchParams()
+        params.append("grant_type", "refresh_token")
+        params.append("client_id", keycloakConfig.clientId)
+        params.append("refresh_token", refreshToken)
+
+        const response = await axios.post(
+            `${KEYCLOAK_SERVER_URL}/realms/${keycloakConfig.realm}/protocol/openid-connect/token`,
+            params,
+            { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+        )
+
+        return response.data
+    } catch(err) {
+        console.error("refresh token failed: ", err?.response?.data || err.message)
         throw err
     }
 }

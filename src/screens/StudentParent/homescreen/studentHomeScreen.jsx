@@ -1,13 +1,12 @@
-import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, View, RefreshControl } from "react-native";
-import { useStudent } from "../../../context/student/studentContext";
-import { fetchEvents } from "../../../controllers/studentDataController";
-import UserBanner from "../../../components/student/userBanner";
-import PerformanceGrid from "../../../components/student/performaceGrid";
-import StudentAnnouncements from "../../../components/student/announcements";
-import TodaySchedule from "../../../components/student/todaySchedule";
-import EventSlider from "../../../components/student/events";
-
+import { useEffect, useState } from "react"
+import { ScrollView, StyleSheet, View, RefreshControl } from "react-native"
+import { useStudent } from "../../../context/student/studentContext"
+import { fetchEvents } from "../../../controllers/studentDataController"
+import UserBanner from "../../../components/student/userBanner"
+import PerformanceGrid from "../../../components/student/performaceGrid"
+import StudentAnnouncements from "../../../components/student/announcements"
+import TodaySchedule from "../../../components/student/todaySchedule"
+import EventSlider from "../../../components/student/events"
 
 
 

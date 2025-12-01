@@ -1,7 +1,8 @@
-import { createContext, useState, useEffect, useContext } from "react"
+import { createContext, useState, useEffect, useContext, useCallback } from "react"
 import * as SecureStore from "expo-secure-store"
-import { loginUser, logoutUser } from "../controllers/authController"
-import { jwtDecode } from "jwt-decode"
+import { decodeToken } from "../utils/token"
+import { loginUser, logoutUser, refreshUser } from "../controllers/authController"
+import { attachAuthHandlers } from "../api/handlers"
 
 export const AuthContext = createContext()
 
@@ -13,27 +14,15 @@ export const AuthProvider = ({ children }) => {
     const [decodedToken, setDecodedToken] = useState(null)
     const [loading, setLoading] = useState(true)
 
-    const decode = (token) => {
-        try {
-            return jwtDecode(token)
-        } catch(err) {
-            console.error("invalid token, decoding failed.")
-            return null
-        }
-    }
-
     const login = async (userId, password) => {
         setLoading(true)
         try {
             const data = await loginUser(userId, password)
             if(data) {
                 await SecureStore.setItemAsync("auth", JSON.stringify(data))
-
                 setAccessToken(data.access_token)
-
-                const decoded = decode(data.access_token)
+                const decoded = decodeToken(data.access_token)
                 setDecodedToken(decoded)
-                
                 setIsAuthenticated(true)
             }
         } catch(err) {
@@ -60,13 +49,13 @@ export const AuthProvider = ({ children }) => {
         }
     }
 
-    const loadUser = async () => {
+    const loadUser = useCallback(async () => {
         setLoading(true)
         try {
             const stored = await SecureStore.getItemAsync("auth")
             if(stored) {
                 const parsed = JSON.parse(stored)
-                const decoded = decode(parsed.access_token)
+                const decoded = decodeToken(parsed.access_token)
                 if(decoded) {
                     setAccessToken(parsed.access_token)
                     setDecodedToken(decoded)
@@ -80,12 +69,46 @@ export const AuthProvider = ({ children }) => {
         } finally {
             setLoading(false)
         }
-    }
+    }, [])
+
+    const refreshTokens = useCallback(async () => {
+        try {
+            const stored = await SecureStore.getItemAsync("auth")
+            if(!stored) throw new Error("no refresh tokens stored.")
+            
+            const parsed = JSON.parse(stored)
+            const refreshToken = parsed.refresh_token
+
+            const data = await refreshUser(refreshToken)
+            await SecureStore.setItemAsync("auth", JSON.stringify(data))
+
+            setAccessToken(data.access_token)
+            setDecodedToken(decodeToken(data.access_token))
+            return data.access_token
+        } catch(err) {
+            console.error("refresh failed: ", err)
+            logout()
+            throw err
+        }
+    }, [logoutUser])
+
+    const attachHandlers = useCallback(() => {
+        attachAuthHandlers({
+            getAccessToken: async () => accessToken,
+            refreshTokens: async () => refreshTokens(),
+            onLogout: async () => logout()
+        })
+    }, [accessToken, refreshTokens, logout])
+
 
 
     useEffect(() => {
         loadUser()
     }, [])
+
+    useEffect(() => {
+        attachHandlers()
+    }, [attachHandlers])
 
     return (
         <AuthContext.Provider
