@@ -12,7 +12,8 @@ export async function loginUser(username, password) {
                 client_id: keycloakConfig.clientId,
                 grant_type: "password",
                 username,
-                password
+                password,
+                scope: "offline_access"
             }),
             {
                 headers: {

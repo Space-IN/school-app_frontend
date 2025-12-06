@@ -6,10 +6,12 @@ import { useEffect, useState } from "react"
 import { fetchActiveAnnouncements } from "../../controllers/studentDataController"
 
 
+
 export default function StudentAnnouncements() {
   const [announcements, setAnnouncements] = useState([])
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState(null)
+
 
   useEffect(() => {
     const loadAnnouncements = async () => {
