@@ -22,16 +22,16 @@ export default function AppNavigator() {
     return <LoginScreen />
   }
 
-  switch(decodedToken?.role) {
-    case "Student":
+  switch(decodedToken?.realm_access.roles[0]) {
+    case "student":
       return (
         <StudentProvider>
           <StudentTab />
         </StudentProvider>
       )
-    case "Faculty":
+    case "faculty":
       return <FacultyNavigator />
-    case "Admin":
+    case "admin":
       return <AdminNavigator />
     default:
       return <LoginScreen />

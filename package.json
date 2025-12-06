@@ -1,5 +1,5 @@
 {
-  "name": "donewithit",
+  "name": "vishwachetana-vidyaniketana",
   "license": "0BSD",
   "version": "1.0.0",
   "main": "src/index.js",
@@ -64,7 +64,9 @@
     "react-native-zeroconf": "^0.13.8",
     "socket.io-client": "^4.8.1",
     "use-latest-callback": "^0.2.4",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "expo-auth-session": "~7.0.9",
+    "expo-linking": "~8.0.9"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

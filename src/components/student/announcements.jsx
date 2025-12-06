@@ -16,7 +16,12 @@ export default function StudentAnnouncements() {
       setLoading(true)
       try {
         const response = await fetchActiveAnnouncements()
-        if(response) setAnnouncements(response)
+        if(response) {
+          response.sort((a, b) => {
+            return a.date > b.date
+          })
+          setAnnouncements(response)
+        }
       } catch (err) {
         setErr(err.message || "An error occurred while fetching announcements.")
       } finally {
