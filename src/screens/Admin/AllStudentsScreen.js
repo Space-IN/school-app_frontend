@@ -13,7 +13,9 @@ import {
   StatusBar,
 } from 'react-native';
 
-export default function AllStudentsScreen({ navigation }) {
+export default function AllStudentsScreen({ navigation, route }) {
+  const { board } = route.params || {};
+
   const grades = Array.from({ length: 10 }, (_, i) => `Grade ${i + 1}`);
   const sections = ['A', 'B', 'C', 'D'];
 
@@ -30,12 +32,14 @@ export default function AllStudentsScreen({ navigation }) {
     navigation.navigate('FilteredStudentsScreen', {
       grade: selectedGrade,
       section,
+      board,
     });
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.heading}>📚 Select Grade</Text>
+      <Text style={styles.heading}>📚 Select Grade {board ? `(${board})` : ''}</Text>
+
 
       <FlatList
         data={grades}

@@ -11,19 +11,22 @@ import {
   StatusBar,
   ScrollView,
   SafeAreaView,
+  LayoutAnimation,
+  UIManager,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import axios from 'axios';
-import { BASE_URL } from '@env';
-// import PosterCarousel from '../../components/PosterCarousel';
 import { useAuth } from '../../context/authContext';
+
+
 
 export default function AdminDashboard({ navigation }) {
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [events, setEvents] = useState([]);
-  const { logout } = useAuth() 
+  const { logout } = useAuth();
+
+  // State for expanded sections
+  const [expandedSection, setExpandedSection] = useState(null);
 
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
@@ -56,31 +59,42 @@ export default function AdminDashboard({ navigation }) {
         text: 'Logout',
         style: 'destructive',
         onPress: async () => {
-          logout()
+          logout();
         },
       },
     ]);
   };
 
+  const toggleSection = (section) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedSection(expandedSection === section ? null : section);
+  };
+
   // ✅ Navigation handlers
-  const handleAddStudent = () => navigation.navigate('AddStudentScreen');
+  const handleAddStudent = () => {
+    navigation.navigate('BoardSelectionScreen', {
+      nextScreen: 'AddStudentScreen',
+      title: 'Add Student - Select Board',
+    });
+  };
+
   const handleAddFaculty = () => navigation.navigate('AddFacultyScreen');
-  const handleViewStudents = () => navigation.navigate('AllStudentsScreen');
+
+  const handleViewStudents = () => {
+    navigation.navigate('BoardSelectionScreen', {
+      nextScreen: 'AllStudentsScreen',
+      title: 'View Students - Select Board',
+    });
+  };
+
   const handleViewFaculty = () => navigation.navigate('AllFacultyScreen');
   const handleClassSchedule = () => navigation.navigate('ClassScheduleScreen');
   const handleAddSubjectMaster = () => navigation.navigate('AddSubjectMasterScreen');
   const handleAssignSubject = () => navigation.navigate('AssignSubjectScreen');
   const handleAddEvent = () => navigation.navigate('AddEventScreen');
   const handleViewClassSchedule = () => navigation.navigate('ClassScheduleViewScreen');
-  // const handlePosterManagement = () => navigation.navigate('AdminPosterManager');
   const handleAddNotice = () => navigation.navigate('AddNoticeScreen');
   const handleFacultyPerformance = () => navigation.navigate('FacultyPerformance');
-
-  const today = new Date().toISOString().split('T')[0];
-  const todayEvents = events.filter((event) => {
-    const eventDate = new Date(event.date).toISOString().split('T')[0];
-    return eventDate === today;
-  });
 
   if (loading) {
     return (
@@ -90,112 +104,142 @@ export default function AdminDashboard({ navigation }) {
     );
   }
 
+  const renderSectionHeader = (title, icon, sectionKey) => (
+    <TouchableOpacity
+      style={styles.sectionHeader}
+      onPress={() => toggleSection(sectionKey)}
+    >
+      <View style={styles.sectionHeaderLeft}>
+        <Ionicons name={icon} size={24} color="#1e3a8a" />
+        <Text style={styles.sectionTitle}>{title}</Text>
+      </View>
+      <Ionicons
+        name={expandedSection === sectionKey ? "chevron-up" : "chevron-down"}
+        size={24}
+        color="#1e3a8a"
+      />
+    </TouchableOpacity>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
-    {/* ✅ Status Bar */}
-    <StatusBar
-      translucent
-      backgroundColor="transparent"
-      barStyle="light-content"
-    />
+      {/* ✅ Status Bar */}
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle="light-content"
+      />
 
-    {/* ✅ Custom Header */}
-    <View style={[styles.headerRow, { paddingTop: StatusBar.currentHeight }]}>
-      <Text style={styles.headerTitle}>Admin Dashboard</Text>
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Ionicons name="log-out-outline" size={18} color="#fff" />
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
-    </View>
-
-    <ScrollView contentContainerStyle={styles.scrollContent}>
-      <View style={styles.profileCard}>
-        <Text style={styles.greeting}>Hello, {userId} 👋</Text>
-        <Text style={styles.subtitle}>Welcome to the Admin Dashboard</Text>
+      {/* ✅ Custom Header */}
+      <View style={[styles.headerRow, { paddingTop: StatusBar.currentHeight }]}>
+        <Text style={styles.headerTitle}>Admin Dashboard</Text>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Ionicons name="log-out-outline" size={18} color="#fff" />
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
       </View>
-        {/* <PosterCarousel /> */}
+
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.profileCard}>
+          <Text style={styles.greeting}>Hello, {userId} 👋</Text>
+          <Text style={styles.subtitle}>Welcome to the Admin Dashboard</Text>
+        </View>
 
         {/* ---------------- Sections ---------------- */}
 
-        <Text style={styles.sectionTitle}>➕ Add Users</Text>
-        <View style={styles.row}>
-          <TouchableOpacity style={styles.tileButton} onPress={handleAddStudent}>
-            <Ionicons name="person-add" size={30} color="#000000ff" />
-            <Text style={styles.tileText}>Add Student</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.tileButton} onPress={handleAddFaculty}>
-            <Ionicons name="person-add-outline" size={30} color="#000000ff" />
-            <Text style={styles.tileText}>Add Faculty</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Add Users Section */}
+        {renderSectionHeader("Add Users", "person-add", "addUsers")}
+        {expandedSection === "addUsers" && (
+          <View style={styles.dropdownContent}>
+            <TouchableOpacity style={styles.dropdownItem} onPress={handleAddStudent}>
+              <Ionicons name="person-add-outline" size={20} color="#333" />
+              <Text style={styles.dropdownText}>Add Student</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.dropdownItem} onPress={handleAddFaculty}>
+              <Ionicons name="person-add-outline" size={20} color="#333" />
+              <Text style={styles.dropdownText}>Add Faculty</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-        <Text style={styles.sectionTitle}>📋 View Users</Text>
-        <View style={styles.row}>
-          <TouchableOpacity style={styles.tileButton} onPress={handleViewStudents}>
-            <Ionicons name="school-outline" size={30} color="#000000ff" />
-            <Text style={styles.tileText}>View Students</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.tileButton} onPress={handleViewFaculty}>
-            <Ionicons name="people-outline" size={30} color="#000000ff" />
-            <Text style={styles.tileText}>View Faculty</Text>
-          </TouchableOpacity>
-        </View>
+        {/* View Users Section */}
+        {renderSectionHeader("View Users", "people", "viewUsers")}
+        {expandedSection === "viewUsers" && (
+          <View style={styles.dropdownContent}>
+            <TouchableOpacity style={styles.dropdownItem} onPress={handleViewStudents}>
+              <Ionicons name="school-outline" size={20} color="#333" />
+              <Text style={styles.dropdownText}>View Students</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.dropdownItem} onPress={handleViewFaculty}>
+              <Ionicons name="people-outline" size={20} color="#333" />
+              <Text style={styles.dropdownText}>View Faculty</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-        <Text style={styles.sectionTitle}>📅 Event Management</Text>
-        <View style={styles.row}>
-          <TouchableOpacity style={styles.tileButton} onPress={handleAddEvent}>
-            <Ionicons name="calendar-outline" size={30} color="#000000ff" />
-            <Text style={styles.tileText}>Add Event</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Event Management Section */}
+        {renderSectionHeader("Event Management", "calendar", "eventManagement")}
+        {expandedSection === "eventManagement" && (
+          <View style={styles.dropdownContent}>
+            <TouchableOpacity style={styles.dropdownItem} onPress={handleAddEvent}>
+              <Ionicons name="calendar-outline" size={20} color="#333" />
+              <Text style={styles.dropdownText}>Add Event</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-        <Text style={styles.sectionTitle}>📚 Subject Management</Text>
-        <View style={styles.row}>
-          <TouchableOpacity style={styles.tileButton} onPress={handleAddSubjectMaster}>
-            <Ionicons name="book-outline" size={30} color="#000000ff" />
-            <Text style={styles.tileText}>Add Subject Master</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.tileButton} onPress={handleAssignSubject}>
-            <Ionicons name="create-outline" size={30} color="#000000ff" />
-            <Text style={styles.tileText}>Assign Subject</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Subject Management Section */}
+        {renderSectionHeader("Subject Management", "book", "subjectManagement")}
+        {expandedSection === "subjectManagement" && (
+          <View style={styles.dropdownContent}>
+            <TouchableOpacity style={styles.dropdownItem} onPress={handleAddSubjectMaster}>
+              <Ionicons name="book-outline" size={20} color="#333" />
+              <Text style={styles.dropdownText}>Add Subject Master</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.dropdownItem} onPress={handleAssignSubject}>
+              <Ionicons name="create-outline" size={20} color="#333" />
+              <Text style={styles.dropdownText}>Assign Subject</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-        <Text style={styles.sectionTitle}>🗓️ Class Schedule</Text>
-        <View style={styles.row}>
-          <TouchableOpacity style={styles.tileButton} onPress={handleClassSchedule}>
-            <Ionicons name="calendar-outline" size={30} color="#000000ff" />
-            <Text style={styles.tileText}>Class Schedule</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.tileButton} onPress={handleViewClassSchedule}>
-            <Ionicons name="eye-outline" size={30} color="#000000ff" />
-            <Text style={styles.tileText}>View Schedule</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Class Schedule Section */}
+        {renderSectionHeader("Class Schedule", "time", "classSchedule")}
+        {expandedSection === "classSchedule" && (
+          <View style={styles.dropdownContent}>
+            <TouchableOpacity style={styles.dropdownItem} onPress={handleClassSchedule}>
+              <Ionicons name="calendar-outline" size={20} color="#333" />
+              <Text style={styles.dropdownText}>Manage Schedule</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.dropdownItem} onPress={handleViewClassSchedule}>
+              <Ionicons name="eye-outline" size={20} color="#333" />
+              <Text style={styles.dropdownText}>View Schedule</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-        <Text style={styles.sectionTitle}>📊 Faculty Performance</Text>
-        <View style={styles.row}>
-          <TouchableOpacity style={styles.tileButton} onPress={handleFacultyPerformance}>
-            <Ionicons name="analytics-outline" size={30} color="#000000ff" />
-            <Text style={styles.tileText}>View Performance</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Faculty Performance Section */}
+        {renderSectionHeader("Faculty Performance", "analytics", "facultyPerformance")}
+        {expandedSection === "facultyPerformance" && (
+          <View style={styles.dropdownContent}>
+            <TouchableOpacity style={styles.dropdownItem} onPress={handleFacultyPerformance}>
+              <Ionicons name="analytics-outline" size={20} color="#333" />
+              <Text style={styles.dropdownText}>View Performance</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-        <Text style={styles.sectionTitle}>📢 Notices</Text>
-        <View style={styles.row}>
-          <TouchableOpacity style={styles.tileButton} onPress={handleAddNotice}>
-            <Ionicons name="megaphone-outline" size={30} color="#000000ff" />
-            <Text style={styles.tileText}>Add Notice</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Notices Section */}
+        {renderSectionHeader("Notices", "megaphone", "notices")}
+        {expandedSection === "notices" && (
+          <View style={styles.dropdownContent}>
+            <TouchableOpacity style={styles.dropdownItem} onPress={handleAddNotice}>
+              <Ionicons name="megaphone-outline" size={20} color="#333" />
+              <Text style={styles.dropdownText}>Add Notice</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-        {/* <Text style={styles.sectionTitle}>🖼️ Manage Posters</Text>
-        <View style={styles.row}>
-          <TouchableOpacity style={styles.tileButton} onPress={handlePosterManagement}>
-            <Ionicons name="images-outline" size={30} color="#000000ff" />
-            <Text style={styles.tileText}>Manage Posters</Text>
-          </TouchableOpacity>
-        </View> */}
       </ScrollView>
     </SafeAreaView>
   );
@@ -204,20 +248,19 @@ export default function AdminDashboard({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ac1d1dff',
+    backgroundColor: '#ffffff', // Changed from red to white
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   headerRow: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  paddingHorizontal: 16,
-  paddingBottom: 12,
-  backgroundColor: '#ac1d1dff',
-  borderBottomWidth: 1,
-  borderBottomColor: '#ddd',
-},
-
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12, // Adjusted padding
+    backgroundColor: '#ac1d1dff', // Kept header red for branding
+    borderBottomWidth: 0, // Removed border
+    elevation: 4, // Added shadow for separation
+  },
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
@@ -252,6 +295,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginTop: 10,
+    marginBottom: 20,
   },
   greeting: {
     fontSize: 20,
@@ -263,33 +307,42 @@ const styles = StyleSheet.create({
     color: '#ffffffff',
     marginTop: 4,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    marginTop: 10,
+  },
+  sectionHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    marginTop: 30,
-    marginBottom: 12,
     color: '#1e3a8a',
+    marginLeft: 10,
   },
-  row: {
+  dropdownContent: {
+    backgroundColor: '#f9f9f9',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    marginTop: 5,
+  },
+  dropdownItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  tileButton: {
-    flex: 1,
-    backgroundColor: '#faebebff',
-    paddingVertical: 20,
-    marginHorizontal: 6,
-    borderRadius: 12,
     alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 2,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
-  tileText: {
-    marginTop: 10,
-    fontSize: 14,
-    color: '#000000ff',
-    fontWeight: '600',
-    textAlign: 'center',
+  dropdownText: {
+    fontSize: 16,
+    color: '#333',
+    marginLeft: 10,
   },
 });

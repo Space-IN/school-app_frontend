@@ -15,7 +15,9 @@ import axios from 'axios';
 import { BASE_URL } from '@env';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-const AddStudentScreen = () => {
+const AddStudentScreen = ({ route }) => {
+  const { board } = route.params || {};
+
   const [form, setForm] = useState({
     name: '',
     userId: '',
@@ -41,7 +43,7 @@ const AddStudentScreen = () => {
   // State for date pickers
   const [showDobPicker, setShowDobPicker] = useState(false);
   const [showAdmissionDatePicker, setShowAdmissionDatePicker] = useState(false);
-  
+
   // State for gender picker modal
   const [showGenderPicker, setShowGenderPicker] = useState(false);
 
@@ -104,6 +106,7 @@ const AddStudentScreen = () => {
         motherOccupation: form.motherOccupation?.trim() || '',
         motherContact: form.motherContact?.trim() || '',
         parentEmail: form.parentEmail?.trim() || '',
+        board: board || '',
       };
 
       const res = await axios.post(`${BASE_URL}/api/admin/add-student`, payload);
@@ -162,7 +165,7 @@ const AddStudentScreen = () => {
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.form}>
-        <Text style={styles.title}>Add New Student</Text>
+        <Text style={styles.title}>Add New Student {board ? `(${board})` : ''}</Text>
 
         {fields.map(([field, placeholder, type]) => (
           <TextInput
@@ -177,8 +180,8 @@ const AddStudentScreen = () => {
         ))}
 
         {/* Date of Birth Picker */}
-        <TouchableOpacity 
-          style={styles.pickerInput} 
+        <TouchableOpacity
+          style={styles.pickerInput}
           onPress={() => setShowDobPicker(true)}
         >
           <Text style={form.dob ? styles.pickerText : styles.pickerPlaceholder}>
@@ -187,8 +190,8 @@ const AddStudentScreen = () => {
         </TouchableOpacity>
 
         {/* Admission Date Picker */}
-        <TouchableOpacity 
-          style={styles.pickerInput} 
+        <TouchableOpacity
+          style={styles.pickerInput}
           onPress={() => setShowAdmissionDatePicker(true)}
         >
           <Text style={form.admissionDate ? styles.pickerText : styles.pickerPlaceholder}>
@@ -197,8 +200,8 @@ const AddStudentScreen = () => {
         </TouchableOpacity>
 
         {/* Gender Picker */}
-        <TouchableOpacity 
-          style={styles.pickerInput} 
+        <TouchableOpacity
+          style={styles.pickerInput}
           onPress={() => setShowGenderPicker(true)}
         >
           <Text style={form.gender ? styles.pickerText : styles.pickerPlaceholder}>
@@ -237,22 +240,22 @@ const AddStudentScreen = () => {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Select Gender</Text>
-              
-              <TouchableOpacity 
+
+              <TouchableOpacity
                 style={styles.genderOption}
                 onPress={() => handleGenderSelect('Male')}
               >
                 <Text style={styles.genderText}>Male</Text>
               </TouchableOpacity>
-              
-              <TouchableOpacity 
+
+              <TouchableOpacity
                 style={styles.genderOption}
                 onPress={() => handleGenderSelect('Female')}
               >
                 <Text style={styles.genderText}>Female</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.cancelButton}
                 onPress={() => setShowGenderPicker(false)}
               >

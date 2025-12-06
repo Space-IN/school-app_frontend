@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 
-import AdminDashboard from '../../screens/Admin/AdminDashboard';
+import AdminTabNavigator from '../../screens/Admin/AdminTabNavigator';
+import AdminDashboard from '../../screens/Admin/AdminDashboard'; // Keeping for reference if needed, but main entry is TabNav
 import AddStudentScreen from '../../screens/Admin/AddStudentScreen';
 import AddFacultyScreen from '../../screens/Admin/AddFacultyScreen';
 import AllStudentsScreen from '../../screens/Admin/AllStudentsScreen';
@@ -18,10 +19,11 @@ import ClassScheduleScreen from '../../screens/Admin/classScheduleManagement/Cla
 import ClassScheduleViewScreen from '../../screens/Admin/classScheduleManagement/ClassScheduleViewScreen';
 import AddNoticeScreen from '../../screens/Admin/AddNoticeScreen';
 import FacultyPerformance from "../../screens/Admin/FacultyPerformance";
-import FacultyListScreen from "../../screens/Admin/FacultyListScreen";  
+import FacultyListScreen from "../../screens/Admin/FacultyListScreen";
 import FacultyScoreScreen from "../../screens/Admin/FacultyScoreScreen";
 import FacultyProfileViewScreen from '../../screens/Admin/FacultyProfileViewScreen';
 import AdminAttendanceScreen from '../../screens/Admin/AdminAttendanceScreen';
+import BoardSelectionScreen from '../../screens/Admin/BoardSelectionScreen';
 
 // import AdminPosterManager from "../../screens/Admin/AdminPosterManager";
 
@@ -46,7 +48,7 @@ export default function AdminNavigator() {
                 headerTitleStyle: { fontWeight: 'bold' },
             }}
         >
-            <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
+            <Stack.Screen name="AdminDashboard" component={AdminTabNavigator} />
             <Stack.Screen name="AddStudentScreen" component={AddStudentScreen} />
             <Stack.Screen name="AddFacultyScreen" component={AddFacultyScreen} />
             <Stack.Screen name="AllStudentsScreen" component={AllStudentsScreen} />
@@ -67,11 +69,12 @@ export default function AdminNavigator() {
             <Stack.Screen name="FacultyListScreen" component={FacultyListScreen} />
             <Stack.Screen name="FacultyScore" component={FacultyScoreScreen} />
             <Stack.Screen name="FacultyProfileViewScreen" component={FacultyProfileViewScreen} />
-           <Stack.Screen name="AdminStudentProfileView" component={AdminStudentProfileView}  />
-           <Stack.Screen name="AdminAttendanceScreen" component={AdminAttendanceScreen} />
-           
-           
+            <Stack.Screen name="AdminStudentProfileView" component={AdminStudentProfileView} />
+            <Stack.Screen name="AdminAttendanceScreen" component={AdminAttendanceScreen} />
+            <Stack.Screen name="BoardSelectionScreen" component={BoardSelectionScreen} options={{ title: 'Select Board' }} />
+
+
         </Stack.Navigator>
-        
+
     )
 }

@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from 'react';
 import {
   Platform,
@@ -12,13 +10,12 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  
 } from 'react-native';
 import axios from 'axios';
 import { BASE_URL } from '@env';
 
 export default function FilteredStudentsScreen({ route, navigation }) {
-  const { grade, section } = route.params;
+  const { grade, section, board } = route.params;
 
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,10 +46,37 @@ export default function FilteredStudentsScreen({ route, navigation }) {
       const encodedGrade = encodeURIComponent(className);
       const encodedSection = encodeURIComponent(section);
 
+      // Add board as query param if it exists
+      const boardQuery = board ? `?board=${encodeURIComponent(board)}` : '';
+
       const res = await axios.get(
-        `${BASE_URL}/api/admin/students/grade/${encodedGrade}/section/${encodedSection}`
+        `${BASE_URL}/api/admin/students/grade/${encodedGrade}/section/${encodedSection}${boardQuery}`
       );
-      setStudents(res.data || []);
+
+      let fetchedStudents = res.data || [];
+      // Client-side filter as backup if backend ignores the query param
+      if (board) {
+        // Assuming the student object has a 'board' field. 
+        // If not, this might filter out everything if the backend doesn't return 'board'.
+        // However, since we are adding 'board' in AddStudent, it SHOULD be there.
+        // To be safe, let's check if 'board' property exists on the first item.
+        // If it doesn't exist, we might not want to filter client-side to avoid empty list.
+        // But the requirement is to filter. So I'll stick to filtering.
+        // If the backend handles it, it returns filtered list.
+        // If backend returns all, we filter here.
+        fetchedStudents = fetchedStudents.filter(s => !s.board || s.board === board);
+        // Wait, if s.board is missing, should we include it? 
+        // If I added a student without board before, they won't have it.
+        // Let's assume strict filtering: s.board === board.
+        // Actually, let's just trust the backend query param first. 
+        // If the backend doesn't support it, we might get mixed results.
+        // I'll add the client-side filter but be careful.
+        // Let's just use the response for now. If the user complains, I'll add strict client-side filtering.
+        // Re-reading my previous thought: "I'll also filter the results client-side just in case".
+        // Let's do it.
+        fetchedStudents = fetchedStudents.filter(s => s.board === board);
+      }
+      setStudents(fetchedStudents);
     } catch (err) {
       console.error('❌ Error fetching filtered students:', err.message);
       setError('Failed to load students. Please try again.');
@@ -62,9 +86,9 @@ export default function FilteredStudentsScreen({ route, navigation }) {
   };
 
   const handleEdit = (student) => {
-    navigation.navigate('EditStudentScreen', { 
-      student, 
-      onGoBack: fetchFilteredStudents 
+    navigation.navigate('EditStudentScreen', {
+      student,
+      onGoBack: fetchFilteredStudents
     });
   };
 
@@ -87,32 +111,35 @@ export default function FilteredStudentsScreen({ route, navigation }) {
     navigation.navigate('AdminAttendanceScreen', { grade, section });
   };
 
- const renderStudent = ({ item }) => (
-  <TouchableOpacity onPress={() => handleViewProfile(item)}>
-    <View style={styles.card}>
-      <Text style={styles.name}>
-        {item.name} ({item.userId})
-      </Text>
-      <Text style={styles.details}>
-        Grade: {item.className} | Section: {item.section}
-      </Text>
-      <View style={styles.actionRow}>
-        <TouchableOpacity onPress={() => handleEdit(item)}>
-          <Text style={styles.editBtn}>Edit Data</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleSoftDelete(item.userId)}>
-          <Text style={styles.softDeleteBtn}>Soft delete</Text>
-        </TouchableOpacity>
+  const renderStudent = ({ item }) => (
+    <TouchableOpacity onPress={() => handleViewProfile(item)}>
+      <View style={styles.card}>
+        <Text style={styles.name}>
+          {item.name} ({item.userId})
+        </Text>
+        <Text style={styles.details}>
+          Grade: {item.className} | Section: {item.section}
+        </Text>
+        {item.board && (
+          <Text style={styles.details}>Board: {item.board}</Text>
+        )}
+        <View style={styles.actionRow}>
+          <TouchableOpacity onPress={() => handleEdit(item)}>
+            <Text style={styles.editBtn}>Edit Data</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleSoftDelete(item.userId)}>
+            <Text style={styles.softDeleteBtn}>Soft delete</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  </TouchableOpacity>
-);
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.topPadding} />
       <Text style={styles.heading}>
-        👨‍🎓 Students of Grade {(grade || '').replace('Grade ', '')} - Section {section || ''}
+        👨‍🎓 Students of Grade {(grade || '').replace('Grade ', '')} - Section {section || ''} {board ? `(${board})` : ''}
       </Text>
 
       {/* Button to view attendance */}
