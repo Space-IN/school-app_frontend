@@ -32,7 +32,7 @@ export default function FacultyClassesScreen({ navigation, route }) {
     try {
       setLoading(true);
       
-      // Use user ID from auth context instead of route params
+      
       const facultyId = decodedToken?.userId;
       
       if (!facultyId) {
@@ -42,14 +42,14 @@ export default function FacultyClassesScreen({ navigation, route }) {
 
       console.log('Fetching classes for faculty:', facultyId);
       
-      // Option 1: Try using subjects endpoint (more reliable)
+      
       const response = await axios.get(`${BASE_URL}/api/subject/subjects/faculty/${facultyId}`);
       console.log('Subjects API response:', response.data);
       
       let classes = [];
       
       if (response.data && Array.isArray(response.data)) {
-        // Extract classes from subjects data
+        
         response.data.forEach(subject => {
           if (subject.classSectionAssignments && Array.isArray(subject.classSectionAssignments)) {
             subject.classSectionAssignments.forEach(assignment => {

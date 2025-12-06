@@ -1,10 +1,10 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
-import StudentHomeNavigator from "./studentHomeNavigator"
 import { Ionicons } from "@expo/vector-icons"
 import Entypo from '@expo/vector-icons/Entypo'
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import StudentProfileNavigator from "./studentProfileNavigator"
 import StudentMenuNavigator from "./studentMenuNavigator"
+import StudentHomeStack from "./studentHomeStack"
 
 const Tab = createBottomTabNavigator()
 
@@ -23,7 +23,7 @@ export default function StudentTab() {
         >
             <Tab.Screen
                 name="Home"
-                component={StudentHomeNavigator}
+                component={StudentHomeStack}
                 options={{
                     tabBarLabel: "HOME",
                     tabBarIcon: ({ color, size }) => (
