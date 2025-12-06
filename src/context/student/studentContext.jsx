@@ -1,5 +1,4 @@
 import { createContext, useState, useEffect, useContext } from "react"
-import { jwtDecode } from "jwt-decode"
 import { useAuth } from "../authContext"
 import { fetchStudentData, fetchOverallCPGA } from "../../controllers/studentDataController"
 
@@ -41,7 +40,7 @@ export const StudentProvider = ({ children }) => {
         }
     }
 
-
+    
     useEffect(() => {
         loadStudentData(decodedToken)
     }, [decodedToken])

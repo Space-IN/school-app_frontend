@@ -1,7 +1,6 @@
 import { Text, View, ScrollView, Image, StyleSheet } from "react-native"
 
 
-
 export default function EventsSlider({ events = [] }) {
 
     return(

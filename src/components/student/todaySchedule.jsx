@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ActivityIndicator, FlatList } from "react-nativ
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5"
 import { fetchStudentSchedule } from "../../controllers/studentDataController"
 
-export default function TodaySchedule({ studentId, studentLoading }) {
+export default function TodaySchedule({ classAssigned, section, studentLoading }) {
   const [todaySchedule, setTodaySchedule] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -16,7 +16,7 @@ export default function TodaySchedule({ studentId, studentLoading }) {
   useEffect(() => {
     const loadSchedule = async () => {
         try {
-            const scheduleData = await fetchStudentSchedule(studentId)
+            const scheduleData = await fetchStudentSchedule(classAssigned, section)
             const todayData = scheduleData.weeklySchedule?.find(day => day.day === today)
             setTodaySchedule(todayData)
         } catch (err) {
@@ -26,13 +26,13 @@ export default function TodaySchedule({ studentId, studentLoading }) {
         }
     }
     
-    if (studentId) {
+    if (classAssigned || section) {
         loadSchedule()
         setLoading(false)
       return
     }
     
-  }, [studentId, studentLoading, today])
+  }, [classAssigned, section, studentLoading, today])
 
   const renderItem = ({ item, index }) => (
     <View style={styles.card} key={index}>

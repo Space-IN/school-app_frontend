@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,38 +6,18 @@ import {
   ActivityIndicator,
   Alert,
   TouchableOpacity,
-} from "react-native";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import axios from "axios";
-import { BASE_URL } from "@env"
-import AntDesign from '@expo/vector-icons/AntDesign';
-import { useStudent } from "../../../context/student/studentContext";
-import { useAuth } from "../../../context/authContext";
-import { LinearGradient } from "expo-linear-gradient";
+} from "react-native"
+import { Ionicons, MaterialIcons } from "@expo/vector-icons"
+import AntDesign from '@expo/vector-icons/AntDesign'
+import { useStudent } from "../../../context/student/studentContext"
+import { useAuth } from "../../../context/authContext"
+import { LinearGradient } from "expo-linear-gradient"
 
 
 
 const StudentProfileScreen = () => {
   const { studentData, studentLoading, studentErr } = useStudent()
   const { logout } = useAuth()
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const fetchProfile = async () => {
-    try {
-      if (studentData) {
-        const userId = studentData.userId;
-        const response = await axios.get(
-          `${BASE_URL}/api/admin/students/${userId}`
-        );
-        setProfile(response.data);
-      }
-    } catch (err) {
-      console.error("Error loading profile:", err)
-      Alert.alert("Error", "Failed to load student profile")
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handleLogout = () => {
     Alert.alert(
@@ -53,14 +32,10 @@ const StudentProfileScreen = () => {
   }
 
 
-  useEffect(() => {
-    fetchProfile();
-  }, [studentData]);
-
   return (
     <View style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
-        {studentLoading || loading ? (
+        {studentLoading ? (
           <View style={styles.idCard}>
             <ActivityIndicator size="large" color="#9c1006" />
           </View>
@@ -70,7 +45,7 @@ const StudentProfileScreen = () => {
               Something went wrong while fetching your profile data. Please try again later.
             </Text>
           </View>
-        ) : !studentData || !profile ? (
+        ) : !studentData ? (
           <View style={styles.idCard}>
             <Text style={styles.noData}>
               User data couldn't be fetched. Please check your internet connection and try again later...
@@ -87,9 +62,9 @@ const StudentProfileScreen = () => {
             <View style={styles.topRow}>
               <Ionicons name="person-circle-outline" size={80} color="#fff" />
               <View style={{ marginLeft: 10, width: "70%" }}>
-                <Text style={{ fontSize: 24, fontWeight: "900", color: "white" }}>{(profile.name)?.toUpperCase() || "N/A"}</Text>
+                <Text style={{ fontSize: 24, fontWeight: "900", color: "white" }}>{(studentData.name)?.toUpperCase() || "N/A"}</Text>
                 <Text style={{ fontSize: 17, color: "white" }}>
-                  {profile.className || "N/A"} - {profile.section || "N/A"}
+                  {studentData.className || "N/A"} - {studentData.section || "N/A"}
                 </Text>
               </View>
             </View>
@@ -100,28 +75,28 @@ const StudentProfileScreen = () => {
               <View style={styles.detailRow}>
                 <View style={{ width: "100%", display: "flex", flexDirection: "row",  }}>
                   <Text style={styles.label}>Gender: </Text>
-                  <Text style={styles.value}>{profile.gender || "N/A"}</Text>
+                  <Text style={styles.value}>{studentData.gender || "N/A"}</Text>
                 </View>
               </View>
 
               <View style={styles.detailRow}>
                 <View style={{ width: "100%", display: "flex", flexDirection: "row",  }}>
                   <Text style={styles.label}>DOB: </Text>
-                  <Text style={styles.value}>{profile.dob?.split("T")[0] || "N/A"}</Text>
+                  <Text style={styles.value}>{studentData.dob?.split("T")[0] || "N/A"}</Text>
                 </View>
               </View>
 
               <View style={styles.detailRow}>
                 <View style={{ width: "100%", display: "flex", flexDirection: "row", }}>
                   <Text style={styles.label}>Roll Number: </Text>
-                  <Text style={styles.value}>{profile.rollNo || "N/A"}</Text>
+                  <Text style={styles.value}>{studentData.rollNo || "N/A"}</Text>
                 </View>
               </View>
               
               <View style={styles.detailRow}>
                 <View style={{ width: "100%", display: "flex", flexDirection: "row",  }}>
                   <Text style={styles.label}>Admission Number: </Text>
-                  <Text style={styles.value}>{profile.admissionNumber || "N/A"}</Text>
+                  <Text style={styles.value}>{studentData.admissionNumber || "N/A"}</Text>
                 </View>
               </View>
 
@@ -131,7 +106,7 @@ const StudentProfileScreen = () => {
                     <MaterialIcons name="phone" size={20} color="#fff" style={{ marginRight: 5 }} />
                     <Text style={{ fontWeight: "500", color: "#fff", fontSize: 16, }}>Phone No:</Text>
                   </View>
-                  <Text style={styles.value}>{profile.fatherContact || "N/A"}</Text>
+                  <Text style={styles.value}>{studentData.fatherContact || "N/A"}</Text>
                 </View>
               </View>
 
@@ -141,13 +116,13 @@ const StudentProfileScreen = () => {
                     <MaterialIcons name="email" size={20} color="#fff" style={{ marginRight: 5, }} />
                     <Text style={{ fontWeight: "500", color: "#fff", fontSize: 16, }}>E-Mail:</Text>
                   </View>
-                  <Text style={styles.value}>{profile.studentEmail || "N/A"}</Text>
+                  <Text style={styles.value}>{studentData.studentEmail || "N/A"}</Text>
                 </View>
               </View>
 
               <View style={[styles.detailRow, { alignItems: "flex-start" }]}>
                 <Text style={styles.label}>Address:</Text>
-                <Text style={[styles.value, { flex: 1 }]}>{profile.address || "N/A"}</Text>
+                <Text style={[styles.value, { flex: 1 }]}>{studentData.address || "N/A"}</Text>
               </View>
             </View>
 
@@ -156,27 +131,27 @@ const StudentProfileScreen = () => {
               <View style={styles.parentCard}>
                 <Text style={styles.parentRole}>FATHER'S PROFILE</Text>
 
-                <Text style={styles.parentName}>{(profile.fatherName).toUpperCase() || "N/A"}</Text>
+                <Text style={styles.parentName}>{(studentData.fatherName).toUpperCase() || "N/A"}</Text>
 
                 <View style={styles.infoSection}>
                   <View style={[styles.detailRow, { marginBottom: 4, }]}>
                     <View style={{ width: "100%", display: "flex", flexDirection: "row",  }}>
                       <Text style={{ fontWeight: "500", color: "black", fontSize: 16, marginRight: 5, width: "45%"}}>Occupation: </Text>
-                      <Text style={{ color: "black", fontWeight: "400", fontSize: 16, }}>{profile.fatherOccupation || "N/A"}</Text>
+                      <Text style={{ color: "black", fontWeight: "400", fontSize: 16, }}>{studentData.fatherOccupation || "N/A"}</Text>
                     </View>
                   </View>
 
                   <View style={[styles.detailRow, { marginBottom: 4, }]}>
                     <View style={{ width: "100%", display: "flex", flexDirection: "row",  }}>
                       <Text style={{ fontWeight: "500", color: "black", fontSize: 16, marginRight: 5, width: "45%"}}>Contact: </Text>
-                      <Text style={{ color: "black", fontWeight: "400", fontSize: 16, }}>{profile.fatherContact || "N/A"}</Text>
+                      <Text style={{ color: "black", fontWeight: "400", fontSize: 16, }}>{studentData.fatherContact || "N/A"}</Text>
                     </View>
                   </View>
 
                   <View style={[styles.detailRow, { marginBottom: 4, }]}>
                     <View style={{ width: "100%", display: "flex", flexDirection: "row",  }}>
                       <Text style={{ fontWeight: "500", color: "black", fontSize: 16, marginRight: 5, width: "45%"}}>EMail: </Text>
-                      <Text style={{ color: "black", fontWeight: "400", fontSize: 16,flexShrink:1,flexWrap:"wrap" }}>{profile.parentEmail || "N/A"}</Text>
+                      <Text style={{ color: "black", fontWeight: "400", fontSize: 16,flexShrink:1,flexWrap:"wrap" }}>{studentData.parentEmail || "N/A"}</Text>
                     </View>
                   </View>
 
@@ -187,27 +162,27 @@ const StudentProfileScreen = () => {
               <View style={styles.parentCard}>
                 <Text style={styles.parentRole}>MOTHER'S PROFILE</Text>
 
-                <Text style={styles.parentName}>{(profile.motherName).toUpperCase() || "N/A"}</Text>
+                <Text style={styles.parentName}>{(studentData.motherName).toUpperCase() || "N/A"}</Text>
 
                 <View style={styles.infoSection}>
                   <View style={[styles.detailRow, { marginBottom: 4, }]}>
                     <View style={{ width: "100%", display: "flex", flexDirection: "row",  }}>
                       <Text style={{ fontWeight: "500", color: "black", fontSize: 16, marginRight: 5, width: "45%"}}>Occupation: </Text>
-                      <Text style={{ color: "black", fontWeight: "400", fontSize: 16, }}>{profile.motherOccupation || "N/A"}</Text>
+                      <Text style={{ color: "black", fontWeight: "400", fontSize: 16, }}>{studentData.motherOccupation || "N/A"}</Text>
                     </View>
                   </View>
 
                   <View style={[styles.detailRow, { marginBottom: 4, }]}>
                     <View style={{ width: "100%", display: "flex", flexDirection: "row",  }}>
                       <Text style={{ fontWeight: "500", color: "black", fontSize: 16, marginRight: 5, width: "45%"}}>Contact: </Text>
-                      <Text style={{ color: "black", fontWeight: "400", fontSize: 16, }}>{profile.motherContact || "N/A"}</Text>
+                      <Text style={{ color: "black", fontWeight: "400", fontSize: 16, }}>{studentData.motherContact || "N/A"}</Text>
                     </View>
                   </View>
 
                   <View style={[styles.detailRow, { marginBottom: 4, }]}>
                     <View style={{ width: "100%", display: "flex", flexDirection: "row",  }}>
                       <Text style={{ fontWeight: "500", color: "black", fontSize: 16, marginRight: 5, width: "45%"}}>EMail: </Text>
-                      <Text style={{ color: "black", fontWeight: "400", fontSize: 16,flexShrink:1,flexWrap:"wrap" }}>{profile.parentEmail || "N/A"}</Text>
+                      <Text style={{ color: "black", fontWeight: "400", fontSize: 16,flexShrink:1,flexWrap:"wrap" }}>{studentData.parentEmail || "N/A"}</Text>
                     </View>
                   </View>
                 </View>
@@ -222,10 +197,10 @@ const StudentProfileScreen = () => {
         </TouchableOpacity>
       </ScrollView>
     </View>
-  );
-};
+  )
+}
 
-export default StudentProfileScreen;
+export default StudentProfileScreen
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -333,4 +308,4 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "gray",
   },
-});
+})
