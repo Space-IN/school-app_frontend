@@ -127,24 +127,70 @@ export default function AdminInsightsScreen() {
         setCheckingAttendance(true);
         setAttendanceStatus(null);
         try {
-            const today = new Date().toISOString().split('T')[0];
-            const res = await axios.get(`${BASE_URL}/api/attendance/check`, {
+            const d = new Date();
+            const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+            const res = await axios.get(`${BASE_URL}/api/attendance`, {
                 params: {
                     grade: attendanceGrade,
                     section: attendanceSection,
                     date: today,
-                    sessionNumber: 1
                 }
             });
 
             LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
-            if (res.data && res.data.isMarked) {
-                setAttendanceStatus('✅ Attendance Marked');
+
+            // Filter to find the EXACT match for grade and section
+            // This handles cases where "Grade 5" might return "Grade 15" or other partial matches if backend fuzzy search is on
+            const matchingDoc = Array.isArray(res.data) ? res.data.find(doc => {
+                const docGrade = String(doc.grade || doc.classAssigned || '').replace(/Grade\s?/i, '').trim();
+                const docSection = String(doc.section || '').trim();
+                const reqGrade = String(attendanceGrade).trim();
+                const reqSection = String(attendanceSection).trim();
+                return docGrade === reqGrade && docSection === reqSection;
+            }) : null;
+
+            const records = matchingDoc?.records || [];
+
+            if (records.length > 0) {
+                // Initialize counters
+                let s1Present = 0, s1Absent = 0;
+                let s2Present = 0, s2Absent = 0;
+
+                records.forEach(student => {
+                    student.sessions.forEach(session => {
+                        if (session.session_number === 1) {
+                            if (session.status.toLowerCase() === 'present') s1Present++;
+                            else s1Absent++;
+                        } else if (session.session_number === 2) {
+                            if (session.status.toLowerCase() === 'present') s2Present++;
+                            else s2Absent++;
+                        }
+                    });
+                });
+
+                setAttendanceStatus({
+                    status: 'marked',
+                    message: '✅ Attendance Marked',
+                    details: [
+                        `Session 1: Present: ${s1Present}, Absent: ${s1Absent}`,
+                        `Session 2: Present: ${s2Present}, Absent: ${s2Absent}`
+                    ]
+                });
             } else {
-                setAttendanceStatus('❌ Not Marked Yet');
+                setAttendanceStatus({
+                    status: 'not_marked',
+                    message: '❌ Not Marked Yet',
+                    details: []
+                });
             }
         } catch (err) {
-            setAttendanceStatus('❌ Not Marked Yet (or Error)');
+            console.error("Attendance check error:", err);
+            setAttendanceStatus({
+                status: 'error',
+                message: '❌ Not Marked Yet (or Error)',
+                details: []
+            });
         } finally {
             setCheckingAttendance(false);
         }
@@ -217,7 +263,7 @@ export default function AdminInsightsScreen() {
                             <Ionicons name="stats-chart" size={20} color="#047857" />
                         </View>
                         <Text style={styles.metricValue}>
-                            {stats.overallAttendance ? `${stats.overallAttendance}%` : 'N/A'}
+                            {stats.overallAttendance ? `${stats.overallAttendance} % ` : 'N/A'}
                         </Text>
                         <Text style={styles.metricLabel}>Attendance</Text>
                     </LinearGradient>
@@ -264,19 +310,32 @@ export default function AdminInsightsScreen() {
                         {attendanceStatus && (
                             <View style={[
                                 styles.statusResult,
-                                { backgroundColor: attendanceStatus.includes('Marked') ? '#f0fdf4' : '#fef2f2' }
+                                { backgroundColor: attendanceStatus.status === 'marked' ? '#f0fdf4' : '#fef2f2' }
                             ]}>
-                                <Ionicons
-                                    name={attendanceStatus.includes('Marked') ? "checkmark-circle" : "alert-circle"}
-                                    size={20}
-                                    color={attendanceStatus.includes('Marked') ? "#166534" : "#991b1b"}
-                                />
-                                <Text style={[
-                                    styles.statusText,
-                                    { color: attendanceStatus.includes('Marked') ? "#166534" : "#991b1b" }
-                                ]}>
-                                    {attendanceStatus}
-                                </Text>
+                                <View style={{ alignItems: 'center' }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                                        <Ionicons
+                                            name={attendanceStatus.status === 'marked' ? "checkmark-circle" : "alert-circle"}
+                                            size={20}
+                                            color={attendanceStatus.status === 'marked' ? "#166534" : "#991b1b"}
+                                        />
+                                        <Text style={[
+                                            styles.statusText,
+                                            { color: attendanceStatus.status === 'marked' ? "#166534" : "#991b1b" }
+                                        ]}>
+                                            {attendanceStatus.message}
+                                        </Text>
+                                    </View>
+                                    {attendanceStatus.details && attendanceStatus.details.length > 0 ? (
+                                        <View style={{ marginTop: 5 }}>
+                                            {attendanceStatus.details.map((line, idx) => (
+                                                <Text key={idx} style={{ color: '#334155', fontSize: 13, fontWeight: '500', textAlign: 'center' }}>
+                                                    {line}
+                                                </Text>
+                                            ))}
+                                        </View>
+                                    ) : null}
+                                </View>
                             </View>
                         )}
                     </View>
