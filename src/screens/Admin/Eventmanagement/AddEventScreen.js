@@ -31,7 +31,7 @@ export default function AddEventScreen({ navigation }) {
 
   const fetchEvents = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/events`);
+      const res = await axios.get(`${BASE_URL}/api/admin/events`);
       setEvents(res.data);
     } catch (err) {
       console.error('Error fetching events:', err);

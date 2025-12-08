@@ -4,25 +4,27 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { Card, Chip } from 'react-native-paper';
 import { useAuth } from "../../../context/authContext"; 
+import { api } from '../../../api/api';
 
 export default function FeesScreen() {
-  const { decodedToken } = useAuth();
+  const { decodedToken, accessToken } = useAuth();
   const [feeDetails, setFeeDetails] = useState({ total: 0, installments: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log("decoded token: ", accessToken)
     const fetchFees = async () => {
-      if (!decodedToken?.userId) {
-        console.log("❌ No userId found in decodedToken");
+      if (!decodedToken?.preferred_username) {
+        console.log("❌ No preferred_username found in decodedToken");
         setLoading(false);
         return;
       }
 
       try {
-        const url = `${BASE_URL}/api/student/${decodedToken.userId}/fees`;
+        const url = `${BASE_URL}/api/student/${decodedToken.preferred_username}/fees`;
         console.log("🌐 Fetching URL =", url);
 
-        const response = await axios.get(url);
+        const response = await api.get(url);
         const data = response.data;
 
         console.log("🔵 Fee API Response:", data);
