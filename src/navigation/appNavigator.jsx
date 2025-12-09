@@ -9,6 +9,7 @@ import LoginScreen from '../screens/auth/login';
 
 export default function AppNavigator() {
   const { decodedToken, loading } = useAuth()
+  const roles = decodedToken?.realm_access.roles
 
   if(loading) {
     return (
@@ -22,18 +23,17 @@ export default function AppNavigator() {
     return <LoginScreen />
   }
 
-  switch(decodedToken?.role) {
-    case "Student":
-      return (
-        <StudentProvider>
-          <StudentTab />
-        </StudentProvider>
-      )
-    case "Faculty":
-      return <FacultyNavigator />
-    case "Admin":
-      return <AdminNavigator />
-    default:
-      return <LoginScreen />
+  if(roles.includes("student")) {
+    return (
+      <StudentProvider>
+        <StudentTab />
+      </StudentProvider>
+    )
+  } else if(roles.includes("faculty")) {
+    return <FacultyNavigator />
+  } else if(roles.includes("admin")) {
+    return <AdminNavigator />
+  } else {
+    return <LoginScreen />
   }
 }

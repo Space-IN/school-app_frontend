@@ -5,38 +5,44 @@ import { fetchStudentData, fetchOverallCPGA } from "../../controllers/studentDat
 export const StudentContext = createContext()
 
 
+
 export const StudentProvider = ({ children }) => {
-    const { decodedToken } = useAuth()
     const [studentData, setStudentData] = useState(null)
     const [studentLoading, setStudentLoading] = useState(true)
     const [studentErr, setStudentErr] = useState(null)
+    const { decodedToken } = useAuth()
 
-    useEffect(() => {
-        if (!decodedToken?.userId) return
-
-        const loadStudentData = async () => {
-            setStudentLoading(true)
-            try {
-                const studentId = decodedToken?.userId
-
-                const studentRes = await fetchStudentData(studentId)
-                let studentObj = studentRes?.data || {}
-
-                const cgpaRes = await fetchOverallCPGA(studentId)
-                const overall = { grade: cgpaRes }
-
-                studentObj = { ...studentObj, ...overall }
-                if(studentObj) {
-                    setStudentData(studentObj)
-                }
-            } catch(err) {
-                console.error("error setting student data: ", err)
-                setStudentErr(err)
-            } finally {
-                setStudentLoading(false)
-            }
+    const loadStudentData = async (decodedToken) => {
+        if(!decodedToken) {
+            setStudentLoading(false)
+            return
         }
-        loadStudentData()
+
+        setStudentLoading(true)
+        try {
+            const studentId = decodedToken?.preferred_username
+
+            const studentRes = await fetchStudentData(studentId)
+            const cgpaRes = await fetchOverallCPGA(studentId)
+
+            let studentObj = studentRes?.data || {}
+            const overall = { grade: cgpaRes }
+
+            studentObj = { ...studentObj, ...overall }
+            if(studentObj) {
+                setStudentData(studentObj)
+            }
+        } catch(err) {
+            console.error("error setting student data: ", err)
+            setStudentErr(err)
+        } finally {
+            setStudentLoading(false)
+        }
+    }
+
+    
+    useEffect(() => {
+        loadStudentData(decodedToken)
     }, [decodedToken])
 
     return (

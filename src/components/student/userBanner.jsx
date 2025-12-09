@@ -1,10 +1,8 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { View, Text, StyleSheet, Pressable, Animated, ActivityIndicator } from "react-native"
 import FontAwesome from "@expo/vector-icons/FontAwesome"
 import { useNavigation } from "@react-navigation/native"
 import { LinearGradient } from "expo-linear-gradient"
-
-
 
 const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient)
 
@@ -15,16 +13,13 @@ const getGreeting = () => {
   else return "Good Evening"
 }
 
-export default function UserBanner({ studentData, loading, err }) {
+
+
+
+export default function UserBanner({ studentData, loading, err, refreshKey }) {
   const [greeting, setGreeting] = useState(getGreeting())
-  const scaleAnim = new Animated.Value(1)
+  const scaleAnim = useRef(new Animated.Value(1)).current
   const navigation = useNavigation()
-
-
-  useEffect(() => {
-    const interval = setInterval(() => setGreeting(getGreeting()), 60 * 60 * 1000)
-    return () => clearInterval(interval)
-  }, [])
 
   const handlePress = () => {
     Animated.sequence([
@@ -32,6 +27,16 @@ export default function UserBanner({ studentData, loading, err }) {
       Animated.timing(scaleAnim, { toValue: 1, duration: 100, useNativeDriver: true }),
     ]).start(() => navigation.navigate("Profile"))
   }
+
+
+  useEffect(() => {
+    const interval = setInterval(() => setGreeting(getGreeting()), 60 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [])
+
+  useEffect(() => {
+    setGreeting(getGreeting())
+  }, [refreshKey])
 
   return (
     <Pressable onPress={handlePress}>
@@ -69,7 +74,7 @@ export default function UserBanner({ studentData, loading, err }) {
         )}
       </AnimatedLinearGradient>
     </Pressable>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -129,4 +134,4 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "gray",
   },
-});
+})

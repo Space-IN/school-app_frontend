@@ -1,34 +1,9 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { View, Image, TouchableOpacity, StyleSheet, Modal, Text } from "react-native"
 import Ionicons from '@expo/vector-icons/Ionicons'
-import { Calendar, CalendarList, Agenda } from "react-native-calendars"
-
-
+import { Calendar, } from "react-native-calendars"
 
 const CalendarModal = ({ visible, onClose }) => {
-
-    // useEffect(() => {
-    //     const fetchHolidays = async () => {
-    //         try {
-    //             const response = await fetch("https://date.nager.at/api/v3/PublicHolidays/2025/IN")
-    //             const data = await response.json()
-    //             console.log("data from nager.date: ", data)
-
-    //             const holidayMap = {}
-    //             data.forEach((holiday) => {
-    //                 holidayMap[holiday.date] = {
-    //                     name: holiday.localName,
-    //                     type: "holiday",
-    //                 }
-    //             })
-    //             setHolidays(holidayMap)
-    //         } catch(err) {
-    //             console.error("error fetching holidays: ", err)
-    //         }
-    //     }
-    //     fetchHolidays()
-    // }, [])
-
     return (
         <Modal visible={visible} transparent animationType="fade">
             <View style={styles.modalBackground}>
@@ -62,7 +37,6 @@ const CalendarModal = ({ visible, onClose }) => {
                             shadowRadius: 4,
                         }}
                     />
-
                     <TouchableOpacity style={styles.closeBtn} onPress={onClose} activeOpacity={0.9}>
                         <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>Close</Text>
                     </TouchableOpacity>
@@ -71,6 +45,7 @@ const CalendarModal = ({ visible, onClose }) => {
         </Modal>
     )
 }
+
 
 
 export default function StudentHeader({ navigation, back }) {
