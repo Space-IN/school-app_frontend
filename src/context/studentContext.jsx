@@ -1,6 +1,6 @@
 import { createContext, useState, useEffect, useContext } from "react"
-import { useAuth } from "../authContext"
-import { fetchStudentData, fetchOverallCPGA } from "../../controllers/studentDataController"
+import { useAuth } from "./authContext"
+import { fetchStudentData, fetchOverallCPGA } from "../controllers/studentDataController"
 
 export const StudentContext = createContext()
 

@@ -18,7 +18,7 @@ import * as Animatable from 'react-native-animatable';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BASE_URL } from '@env';
-import { useStudent } from '../../../context/student/studentContext';
+import { useStudent } from '../../../context/studentContext';
 
 const { width } = Dimensions.get('window');
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];

@@ -9,7 +9,7 @@ import {
 } from "react-native"
 import { Ionicons, MaterialIcons } from "@expo/vector-icons"
 import AntDesign from '@expo/vector-icons/AntDesign'
-import { useStudent } from "../../../context/student/studentContext"
+import { useStudent } from "../../../context/studentContext"
 import { useAuth } from "../../../context/authContext"
 import { LinearGradient } from "expo-linear-gradient"
 

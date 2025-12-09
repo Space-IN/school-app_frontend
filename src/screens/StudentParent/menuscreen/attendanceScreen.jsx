@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import * as Animatable from 'react-native-animatable';
-import { useStudent } from '../../../context/student/studentContext';
+import { useStudent } from '../../../context/studentContext';
 import { BASE_URL } from '@env'
 import axios from 'axios'
 
