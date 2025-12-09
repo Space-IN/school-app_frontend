@@ -21,7 +21,7 @@ export default function FeesScreen() {
       }
 
       try {
-        const url = `${BASE_URL}/api/student/${decodedToken.preferred_username}/fees`;
+        const url = `${BASE_URL}/api/student/info/fees/${decodedToken.preferred_username}`;
         console.log("🌐 Fetching URL =", url);
 
         const response = await api.get(url);

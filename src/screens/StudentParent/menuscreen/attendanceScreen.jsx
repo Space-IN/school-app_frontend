@@ -1,127 +1,298 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  ActivityIndicator,
+  Alert,
+  Modal,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
+import { Calendar } from 'react-native-calendars';
+import * as Animatable from 'react-native-animatable';
+import { useStudent } from '../../../context/student/studentContext';
 import { BASE_URL } from '@env';
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
-import { Card, Chip } from 'react-native-paper';
 
-export default function FeesScreen() {
-  const [feeDetails, setFeeDetails] = useState(null);
+const AttendanceScreen = () => {
+  const { studentData } = useStudent();
+  const [attendanceData, setAttendanceData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
-    const fetchFees = async () => {
+    const fetchAttendance = async () => {
+      if (!studentData?.userId) {
+        Alert.alert('Error', 'Could not identify student.');
+        setLoading(false);
+        return;
+      }
+
       try {
-        const userId = await AsyncStorage.getItem('userId');
-        if (!userId) return;
+        const response = await axios.get(
+          `${BASE_URL}/api/attendance/student/${studentData?.userId}?grade=${studentData?.className}&section=${studentData?.section}`
+        );
+        const data = await response.data;
 
-        // Use BASE_URL from environment
-        const response = await axios.get(`${BASE_URL}/api/student/${userId}/fees`);
-        const data = response.data;
-
-        setFeeDetails({
-          total: data.totalFee,
-          installments: [
-            { id: 1, title: 'Installment 1', amount: data.inst1Amount, dueDate: data.inst1Due, paid: data.inst1Paid || 0, status: data.inst1Status || 'Pending' },
-            { id: 2, title: 'Installment 2', amount: data.inst2Amount, dueDate: data.inst2Due, paid: data.inst2Paid || 0, status: data.inst2Status || 'Pending' },
-            { id: 3, title: 'Installment 3', amount: data.inst3Amount, dueDate: data.inst3Due, paid: data.inst3Paid || 0, status: data.inst3Status || 'Pending' },
-          ],
-        });
-      } catch (err) {
-        console.error('Error fetching fees:', err);
+        if (response.status === 200) {
+          setAttendanceData(data);
+        } else {
+          Alert.alert('Error', data.message || 'Failed to fetch attendance.');
+        }
+      } catch (error) {
+        console.error('Error fetching attendance:', error);
+        Alert.alert('Error', 'An unexpected error occurred.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchFees();
-  }, []);
+    fetchAttendance();
+  }, [studentData]);
 
-  if (loading) return <ActivityIndicator style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} size="large" color="#8f1b1bff" />;
+  const { markedDates, attendanceStats } = useMemo(() => {
+    const dates = {};
+    let presentSessions = 0;
+    let absentSessions = 0;
 
-  const totalPaid = feeDetails?.installments?.reduce((sum, inst) => sum + inst.paid, 0) || 0;
-  const totalPending = feeDetails?.total - totalPaid || 0;
+    attendanceData.forEach(record => {
+      const date = record.date.split('T')[0];
+      let dailyPresent = 0;
+      let dailyAbsent = 0;
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Paid': return 'green';
-      case 'Partially Paid': return 'orange';
-      case 'Pending': return 'red';
-      case 'Upcoming': return '#1976D2';
-      default: return '#aaa';
-    }
+      record.sessions.forEach(session => {
+        if (session.status === 'present') {
+          presentSessions++;
+          dailyPresent++;
+        } else {
+          absentSessions++;
+          dailyAbsent++;
+        }
+      });
+
+      if (dailyAbsent > 0) {
+        dates[date] = { marked: true, dotColor: '#ef4444', activeOpacity: 0.5 };
+      } else if (dailyPresent > 0) {
+        dates[date] = { marked: true, dotColor: '#22c55e', activeOpacity: 0.5 };
+      }
+    });
+
+    const totalSessions = presentSessions + absentSessions;
+    const percentage = totalSessions > 0 ? (presentSessions / totalSessions) * 100 : 0;
+
+    return {
+      markedDates: dates,
+      attendanceStats: {
+        present: presentSessions,
+        absent: absentSessions,
+        total: totalSessions,
+        percentage: percentage.toFixed(1),
+      },
+    };
+  }, [attendanceData]);
+
+  const onDayPress = day => {
+    setSelectedDate(day.dateString);
+    setIsModalVisible(true);
   };
 
+  const renderSessionDetails = () => {
+    if (!selectedDate) return null;
+
+    const record = attendanceData.find(r => r.date.startsWith(selectedDate));
+    if (!record) {
+      return <Text style={styles.modalText}>No attendance recorded for this day.</Text>;
+    }
+
+    return record.sessions.map((session, index) => (
+      <View key={index} style={styles.sessionRow}>
+        <Text style={styles.sessionText}>Session {session.session_number}</Text>
+        <Text
+          style={[
+            styles.statusText,
+            { color: session.status === 'present' ? '#22c55e' : '#ef4444' },
+          ]}
+        >
+          {session.status}
+        </Text>
+      </View>
+    ));
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" color="#c01e12" />
+      </View>
+    );
+  }
+
+  // Get today's date and record
+  const todayString = new Date().toISOString().split('T')[0];
+  const todaysRecord = attendanceData.find(r => r.date.startsWith(todayString));
+
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <Text style={styles.title}>Fees Summary</Text>
-        <View style={styles.row}>
-          <Card style={[styles.card, styles.smallCard]}>
-            <Card.Content>
-              <Text style={styles.label}>Amount Paid</Text>
-              <Text style={[styles.value, styles.paid]}>{totalPaid}</Text>
-            </Card.Content>
-          </Card>
-          <Card style={[styles.card, styles.smallCard]}>
-            <Card.Content>
-              <Text style={[styles.label, styles.pendingText]}>Pending Amount</Text>
-              <Text style={[styles.value, styles.pendingText]}>{totalPending}</Text>
-            </Card.Content>
-          </Card>
+    <SafeAreaView style={styles.container}>
+      <ScrollView>
+        <Animatable.View animation="fadeInDown" style={styles.statsContainer}>
+          <View style={styles.statBox}>
+            <Text style={styles.statValue}>{studentData?.attendancePercentage}%</Text>
+            <Text style={styles.statLabel}>Overall Attendance</Text>
+          </View>
+          <View style={styles.statRow}>
+            <View style={styles.statBox}>
+              <Text style={styles.statValue}>{attendanceStats.present}</Text>
+              <Text style={styles.statLabel}> Sessions Present</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={styles.statValue}>{attendanceStats.absent}</Text>
+              <Text style={styles.statLabel}> Sessions Absent</Text>
+            </View>
+          </View>
+        </Animatable.View>
+
+        <Animatable.View animation="fadeInUp" delay={300}>
+          <Calendar
+            onDayPress={onDayPress}
+            markedDates={markedDates}
+            theme={{
+              backgroundColor: '#ffffff',
+              calendarBackground: '#ffffff',
+              textSectionTitleColor: '#b6c1cd',
+              selectedDayBackgroundColor: '#c01e12',
+              selectedDayTextColor: '#ffffff',
+              todayTextColor: '#c01e12',
+              dayTextColor: '#2d4150',
+              arrowColor: '#c01e12',
+              monthTextColor: '#c01e12',
+              indicatorColor: 'blue',
+              textDayFontWeight: '300',
+              textMonthFontWeight: 'bold',
+              textDayHeaderFontWeight: '300',
+              textDayFontSize: 16,
+              textMonthFontSize: 16,
+              textDayHeaderFontSize: 14,
+            }}
+          />
+        </Animatable.View>
+
+        {/* Today's Attendance at the bottom */}
+        <View style={styles.todayContainer}>
+          <Text style={styles.todayTitle}>Today's Attendance</Text>
+          {todaysRecord ? (
+            todaysRecord.sessions.map((session, index) => (
+              <View key={index} style={styles.sessionRow}>
+                <Text style={styles.sessionText}>Session {session.session_number}</Text>
+                <Text
+                  style={[
+                    styles.statusText,
+                    { color: session.status === 'present' ? '#22c55e' : '#ef4444' },
+                  ]}
+                >
+                  {session.status}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text style={{ fontSize: 16, color: '#6b7280' }}>
+              No attendance recorded for today.
+            </Text>
+          )}
         </View>
-        <Card style={styles.totalCard}>
-          <Card.Content>
-            <Text style={[styles.label, styles.totalLabel]}>Total Fees</Text>
-            <Text style={[styles.value, styles.totalLabel]}>{feeDetails.total}</Text>
-          </Card.Content>
-        </Card>
-        <Text style={styles.sectionTitle}>Installments</Text>
-        {feeDetails.installments.map((inst) => {
-          const progressPercent = (inst.paid / inst.amount) * 100;
-          return (
-            <Card key={inst.id} style={styles.installmentCard}>
-              <Card.Content>
-                <View style={styles.installmentHeader}>
-                  <Text style={styles.installmentTitle}>{inst.title}</Text>
-                  <Chip style={{ backgroundColor: getStatusColor(inst.status) }} textStyle={{ color: 'white', fontWeight: 'bold' }}>{inst.status}</Chip>
-                </View>
-                <Text style={styles.instDetail}>Amount: ₹ {inst.amount}</Text>
-                <Text style={styles.instDetail}>Due: {inst.dueDate}</Text>
-                <View style={styles.progressBarBackground}>
-                  <View style={[styles.progressBarFill, { width: `${progressPercent}%`, backgroundColor: getStatusColor(inst.status) }]} />
-                </View>
-                <Text style={styles.progressText}>Paid: ₹ {inst.paid} | Pending: ₹ {inst.amount - inst.paid}</Text>
-              </Card.Content>
-            </Card>
-          );
-        })}
-        <Text style={styles.note}>* All amounts are in INR (₹)</Text>
       </ScrollView>
-    </View>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Attendance for {selectedDate}</Text>
+            {renderSessionDetails()}
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setIsModalVisible(false)}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FAFB' },
-  scrollViewContent: { padding: 20 },
-  title: { fontSize: 22, fontWeight: 'bold', color: '#8f1b1bff', marginBottom: 25, textAlign: 'center' },
-  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
-  smallCard: { width: '48%' },
-  card: { backgroundColor: 'white', borderRadius: 12, elevation: 3, paddingVertical: 10 },
-  label: { fontSize: 15, color: '#475569', marginBottom: 5 },
-  value: { fontSize: 20, fontWeight: 'bold', color: '#8f1b1bff' },
-  paid: { color: 'green' },
-  pendingText: { color: 'red', fontWeight: 'bold' },
-  totalCard: { backgroundColor: '#8f1b1bff', borderRadius: 12, paddingVertical: 10, elevation: 3, marginBottom: 20 },
-  totalLabel: { color: 'white', fontWeight: 'bold' },
-  note: { textAlign: 'center', color: '#475569', marginTop: 15 },
-  sectionTitle: { fontSize: 18, fontWeight: '600', marginVertical: 15 },
-  installmentCard: { marginBottom: 15, borderRadius: 12, elevation: 3 },
-  installmentHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  installmentTitle: { fontSize: 16, fontWeight: 'bold' },
-  instDetail: { fontSize: 14, marginBottom: 4, color: '#475569' },
-  progressBarBackground: { height: 8, backgroundColor: '#eee', borderRadius: 4, marginTop: 6 },
-  progressBarFill: { height: 8, borderRadius: 4 },
-  progressText: { fontSize: 12, color: '#475569', marginTop: 4, fontWeight: '500' },
+  container: { flex: 1, backgroundColor: '#f4f4f8' },
+  centered: { justifyContent: 'center', alignItems: 'center' },
+  statsContainer: {
+    padding: 20,
+    backgroundColor: '#fff',
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  statRow: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 15 },
+  statBox: { alignItems: 'center' },
+  statValue: { fontSize: 28, fontWeight: 'bold', color: '#c01e12' },
+  statLabel: { fontSize: 14, color: '#6b7280', marginTop: 5 },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '85%',
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 25,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 20 },
+  sessionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  sessionText: { fontSize: 16, color: '#374151' },
+  statusText: { fontSize: 16, fontWeight: 'bold', textTransform: 'capitalize' },
+  closeButton: {
+    marginTop: 25,
+    backgroundColor: '#c01e12',
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    elevation: 2,
+  },
+  closeButtonText: { color: 'white', fontWeight: 'bold', textAlign: 'center', fontSize: 16 },
+  todayContainer: {
+    marginTop: 20,
+    padding: 15,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginHorizontal: 20,
+    marginBottom: 30,
+  },
+  todayTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 10 },
 });
+
+export default AttendanceScreen;
