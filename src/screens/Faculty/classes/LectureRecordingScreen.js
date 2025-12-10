@@ -14,11 +14,12 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Audio } from 'expo-av';
-import axios from 'axios';
+ 
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { BASE_URL } from "@env";
+import { api } from '../../../api/api';
 
 export default function LectureRecordingScreen({ route }) {
   const { facultyId } = route.params || {};
@@ -137,7 +138,7 @@ export default function LectureRecordingScreen({ route }) {
   const fetchSchedule = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${BASE_URL}/api/schedule/faculty/${facultyId}`);
+      const res = await api.get(`${BASE_URL}/api/faculty/schedule/faculty/${facultyId}`);
       if (res.data && Array.isArray(res.data.schedule)) {
         setScheduleData(res.data.schedule);
 

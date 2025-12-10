@@ -10,10 +10,11 @@ import {
   StatusBar,
   RefreshControl,
 } from 'react-native';
-import axios from 'axios';
+ 
 import { BASE_URL } from '@env';
 import { useAuth } from "../../../context/authContext";
 import { useScrollToTop } from '@react-navigation/native';
+import { api } from '../../../api/api';
 
 export default function FacultySchedulesScreen() {
   const { decodedToken } = useAuth();
@@ -33,7 +34,7 @@ export default function FacultySchedulesScreen() {
     try {
       setLoading(true);
       
-      const facultyId = decodedToken?.userId;
+      const facultyId = decodedToken?.preferred_username;
       
       if (!facultyId) {
         Alert.alert('Error', 'Faculty ID not found');
@@ -42,7 +43,7 @@ export default function FacultySchedulesScreen() {
 
       console.log('Fetching schedule for faculty:', facultyId);
       
-      const res = await axios.get(`${BASE_URL}/api/schedule/faculty/${facultyId}`);
+      const res = await api.get(`${BASE_URL}/api/faculty/schedule/faculty/${facultyId}`);
       console.log('Schedule API response:', res.data);
       
       setFacultyName(res.data.facultyName);

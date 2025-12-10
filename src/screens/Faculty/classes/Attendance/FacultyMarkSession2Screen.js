@@ -10,13 +10,14 @@ import {
   TextInput,
   StatusBar,
 } from 'react-native';
-import axios from 'axios';
+ 
 import { BASE_URL } from '@env';
 import * as SecureStore from 'expo-secure-store';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView, SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../../../context/authContext';
 import { Ionicons } from '@expo/vector-icons';
+import { api } from '../../../../api/api';
 
 // HARDCODED SESSION NUMBER - This screen ONLY handles Session 2
 const SESSION_NUMBER = 2;
@@ -69,11 +70,11 @@ export default function FacultyMarkSession2Screen({ route }) {
 
   const verifyFacultyAssignment = async () => {
     try {
-      console.log('🔍 [Session 2] Verifying faculty assignment...');
+      console.log(' [Session 2] Verifying faculty assignment...');
       const currentFacultyId = decodedToken?.userId || facultyId;
       
-      const response = await axios.get(
-        `${BASE_URL}/api/subject/subjects/faculty/${currentFacultyId}`
+      const response = await api.get(
+        `${BASE_URL}/api/faculty/subject/subjects/faculty/${currentFacultyId}`
       );
       
       const assignedSubjects = response.data || [];
@@ -100,15 +101,15 @@ export default function FacultyMarkSession2Screen({ route }) {
         );
       }
     } catch (error) {
-      console.error('❌ [Session 2] Error verifying faculty assignment:', error);
+      console.error(' [Session 2] Error verifying faculty assignment:', error);
     }
   };
 
   const loadStudents = async () => {
     try {
-      console.log('📚 [Session 2] Loading students...');
-      const { data } = await axios.get(
-        `${BASE_URL}/api/admin/students/grade/${grade}/section/${section}`
+      console.log(' [Session 2] Loading students...');
+      const { data } = await api.get(
+        `${BASE_URL}/api/faculty/students/grade/${grade}/section/${section}`
       );
       setStudents(data);
 
@@ -118,9 +119,9 @@ export default function FacultyMarkSession2Screen({ route }) {
         initialAttendance[student._id] = 'present';
       });
       setAttendance(initialAttendance);
-      console.log('✅ [Session 2] Students loaded:', data.length);
+      console.log(' [Session 2] Students loaded:', data.length);
     } catch (err) {
-      console.error('❌ [Session 2] Error loading students:', err);
+      console.error(' [Session 2] Error loading students:', err);
       Alert.alert('Error', 'Failed to load students. Please try again.');
     } finally {
       setLoading(false);
@@ -164,7 +165,7 @@ export default function FacultyMarkSession2Screen({ route }) {
 
   const handleSubmit = async (retryCount = 0) => {
     if (submitting) {
-      console.log('⚠️ [Session 2] Submission already in progress');
+      console.log('[Session 2] Submission already in progress');
       return;
     }
 
@@ -180,19 +181,15 @@ export default function FacultyMarkSession2Screen({ route }) {
       return;
     }
 
-    console.log(`🚀 [Session 2] Starting attendance submission...`);
+    console.log(` [Session 2] Starting attendance submission...`);
     setSubmitting(true);
 
     const date = new Date().toISOString().split('T')[0];
     
     try {
-      const token = await SecureStore.getItemAsync('token');
-      if (!token) {
-        throw new Error('Authentication token not found');
-      }
-
+     
       const records = validateAndPrepareRecords();
-      console.log('📝 [Session 2] Validated records:', records);
+      console.log('[Session 2] Validated records:', records);
 
       const payload = {
         grade: Number(grade),
@@ -204,23 +201,17 @@ export default function FacultyMarkSession2Screen({ route }) {
         force: false
       };
 
-      console.log('📤 [Session 2] Sending attendance payload:', JSON.stringify(payload, null, 2));
+      console.log(' [Session 2] Sending attendance payload:', JSON.stringify(payload, null, 2));
 
-      const response = await axios.post(`${BASE_URL}/api/attendance/mark`, payload, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        timeout: 15000,
-      });
+      const response = await api.post(`${BASE_URL}/api/faculty/attendance/mark`, payload);
 
-      console.log('✅ [Session 2] Attendance marked successfully');
+      console.log(' [Session 2] Attendance marked successfully');
       
       const presentCount = getPresentCount();
       const absentCount = getAbsentCount();
 
       Alert.alert(
-        'Success ✅', 
+        'Success ', 
         `Session 2 attendance marked successfully!\n\nPresent: ${presentCount}\nAbsent: ${absentCount}\nTotal: ${students.length}`,
         [
           { 
@@ -231,7 +222,7 @@ export default function FacultyMarkSession2Screen({ route }) {
       );
 
     } catch (err) {
-      console.error('🔴 [Session 2] Submission error:', err);
+      console.error(' [Session 2] Submission error:', err);
       
       let errorMessage = 'Failed to mark attendance. Please try again.';
       let canRetry = false;

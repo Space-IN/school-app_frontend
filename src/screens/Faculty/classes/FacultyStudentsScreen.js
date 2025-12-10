@@ -12,11 +12,12 @@ import {
   TextInput
 } from 'react-native';
 import { SafeAreaView, SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import axios from 'axios';
+
 import { BASE_URL } from '@env';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useAuth } from '../../../context/authContext';
 import { Ionicons } from '@expo/vector-icons';
+import {api} from '../../../api/api';
 
 export default function FacultyStudentsScreen() {
   const route = useRoute();
@@ -73,14 +74,14 @@ export default function FacultyStudentsScreen() {
       setLoading(true);
       console.log('📋 Fetching students for:', { grade, section });
       
-      const response = await axios.get(
-        `${BASE_URL}/api/admin/students/grade/${grade}/section/${section}`
+      const response = await api.get(
+        `${BASE_URL}/api/faculty/students/grade/${grade}/section/${section}`
       );
-      console.log('✅ Students data:', response.data);
+      console.log(' Students data:', response.data);
       setStudents(response.data);
       setFilteredStudents(response.data);
     } catch (error) {
-      console.error('❌ Error fetching students:', error);
+      console.error(' Error fetching students:', error);
       Alert.alert('Error', 'Failed to fetch students data');
       setStudents([]);
       setFilteredStudents([]);

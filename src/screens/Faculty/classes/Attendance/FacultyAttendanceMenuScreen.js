@@ -9,12 +9,13 @@ import {
   StatusBar,
   ScrollView,
 } from 'react-native';
-import axios from 'axios';
+ 
 import { BASE_URL } from '@env';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView, SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../../../context/authContext';
 import { Ionicons } from '@expo/vector-icons';
+import {api} from '../../../../api/api';
 
 export default function FacultyAttendanceMenuScreen({ route }) {
   const { grade, section, subjectMasterId, facultyId, subjectName, subjectId } = route.params || {};
@@ -51,11 +52,11 @@ export default function FacultyAttendanceMenuScreen({ route }) {
 
   const verifyFacultyAssignment = async () => {
     try {
-      console.log('🔍 Verifying faculty assignment...');
-      const currentFacultyId = decodedToken?.userId || facultyId;
+      console.log(' Verifying faculty assignment...');
+      const currentFacultyId = decodedToken?.preferred_username || facultyId;
 
-      const response = await axios.get(
-        `${BASE_URL}/api/subject/subjects/faculty/${currentFacultyId}`
+      const response = await api.get(
+        `${BASE_URL}/api/faculty/subject/subjects/faculty/${currentFacultyId}`
       );
 
       const assignedSubjects = response.data || [];
@@ -84,7 +85,7 @@ export default function FacultyAttendanceMenuScreen({ route }) {
         );
       }
     } catch (error) {
-      console.error('❌ Error verifying faculty assignment:', error);
+      console.error(' Error verifying faculty assignment:', error);
     }
   };
 
@@ -94,11 +95,11 @@ export default function FacultyAttendanceMenuScreen({ route }) {
 
       // Check both sessions
       const [session1Response, session2Response] = await Promise.all([
-        axios.get(
-          `${BASE_URL}/api/attendance/check?grade=${grade}&section=${section}&date=${date}&sessionNumber=1`
+        api.get(
+          `${BASE_URL}/api/faculty/attendance/check?grade=${grade}&section=${section}&date=${date}&sessionNumber=1`
         ).catch(() => ({ data: { exists: false } })),
-        axios.get(
-          `${BASE_URL}/api/attendance/check?grade=${grade}&section=${section}&date=${date}&sessionNumber=2`
+        api.get(
+          `${BASE_URL}/api/faculty/attendance/check?grade=${grade}&section=${section}&date=${date}&sessionNumber=2`
         ).catch(() => ({ data: { exists: false } })),
       ]);
 
@@ -115,7 +116,7 @@ export default function FacultyAttendanceMenuScreen({ route }) {
         },
       });
     } catch (error) {
-      console.error('❌ Error checking session status:', error);
+      console.error(' Error checking session status:', error);
     } finally {
       setLoading(false);
     }
@@ -158,7 +159,7 @@ const screenName = sessionNumber === 1
       section,
       subjectName,
       subjectId,
-      facultyId: decodedToken?.userId || facultyId,
+      facultyId: decodedToken?.preferred_username || facultyId,
     });
   };
 
@@ -214,11 +215,11 @@ const screenName = sessionNumber === 1
 
           {validSubject ? (
             <View style={styles.authorizedContainer}>
-              <Text style={styles.authorizedText}>✅ Authorized</Text>
+              <Text style={styles.authorizedText}> Authorized</Text>
             </View>
           ) : (
             <View style={styles.unauthorizedContainer}>
-              <Text style={styles.unauthorizedText}>⚠️ Verifying...</Text>
+              <Text style={styles.unauthorizedText}> Verifying...</Text>
             </View>
           )}
         </View>
@@ -249,13 +250,13 @@ const screenName = sessionNumber === 1
               {sessionStatus.session1.marked ? (
                 <View style={styles.statusMarked}>
                   <Text style={styles.statusText}>
-                    ✅ Marked: {sessionStatus.session1.presentCount}/
+                     Marked: {sessionStatus.session1.presentCount}/
                     {sessionStatus.session1.totalCount} Present
                   </Text>
                 </View>
               ) : (
                 <View style={styles.statusPending}>
-                  <Text style={styles.statusText}>⏳ Not Marked Yet</Text>
+                  <Text style={styles.statusText}> Not Marked Yet</Text>
                 </View>
               )}
             </View>
@@ -293,13 +294,13 @@ const screenName = sessionNumber === 1
               {sessionStatus.session2.marked ? (
                 <View style={styles.statusMarked}>
                   <Text style={styles.statusText}>
-                    ✅ Marked: {sessionStatus.session2.presentCount}/
+                     Marked: {sessionStatus.session2.presentCount}/
                     {sessionStatus.session2.totalCount} Present
                   </Text>
                 </View>
               ) : (
                 <View style={styles.statusPending}>
-                  <Text style={styles.statusText}>⏳ Not Marked Yet</Text>
+                  <Text style={styles.statusText}> Not Marked Yet</Text>
                 </View>
               )}
             </View>
@@ -359,14 +360,14 @@ const screenName = sessionNumber === 1
               <View style={styles.summaryItem}>
                 <Text style={styles.summaryLabel}>Session 1</Text>
                 <Text style={styles.summaryValue}>
-                  {sessionStatus.session1.marked ? '✅ Done' : '⏳ Pending'}
+                  {sessionStatus.session1.marked ? ' Done' : ' Pending'}
                 </Text>
               </View>
               <View style={styles.summaryDivider} />
               <View style={styles.summaryItem}>
                 <Text style={styles.summaryLabel}>Session 2</Text>
                 <Text style={styles.summaryValue}>
-                  {sessionStatus.session2.marked ? '✅ Done' : '⏳ Pending'}
+                  {sessionStatus.session2.marked ? 'Done' : ' Pending'}
                 </Text>
               </View>
             </View>

@@ -66,7 +66,7 @@ export default function FacultyChaptersScreen({ route }) {
       setLoading(true);
       // console.log("fetch data from chapters: ", subjectId, grade, section)
       const res = await fetch(
-        `${BASE_URL}/api/chapters?subjectId=${subjectId}&classAssigned=${grade}&section=${section}`
+        `${BASE_URL}/api/faculty/chapters?subjectId=${subjectId}&classAssigned=${grade}&section=${section}`
       );
       const text = await res.text();
       // console.log("FETCH CHAPTERS RESPONSE:", text);

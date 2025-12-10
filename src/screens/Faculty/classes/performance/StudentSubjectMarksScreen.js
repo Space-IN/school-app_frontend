@@ -13,6 +13,7 @@ import axios from 'axios';
 import Toast from 'react-native-toast-message';
 import { BASE_URL } from '@env';
 import { useAuth } from "../../../../context/authContext";
+import { api } from '../../../../api/api';
 
 const StudentSubjectMarksScreen = ({ route }) => {
   const { students, grade, section } = route.params;
@@ -25,7 +26,7 @@ const StudentSubjectMarksScreen = ({ route }) => {
   const [loadingSubjects, setLoadingSubjects] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const facultyId = decodedToken?.userId || null;
+  const facultyId = decodedToken?.preferred_username || null;
 
   const examTypes = [
     'Unit Test-1', 'Unit Test-2', 'Midterm',
@@ -39,7 +40,7 @@ const StudentSubjectMarksScreen = ({ route }) => {
   const fetchSubjects = async () => {
     setLoadingSubjects(true);
     try {
-      const res = await axios.get(`${BASE_URL}/api/subject/subjects/faculty/${facultyId}`);
+      const res = await api.get(`${BASE_URL}/api/faculty/subject/subjects/faculty/${facultyId}`);
 
       const filteredSubjects = res.data
         .filter(subj =>
@@ -118,7 +119,7 @@ const StudentSubjectMarksScreen = ({ route }) => {
 
       console.log("PAYLOAD SENT:", JSON.stringify(payload1, null, 2));
 
-      const response = await axios.post(`${BASE_URL}/api/assessment/faculty/submit`, payload1);
+      const response = await api.post(`${BASE_URL}/api/faculty/assessment/faculty/submit`, payload1);
       console.log("Submit Response:", response.data);
 
 
