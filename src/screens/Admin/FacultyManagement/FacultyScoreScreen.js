@@ -10,7 +10,7 @@ import {
   
 import { Ionicons } from "@expo/vector-icons";
 import { BASE_URL } from '@env';
-import {api} from '../../api/api'
+import {api} from '../../../api/api'
 
 const FacultyScoreScreen = ({ route }) => {
   const { facultyId, classId, section, subjectName } = route.params;
@@ -22,7 +22,7 @@ const FacultyScoreScreen = ({ route }) => {
     const fetchLectures = async () => {
       try {
         const res = await api.get(
-          `${BASE_URL}/api/admin/lecture-recording/faculty/${facultyId}/class/${classId}/section/${section}`
+          `${BASE_URL}/api/admin/lecture-recordings/faculty/${facultyId}/class/${classId}/section/${section}`
         );
         setLectures(res.data);
       } catch (error) {

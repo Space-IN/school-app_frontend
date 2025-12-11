@@ -12,7 +12,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { BASE_URL } from '@env';
-import { api } from '../../api/api';
+import { api } from '../../../api/api';
 
 export default function DeletedStudentsScreen({ navigation }) {
   const [students, setStudents] = useState([]);

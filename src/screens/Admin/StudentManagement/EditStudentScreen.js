@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import { BASE_URL } from '@env';
-import {api} from '../../api/api'
+import {api} from '../../../api/api'
 
 export default function EditStudentScreen({ route, navigation }) {
   const { student, onGoBack } = route.params;

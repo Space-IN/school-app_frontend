@@ -12,7 +12,7 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
  
 import { BASE_URL } from '@env';
-import {api} from '../../api/api'
+import {api} from '../../../api/api'
 
 export default function EditFacultyScreen({ route, navigation }) {
   const { faculty } = route.params;

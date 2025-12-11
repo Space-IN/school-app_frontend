@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { BASE_URL } from '@env';
-import { api } from '../../api/api';
+import { api } from '../../../api/api';
 
 export default function AdminAttendanceScreen({ route }) {
   const { grade, section } = route.params;
