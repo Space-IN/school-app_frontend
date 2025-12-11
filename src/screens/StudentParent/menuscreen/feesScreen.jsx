@@ -1,5 +1,4 @@
 import { BASE_URL } from '@env';
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { Card, Chip } from 'react-native-paper';
