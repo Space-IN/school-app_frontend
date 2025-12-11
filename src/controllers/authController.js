@@ -1,12 +1,13 @@
 import axios from "axios"
 import { KEYCLOAK_SERVER_URL } from "@env"
 import { keycloakConfig } from "../config/keycloak"
+import { api } from "../api/api"
 
 
 
 export async function loginUser(username, password) {
     try {
-        const response = await axios.post(
+        const response = await api.post(
             `${KEYCLOAK_SERVER_URL}/realms/vishwachetana-vidyaniketana/protocol/openid-connect/token`,
             new URLSearchParams({
                 client_id: keycloakConfig.clientId,
@@ -31,7 +32,7 @@ export async function loginUser(username, password) {
 
 export async function logoutUser(refreshToken) {
     try {
-        const response = await axios.post(
+        const response = await api.post(
             `${KEYCLOAK_SERVER_URL}/realms/vishwachetana-vidyaniketana/protocol/openid-connect/logout`,
             new URLSearchParams({
                 client_id: keycloakConfig.clientId,
@@ -58,7 +59,7 @@ export async function refreshUser(refreshToken) {
         params.append("client_id", keycloakConfig.clientId)
         params.append("refresh_token", refreshToken)
 
-        const response = await axios.post(
+        const response = await api.post(
             `${KEYCLOAK_SERVER_URL}/realms/${keycloakConfig.realm}/protocol/openid-connect/token`,
             params,
             { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
