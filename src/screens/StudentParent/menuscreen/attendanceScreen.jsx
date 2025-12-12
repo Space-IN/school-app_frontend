@@ -12,46 +12,63 @@ import {
 import { Calendar } from 'react-native-calendars';
 import * as Animatable from 'react-native-animatable';
 import { useStudent } from '../../../context/student/studentContext';
+import { useAuth } from '../../../context/authContext'
 import { BASE_URL } from '@env'
-import axios from 'axios'
+ 
+import { api } from '../../../api/api';
 
 
 const AttendanceScreen = () => {
-  const { studentData } = useStudent()
+  const { studentData, studentLoading } = useStudent()
   const [attendanceData, setAttendanceData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  const { decodedToken } = useAuth()
+
   useEffect(() => {
+    // don't act until the student context finishes loading
+    if (studentLoading) return
+
+    // resolve id: prefer studentData, fallback to token
+    const idToUse = studentData?.preferred_username || decodedToken?.preferred_username
+
+    if (!idToUse) {
+      setLoading(false)
+      Alert.alert('Error', 'Could not identify student.')
+      return
+    }
+
     const fetchAttendance = async () => {
-      if (!studentData?.userId) {
-        Alert.alert('Error', 'Could not identify student.');
-        setLoading(false);
-        return;
-      }
+      setLoading(true)
 
       try {
-        const response = await axios.get(
-          `${BASE_URL}/api/student/attendance/${studentData?.userId}?grade=${studentData?.className}&section=${studentData?.section}`
-        )
-        const data = await response.data
+        // build url with optional query params (grade & section)
+        let url = `${BASE_URL}/api/student/attendance/${encodeURIComponent(idToUse)}`
+        const params = []
+        if (studentData?.className) params.push(`grade=${encodeURIComponent(studentData.className)}`)
+        if (studentData?.section) params.push(`section=${encodeURIComponent(studentData.section)}`)
+        if (params.length) url += `?${params.join('&')}`
 
-        if (response.status===200) {
-          setAttendanceData(data);
+        const response = await api.get(url)
+        const data = response.data
+
+        if (response.status === 200) {
+          setAttendanceData(data)
         } else {
-          Alert.alert('Error', data.message || 'Failed to fetch attendance.');
+          Alert.alert('Error', data?.message || 'Failed to fetch attendance.')
         }
       } catch (error) {
-        console.error('Error fetching attendance:', error);
-        Alert.alert('Error', 'An unexpected error occurred.');
+        console.error('Error fetching attendance:', error)
+        Alert.alert('Error', 'An unexpected error occurred.')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchAttendance();
-  }, [studentData]);
+    fetchAttendance()
+  }, [studentData, studentLoading, decodedToken])
 
   const { markedDates, attendanceStats } = useMemo(() => {
     const dates = {};

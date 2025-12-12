@@ -12,10 +12,9 @@ import {
   Modal,
   Pressable
 } from "react-native";
-import axios from "axios";
-import { io } from "socket.io-client";
 import * as DocumentPicker from 'expo-document-picker';
-import { BASE_URL } from '@env';
+import { BASE_ URL } from '@env';
+import { api } from "../../../api/api";
 
 const AddNoticeScreen = () => {
   const [title, setTitle] = useState("");
@@ -29,12 +28,9 @@ const AddNoticeScreen = () => {
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewUrl, setPreviewUrl] = useState('');
 
-
-  const socket = io(BASE_URL);
-
   const fetchNotices = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/announcement/`);
+      const res = await api.get(`${BASE_URL}/api/admin/announcement/`);
       setNotices(res.data || []);
     } catch (error) {
       console.error("Error fetching notices:", error);
@@ -47,38 +43,7 @@ const AddNoticeScreen = () => {
     fetchNotices();
   }, []);
 
-  // const handleAddNotice = async () => {
-  //   if (!title || !message) {
-  //     Alert.alert("Error", "Title and message are required");
-  //     return;
-  //   }
-
-  //   try {
-  //     await axios.post(`${BASE_URL}/api/notices/add`, {
-  //       title,
-  //       message,
-  //       target,
-  //       specificIds: target === "specific" ? specificIds.split(",") : [],
-  //     });
-
-  //     // socket.emit("new_notice", {
-  //     //   title,
-  //     //   message,
-  //     //   target,
-  //     //   specificIds: target === "specific" ? specificIds.split(",") : [],
-  //     // });
-
-  //     Alert.alert("Success", "Notice added successfully");
-  //     setTitle("");
-  //     setMessage("");
-  //     setTarget("all");
-  //     setSpecificIds("");
-  //     fetchNotices(); // refresh list
-  //   } catch (error) {
-  //     console.error("Error adding notice:", error);
-  //     Alert.alert("Error", "Failed to add notice");
-  //   }
-  // };
+ 
 
   const handleAddNotice = async () => {
   const formData = new FormData();
@@ -106,7 +71,7 @@ const AddNoticeScreen = () => {
   try {
     console.log("Selected file:", selectedFile);
 
-    await axios.post(`${BASE_URL}/api/announcement/add`, formData, {
+    await api.post(`${BASE_URL}/api/admin/announcement/add`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       },
@@ -133,7 +98,7 @@ const AddNoticeScreen = () => {
         style: "destructive",
         onPress: async () => {
           try {
-            await axios.delete(`${BASE_URL}/api/announcement/delete/${id}`);
+            await api.delete(`${BASE_URL}/api/admin/announcement/delete/${id}`);
             fetchNotices(); 
             Alert.alert("Deleted", "Notice deleted successfully");
           } catch (error) {

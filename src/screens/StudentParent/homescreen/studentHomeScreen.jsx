@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { ScrollView, StyleSheet, View, RefreshControl } from "react-native"
-import { useStudent } from "../../../context/student/studentContext"
+import { useStudent } from "../../../context/studentContext"
 import UserBanner from "../../../components/student/userBanner"
 import PerformanceGrid from "../../../components/student/performaceGrid"
 import StudentAnnouncements from "../../../components/student/announcements"

@@ -15,6 +15,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import {BASE_URL} from '@env';
 
+import {api} from '../../../api/api';
+
 // --- LOCALE CONFIGURATION ---
 LocaleConfig.locales['en'] = {
   monthNames: [
@@ -67,7 +69,7 @@ export default function AcademicCalendarScreen() {
 
   const fetchEvents = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/api/events`);
+      const response = await api.get(`${BASE_URL}/api/student/events`);
       setEvents(response.data);
     } catch (err) {
       console.error('Failed to fetch events:', err.message);

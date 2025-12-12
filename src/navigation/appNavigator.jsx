@@ -3,7 +3,7 @@ import { useAuth } from '../context/authContext';
 import AdminNavigator from './admin/adminNavigator';
 import FacultyNavigator from './faculty/facultyNavigator';
 import StudentTab from './student/studentTab';
-import { StudentProvider } from '../context/student/studentContext';
+import { StudentProvider } from '../context/studentContext';
 import LoginScreen from '../screens/auth/login';
 
 

@@ -1,37 +1,52 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 
 import AdminTabNavigator from '../../screens/Admin/AdminTabNavigator';
-import AdminDashboard from '../../screens/Admin/AdminDashboard'; // Keeping for reference if needed, but main entry is TabNav
-import AddStudentScreen from '../../screens/Admin/AddStudentScreen';
-import AddFacultyScreen from '../../screens/Admin/AddFacultyScreen';
-import AllStudentsScreen from '../../screens/Admin/AllStudentsScreen';
-import AllFacultyScreen from '../../screens/Admin/AllFacultyScreen';
-import EditStudentScreen from '../../screens/Admin/EditStudentScreen';
-import EditFacultyScreen from '../../screens/Admin/EditFacultyScreen';
-import FilteredStudentsScreen from '../../screens/Admin/FilteredStudentsScreen';
-import DeletedStudentsScreen from '../../screens/Admin/DeletedStudentsScreen';
-import DeletedFacultyScreen from '../../screens/Admin/DeletedFacultyScreen';
-import AddEventScreen from '../../screens/Admin/Eventmanagement/AddEventScreen';
-import AddSubjectMasterScreen from '../../screens/Admin/subjectManagement/AddSubjectMasterScreen';
-import AssignSubjectScreen from '../../screens/Admin/subjectManagement/AssignSubjectScreen';
-import AdminPosterManager from '../../screens/Admin/AdminPosterManager';
+import AdminPosterManager from '../../screens/Admin/AdminDashboard/AdminPosterManager';
+
+// Admin/Faculty Related imports
+import AddFacultyScreen from '../../screens/Admin/FacultyManagement/AddFacultyScreen';
+import AllFacultyScreen from '../../screens/Admin/FacultyManagement/AllFacultyScreen';
+import EditFacultyScreen from '../../screens/Admin/FacultyManagement/EditFacultyScreen';
+import DeletedFacultyScreen from '../../screens/Admin/FacultyManagement/DeletedFacultyScreen';
+import FacultyPerformance from "../../screens/Admin/FacultyManagement/FacultyPerformance";
+import FacultyListScreen from "../../screens/Admin/FacultyManagement/FacultyListScreen";
+import FacultyScoreScreen from "../../screens/Admin/FacultyManagement/FacultyScoreScreen";
+import FacultyProfileViewScreen from '../../screens/Admin/FacultyManagement/FacultyProfileViewScreen';
+
+// Admin/Student related imports
+import AddStudentScreen from '../../screens/Admin/StudentManagement/AddStudentScreen';
+import AllStudentsScreen from '../../screens/Admin/StudentManagement/AllStudentsScreen';
+import EditStudentScreen from '../../screens/Admin/StudentManagement/EditStudentScreen';
+import FilteredStudentsScreen from '../../screens/Admin/StudentManagement/FilteredStudentsScreen';
+import DeletedStudentsScreen from '../../screens/Admin/StudentManagement/DeletedStudentsScreen';
+import AdminAttendanceScreen from '../../screens/Admin/StudentManagement/AdminAttendanceScreen';
+import AdminStudentProfileView from "../../screens/Admin/StudentManagement/AdminStudentProfileView";
+
+// Admin/classSchedule related imports
 import ClassScheduleScreen from '../../screens/Admin/classScheduleManagement/ClassScheduleScreen';
 import ClassScheduleViewScreen from '../../screens/Admin/classScheduleManagement/ClassScheduleViewScreen';
-import AddNoticeScreen from '../../screens/Admin/AddNoticeScreen';
-import FacultyPerformance from "../../screens/Admin/FacultyPerformance";
-import FacultyListScreen from "../../screens/Admin/FacultyListScreen";
-import FacultyScoreScreen from "../../screens/Admin/FacultyScoreScreen";
-import FacultyProfileViewScreen from '../../screens/Admin/FacultyProfileViewScreen';
-import AdminAttendanceScreen from '../../screens/Admin/AdminAttendanceScreen';
+
+// Other screens
 import BoardSelectionScreen from '../../screens/Admin/BoardSelectionScreen';
 import MarksEntryScreen from '../../screens/Admin/MarksEntryScreen';
 
-// import AdminPosterManager from "../../screens/Admin/AdminPosterManager";
 
-import AdminStudentProfileView from "../../screens/Admin/AdminStudentProfileView";
 
-import { StatusBar } from "react-native";
-import { SafeAreaFrameContext } from "react-native-safe-area-context";
+//EventManagement Related imports
+import AddEventScreen from '../../screens/Admin/Eventmanagement/AddEventScreen';
+
+
+// Admin/subjectManagement Related imports 
+import AddSubjectMasterScreen from '../../screens/Admin/subjectManagement/AddSubjectMasterScreen';
+import AssignSubjectScreen from '../../screens/Admin/subjectManagement/AssignSubjectScreen';
+
+
+
+// Admin/NoticeManagement Related imports 
+import AddNoticeScreen from '../../screens/Admin/NoticeManagement/AddNoticeScreen';
+
+
+
 
 
 

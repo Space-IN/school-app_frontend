@@ -1,4 +1,24 @@
-// //AdminDashboard.js -- Is a legacy code (currently not in use)
+// ✅ AdminDashboard.js
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+  TouchableOpacity,
+  Platform,
+  StatusBar,
+  ScrollView,
+  SafeAreaView,
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
+
+import { BASE_URL } from '@env';
+// import PosterCarousel from '../../components/PosterCarousel';
+import { useAuth } from '../../../context/authContext';
+import { api } from '../../../api/api';
 
 // // ✅ AdminDashboard.js
 // import React, { useEffect, useState } from 'react';

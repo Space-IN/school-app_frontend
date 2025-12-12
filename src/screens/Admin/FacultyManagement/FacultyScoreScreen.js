@@ -7,9 +7,10 @@ import {
   ActivityIndicator,
   SafeAreaView,
 } from "react-native";
-import axios from "axios";
+  
 import { Ionicons } from "@expo/vector-icons";
 import { BASE_URL } from '@env';
+import {api} from '../../../api/api'
 
 const FacultyScoreScreen = ({ route }) => {
   const { facultyId, classId, section, subjectName } = route.params;
@@ -20,8 +21,8 @@ const FacultyScoreScreen = ({ route }) => {
   useEffect(() => {
     const fetchLectures = async () => {
       try {
-        const res = await axios.get(
-          `${BASE_URL}/api/lecture-recording/faculty/${facultyId}/class/${classId}/section/${section}`
+        const res = await api.get(
+          `${BASE_URL}/api/admin/lecture-recordings/faculty/${facultyId}/class/${classId}/section/${section}`
         );
         setLectures(res.data);
       } catch (error) {

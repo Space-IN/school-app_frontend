@@ -11,10 +11,12 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import axios from 'axios';
+ 
 import { useAuth } from "../../../context/authContext";
 import { useNavigation } from '@react-navigation/native';
 import { BASE_URL } from '@env';
+import { api } from '../../../api/api';
+import { api } from '../../../api/api';
 
 export default function FacultyProfileScreen() {
   const { decodedToken, logout } = useAuth();
@@ -24,7 +26,7 @@ export default function FacultyProfileScreen() {
 
   const fetchFacultyDetails = async () => {
     try {
-      const facultyId = decodedToken?.userId;
+      const facultyId = decodedToken?.preferred_username;
       
       if (!facultyId) {
         Alert.alert('Error', 'Faculty information not available');
@@ -36,16 +38,16 @@ export default function FacultyProfileScreen() {
       // Try multiple possible endpoints
       let response;
       try {
-        response = await axios.get(`${BASE_URL}/api/faculty/${facultyId}`);
+        response = await api.get(`${BASE_URL}/api/admin/faculty/${facultyId}`);
         console.log('Faculty API response:', response.data);
       } catch (firstErr) {
         console.log('First endpoint failed, trying alternative...');
-        response = await axios.get(`${BASE_URL}/api/faculty/profile/${facultyId}`);
+        // response = await api.get(`${BASE_URL}/api/admin/faculty/profile/${facultyId}`);
       }
       
       setFaculty(response.data);
     } catch (error) {
-      console.error('❌ Error fetching faculty details:', error);
+      console.error(' Error fetching faculty details:', error);
       console.error('Error details:', error.response?.data);
       
       Alert.alert('Error', 'Failed to load faculty profile');
@@ -55,7 +57,7 @@ export default function FacultyProfileScreen() {
   };
 
   useEffect(() => {
-    if (decodedToken?.userId) {
+    if (decodedToken?.preferred_username) {
       fetchFacultyDetails();
     }
   }, [decodedToken?.userId]);

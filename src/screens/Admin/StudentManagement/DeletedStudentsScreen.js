@@ -11,8 +11,8 @@ import {
   Platform,
   StatusBar,
 } from 'react-native';
-import axios from 'axios';
 import { BASE_URL } from '@env';
+import { api } from '../../../api/api';
 
 export default function DeletedStudentsScreen({ navigation }) {
   const [students, setStudents] = useState([]);
@@ -21,7 +21,7 @@ export default function DeletedStudentsScreen({ navigation }) {
   const fetchDeletedStudents = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${BASE_URL}/api/admin/students-deleted`);
+      const res = await api.get(`${BASE_URL}/api/admin/students-deleted`);
       setStudents(res.data || []);
     } catch (err) {
       console.error('❌ Failed to fetch deleted students:', err);
@@ -33,7 +33,7 @@ export default function DeletedStudentsScreen({ navigation }) {
 
   const restoreStudent = async (userId) => {
     try {
-      await axios.patch(`${BASE_URL}/api/admin/students/restore/${userId}`);
+      await api.patch(`${BASE_URL}/api/admin/students/restore/${userId}`);
       Alert.alert('Restored', 'Student restored successfully.');
       fetchDeletedStudents();
     } catch (err) {
@@ -52,7 +52,7 @@ export default function DeletedStudentsScreen({ navigation }) {
           style: 'destructive',
           onPress: async () => {
             try {
-              await axios.delete(`${BASE_URL}/api/admin/students/${userId}`);
+              await api.delete(`${BASE_URL}/api/admin/students/${userId}`);
               Alert.alert('Deleted', 'Student permanently deleted.');
               fetchDeletedStudents();
             } catch (err) {

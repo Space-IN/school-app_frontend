@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from "react-native"
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6'
-import { useStudent } from "../../context/student/studentContext"
+import { useStudent } from "../../context/studentContext"
 
 
 

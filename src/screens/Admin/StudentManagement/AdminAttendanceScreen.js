@@ -8,9 +8,9 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
-import axios from 'axios';
 import { Calendar } from 'react-native-calendars';
 import { BASE_URL } from '@env';
+import { api } from '../../../api/api';
 
 export default function AdminAttendanceScreen({ route }) {
   const { grade, section } = route.params;
@@ -29,7 +29,7 @@ export default function AdminAttendanceScreen({ route }) {
     setNoDataMessage('');
 
     try {
-      const url = `${BASE_URL}/api/attendance`;
+      const url = `${BASE_URL}/api/admin/attendance`;
       const params = {
         grade: String(grade).replace('Grade ', ''),
         section: String(section),
@@ -37,7 +37,7 @@ export default function AdminAttendanceScreen({ route }) {
       };
       console.log('Fetching attendance from URL:', url, 'with params:', params);
 
-      const res = await axios.get(url, { params });
+      const res = await api.get(url, { params });
       console.log('Attendance response:', res.data);
 
       if (Array.isArray(res.data) && res.data.length > 0) {

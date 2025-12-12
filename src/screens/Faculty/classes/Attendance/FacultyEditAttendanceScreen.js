@@ -13,7 +13,7 @@ import {
   FlatList,
   TextInput,
 } from 'react-native';
-import axios from 'axios';
+ 
 import { BASE_URL } from '@env';
 import * as SecureStore from 'expo-secure-store';
 import { useNavigation } from '@react-navigation/native';
@@ -21,6 +21,8 @@ import { SafeAreaView, SafeAreaProvider, useSafeAreaInsets } from 'react-native-
 import { useAuth } from '../../../../context/authContext';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+
+import {api} from '../../../../api/api';
 
 export default function FacultyEditAttendanceScreen({ route }) {
   const { grade, section, subjectName, facultyId } = route.params || {};
@@ -63,8 +65,8 @@ export default function FacultyEditAttendanceScreen({ route }) {
 
   const loadStudents = async () => {
     try {
-      const { data } = await axios.get(
-        `${BASE_URL}/api/admin/students/grade/${grade}/section/${section}`
+      const { data } = await api.get(
+        `${BASE_URL}/api/faculty/students/grade/${grade}/section/${section}`
       );
       setStudents(data);
     } catch (err) {
@@ -91,50 +93,67 @@ export default function FacultyEditAttendanceScreen({ route }) {
 
 
 
- const loadAttendanceData = async (date) => {
+const loadAttendanceData = async (date) => {
   try {
     setLoading(true);
     const dateStr = date.toISOString().split('T')[0];
     
-    console.log('📥 Fetching attendance for:', { grade, section, date: dateStr });
+    console.log('📥 Fetching attendance for:', { 
+      grade, 
+      section, 
+      date: dateStr,
+      url: `${BASE_URL}/api/faculty/attendance/edit`
+    });
     
-    const response = await axios.get(`${BASE_URL}/api/attendance`, {
+    const response = await api.get(`${BASE_URL}/api/faculty/attendance/edit`, {
       params: {
-        classAssigned: grade,
+        grade: grade,        // ✅ FIXED: Changed from classAssigned
         section: section,
         date: dateStr
       }
     });
     
-    console.log('📊 Attendance data response:', response.data);
+    console.log('📦 Full response:', JSON.stringify(response.data, null, 2));
     
-    if (response.data && response.data.length > 0) {
-      setAttendanceData(response.data[0]);
-      console.log('✅ Loaded attendance data for date:', dateStr);
+    // Handle both response formats
+    let attendanceArray;
+    if (response.data.success && response.data.data) {
+      attendanceArray = response.data.data;
+    } else if (Array.isArray(response.data)) {
+      attendanceArray = response.data;
     } else {
-      // ✅ FIX: Clear attendance data when no records found
+      attendanceArray = [];
+    }
+    
+    if (attendanceArray.length > 0) {
+      setAttendanceData(attendanceArray[0]);
+      console.log('✅ Loaded attendance:', {
+        date: attendanceArray[0].date,
+        grade: attendanceArray[0].grade,
+        section: attendanceArray[0].section,
+        recordsCount: attendanceArray[0].records?.length || 0,
+        sessions: attendanceArray[0].markedBy?.map(m => m.session) || []
+      });
+    } else {
       setAttendanceData(null);
       console.log('ℹ️ No attendance data found for date:', dateStr);
     }
   } catch (error) {
-    // ✅ FIX: Clear attendance data and show proper error
     console.error('❌ Error loading attendance data:', error);
-    console.error('Error details:', error.response?.data);
+    console.error('❌ Error response:', error.response?.data);
+    console.error('❌ Error status:', error.response?.status);
     
-    // Clear previous attendance data
     setAttendanceData(null);
     
-    // Only show alert for network errors, not for 404 (no data found)
     if (error.response?.status !== 404) {
-      Alert.alert('Error', 'Failed to load attendance data');
+      Alert.alert('Error', `Failed to load attendance: ${error.response?.data?.message || error.message}`);
     } else {
-      console.log('ℹ️ No attendance records found for selected date');
+      console.log('ℹ️ No attendance records found (404) for selected date');
     }
   } finally {
     setLoading(false);
   }
 };
-
 
 
 
@@ -155,7 +174,7 @@ export default function FacultyEditAttendanceScreen({ route }) {
   }
 };
 
- const openEditModal = (sessionNumber) => {
+const openEditModal = (sessionNumber) => {
   if (!attendanceData) {
     Alert.alert('No Data', 'No attendance data found for selected date');
     return;
@@ -165,18 +184,54 @@ export default function FacultyEditAttendanceScreen({ route }) {
   setModalSearchQuery('');
   
   const editData = {};
+  
   students.forEach(student => {
-    const studentRecord = attendanceData.records.find(record => {
-      const recordStudentId = record.student?._id ? record.student._id.toString() : record.student.toString();
-      return recordStudentId === student._id.toString();
+    // Find the student record with flexible handling for different API shapes
+    const studentRecord = attendanceData.records?.find(record => {
+      if (!record) return false;
+
+      // Direct userId match (API sample uses `studentUserId`)
+      if (record.studentUserId && student.userId && record.studentUserId === student.userId) return true;
+
+      // Some APIs may use `studentId` field (could be userId or _id)
+      if (record.studentId && student.userId && record.studentId === student.userId) return true;
+      if (record.studentId && student._id && record.studentId === String(student._id)) return true;
+
+      // Legacy / nested shapes under `student` field
+      const recStudent = record.student;
+      if (!recStudent) return false;
+
+      // If `student` is a string (objectId or userId)
+      if (typeof recStudent === 'string') {
+        if (student._id && recStudent === String(student._id)) return true;
+        if (student.userId && recStudent === student.userId) return true;
+        return false;
+      }
+
+      // If `student` is an object
+      if (typeof recStudent === 'object') {
+        if (recStudent._id && student._id && String(recStudent._id) === String(student._id)) return true;
+        if (recStudent.userId && student.userId && recStudent.userId === student.userId) return true;
+        if (recStudent.student && student._id && String(recStudent.student) === String(student._id)) return true;
+      }
+
+      return false;
     });
     
     if (studentRecord) {
-      const session = studentRecord.sessions.find(s => s.session_number === sessionNumber);
+      const session = studentRecord.sessions?.find(s => s.session_number === sessionNumber);
       editData[student._id] = session ? session.status : 'absent';
     } else {
+      // Student not in attendance records, default to absent
       editData[student._id] = 'absent';
     }
+  });
+  
+  console.log('📝 Edit data prepared:', {
+    sessionNumber,
+    studentsCount: students.length,
+    editDataCount: Object.keys(editData).length,
+    sampleEditData: Object.entries(editData).slice(0, 3)
   });
   
   setEditingAttendance(editData);
@@ -200,7 +255,7 @@ export default function FacultyEditAttendanceScreen({ route }) {
   };
 
   const submitEdit = async () => {
-    const currentFacultyId = decodedToken?.userId || facultyId;
+    const currentFacultyId = decodedToken?.preferred_username || facultyId;
     
     if (!currentFacultyId) {
       Alert.alert('Error', 'Faculty ID not found');
@@ -211,11 +266,7 @@ export default function FacultyEditAttendanceScreen({ route }) {
     const date = selectedDate.toISOString().split('T')[0];
     
     try {
-      const token = await SecureStore.getItemAsync('token');
-      if (!token) {
-        Alert.alert('Error', 'Authentication required');
-        return;
-      }
+      
 
       const records = students.map(student => ({
         studentId: student.userId,
@@ -232,16 +283,11 @@ export default function FacultyEditAttendanceScreen({ route }) {
         force: true // Always force for editing
       };
 
-      console.log('📤 Sending edit payload:', payload);
+      console.log(' Sending edit payload:', payload);
 
-      const response = await axios.post(`${BASE_URL}/api/attendance/mark`, payload, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-      });
+      const response = await api.post(`${BASE_URL}/api/faculty/attendance/mark`, payload);
 
-      console.log('✅ Edit response:', response.data);
+      console.log(' Edit response:', response.data);
       
       Alert.alert('Success', `Session ${editingSession} attendance updated successfully!`);
       
@@ -250,7 +296,7 @@ export default function FacultyEditAttendanceScreen({ route }) {
       setEditModalVisible(false);
       
     } catch (err) {
-      console.error('🔴 Error updating attendance:', err);
+      console.error(' Error updating attendance:', err);
       Alert.alert('Error', 'Failed to update attendance');
     } finally {
       setSubmitting(false);
@@ -258,11 +304,16 @@ export default function FacultyEditAttendanceScreen({ route }) {
   };
 
   const getSessionInfo = (sessionNumber) => {
-    if (!attendanceData?.marked_by) return null;
-    
-    const sessionMark = attendanceData.marked_by.find(mark => mark.session === sessionNumber);
-    return sessionMark;
+    const marks = attendanceData?.markedBy || attendanceData?.marked_by || attendanceData?.markedby || [];
+    if (!Array.isArray(marks) || marks.length === 0) return null;
+
+    const sessionMark = marks.find(mark => mark.session === sessionNumber);
+    return sessionMark || null;
   };
+
+  // Precompute session info to avoid repeated lookups in JSX
+  const session1Info = getSessionInfo(1);
+  const session2Info = getSessionInfo(2);
 
   const getSessionStats = (sessionNumber) => {
     if (!attendanceData?.records) return { present: 0, absent: 0, total: 0 };
@@ -353,10 +404,10 @@ export default function FacultyEditAttendanceScreen({ route }) {
                 
                 <View style={styles.sessionInfo}>
                   <Text style={styles.infoText}>
-                    Marked by: {getSessionInfo(1)?.name || 'N/A'}
+                    Marked by: {session1Info?.facultyName || session1Info?.name || 'N/A'}
                   </Text>
                   <Text style={styles.infoText}>
-                    Faculty ID: {getSessionInfo(1)?.faculty?.$oid || 'N/A'}
+                    Faculty ID: {session1Info?.facultyUserId || session1Info?.facultyId || session1Info?.faculty?.$oid || 'N/A'}
                   </Text>
                 </View>
                 
@@ -382,10 +433,10 @@ export default function FacultyEditAttendanceScreen({ route }) {
                 
                 <View style={styles.sessionInfo}>
                   <Text style={styles.infoText}>
-                    Marked by: {getSessionInfo(2)?.name || 'N/A'}
+                    Marked by: {session2Info?.facultyName || session2Info?.name || 'N/A'}
                   </Text>
                   <Text style={styles.infoText}>
-                    Faculty ID: {getSessionInfo(2)?.faculty?.$oid || 'N/A'}
+                    Faculty ID: {session2Info?.facultyUserId || session2Info?.facultyId || session2Info?.faculty?.$oid || 'N/A'}
                   </Text>
                 </View>
                 
