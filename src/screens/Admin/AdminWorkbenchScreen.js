@@ -195,6 +195,25 @@ export default function AdminWorkbenchScreen({ navigation }) {
                     </View>
                 )}
 
+                {/* Examination and Tests Section */}
+                {renderSectionHeader("Examination and Tests", "clipboard", "exams")}
+                {expandedSection === "exams" && (
+                    <View style={styles.dropdownContent}>
+                        <TouchableOpacity style={styles.dropdownItem} onPress={() => Alert.alert('Coming Soon', 'Exam Schedule feature is under development')}>
+                            <Ionicons name="calendar-number-outline" size={20} color="#333" />
+                            <Text style={styles.dropdownText}>Exam Schedule</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.dropdownItem} onPress={() => navigation.navigate('MarksEntryScreen')}>
+                            <Ionicons name="pencil-outline" size={20} color="#333" />
+                            <Text style={styles.dropdownText}>Marks Entry</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.dropdownItem} onPress={() => Alert.alert('Coming Soon', 'Report Cards feature is under development')}>
+                            <Ionicons name="document-text-outline" size={20} color="#333" />
+                            <Text style={styles.dropdownText}>Report Cards</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+
                 {/* Faculty Performance Section */}
                 {renderSectionHeader("Faculty Performance", "analytics", "facultyPerformance")}
                 {expandedSection === "facultyPerformance" && (

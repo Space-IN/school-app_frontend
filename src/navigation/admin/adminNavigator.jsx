@@ -24,6 +24,7 @@ import FacultyScoreScreen from "../../screens/Admin/FacultyScoreScreen";
 import FacultyProfileViewScreen from '../../screens/Admin/FacultyProfileViewScreen';
 import AdminAttendanceScreen from '../../screens/Admin/AdminAttendanceScreen';
 import BoardSelectionScreen from '../../screens/Admin/BoardSelectionScreen';
+import MarksEntryScreen from '../../screens/Admin/MarksEntryScreen';
 
 // import AdminPosterManager from "../../screens/Admin/AdminPosterManager";
 
@@ -72,6 +73,7 @@ export default function AdminNavigator() {
             <Stack.Screen name="AdminStudentProfileView" component={AdminStudentProfileView} />
             <Stack.Screen name="AdminAttendanceScreen" component={AdminAttendanceScreen} />
             <Stack.Screen name="BoardSelectionScreen" component={BoardSelectionScreen} options={{ title: 'Select Board' }} />
+            <Stack.Screen name="MarksEntryScreen" component={MarksEntryScreen} />
 
 
         </Stack.Navigator>
