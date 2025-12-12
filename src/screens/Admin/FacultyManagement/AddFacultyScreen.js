@@ -1,4 +1,4 @@
- 
+
 import React, { useState } from 'react';
 import {
   View,
@@ -15,7 +15,7 @@ import {
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { BASE_URL } from '@env';
-import { api } from '../../api/api';
+import { api } from '../../../api/api';
 
 const AddFacultyScreen = () => {
   const [formData, setFormData] = useState({

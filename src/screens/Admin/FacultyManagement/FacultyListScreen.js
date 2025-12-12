@@ -12,7 +12,7 @@ import {
  
 import { Ionicons } from "@expo/vector-icons";
 import { BASE_URL } from '@env';
-import { api } from '../../api/api';
+import { api } from '../../../api/api';
 
 const FacultyListScreen = ({ route, navigation }) => {
   const { classId, section } = route.params; // passed from previous screen

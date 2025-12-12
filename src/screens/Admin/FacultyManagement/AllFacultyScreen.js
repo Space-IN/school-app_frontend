@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { BASE_URL } from '@env';
-import { api } from '../../api/api';
+import { api } from '../../../api/api';
 
 export default function AllFacultyScreen({ navigation }) {
   const [activeTab, setActiveTab] = useState('active');

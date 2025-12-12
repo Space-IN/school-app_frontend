@@ -10,7 +10,7 @@ import {
 } from 'react-native';
  
 import { BASE_URL } from '@env';
-import {api} from '../../api/api'
+import {api} from '../../../api/api'
 
 export default function FacultyProfileViewScreen({ route }) {
   const { userId } = route.params;

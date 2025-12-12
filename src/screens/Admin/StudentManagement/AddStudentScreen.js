@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { BASE_URL } from '@env';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { api } from '../../api/api';
+import { api } from '../../../api/api';
 
 const AddStudentScreen = () => {
   const [form, setForm] = useState({

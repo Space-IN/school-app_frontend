@@ -14,7 +14,7 @@ import {
 } from 'react-native';
  
 import { BASE_URL } from '@env';
-import { api } from '../../api/api';
+import { api } from '../../../api/api';
 
 export default function DeletedFacultyScreen({ navigation }) {
   const [faculty, setFaculty] = useState([]);

@@ -12,10 +12,9 @@ import {
   Modal,
   Pressable
 } from "react-native";
-import { io } from "socket.io-client";
 import * as DocumentPicker from 'expo-document-picker';
-import { BASE_URL } from '@env';
-import { api } from "../../api/api";
+import { BASE_ URL } from '@env';
+import { api } from "../../../api/api";
 
 const AddNoticeScreen = () => {
   const [title, setTitle] = useState("");
@@ -28,9 +27,6 @@ const AddNoticeScreen = () => {
 
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewUrl, setPreviewUrl] = useState('');
-
-
-  const socket = io(BASE_URL);
 
   const fetchNotices = async () => {
     try {
