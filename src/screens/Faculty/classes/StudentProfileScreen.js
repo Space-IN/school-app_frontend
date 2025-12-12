@@ -10,10 +10,11 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import axios from 'axios';
+ 
 import { BASE_URL } from '@env';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import {api} from '../../../api/api';
 
 const StudentProfileScreen = ({ route }) => {
   const { studentData } = route.params || {};
@@ -50,7 +51,7 @@ const StudentProfileScreen = ({ route }) => {
 
       console.log('Fetching student details for:', studentData.userId);
       
-      const response = await axios.get(`${BASE_URL}/api/admin/students/${studentData.userId}`);
+      const response = await api.get(`${BASE_URL}/api/faculty/students/${studentData.userId}`);
       console.log('Student API response:', response.data);
       
       setStudent(response.data);

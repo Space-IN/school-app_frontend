@@ -15,6 +15,11 @@ import { BASE_URL } from '@env';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import {api} from '../../../api/api';
+
+
+
+
 
 export default function ClassScheduleScreen({ route }) {
   const { decodedToken } = useAuth();
@@ -46,25 +51,25 @@ export default function ClassScheduleScreen({ route }) {
   };
 
   useEffect(() => {
-    console.log('📱 ClassScheduleScreen - Received params:', { grade, section });
+    console.log('ClassScheduleScreen - Received params:', { grade, section });
     fetchClassSchedule();
   }, []);
 
   const fetchClassSchedule = async () => {
     try {
-      const facultyId = decodedToken?.userId;
-      console.log('🔍 Fetching schedule for faculty:', facultyId);
+      const facultyId = decodedToken?.preferred_username;
+      console.log(' Fetching schedule for faculty:', facultyId);
       
-      const res = await axios.get(`${BASE_URL}/api/schedule/faculty/${facultyId}`);
-      console.log('📦 Full API Response:', JSON.stringify(res.data, null, 2));
+      const res = await api.get(`${BASE_URL}/api/faculty/schedule/faculty/${facultyId}`);
+      console.log(' Full API Response:', JSON.stringify(res.data, null, 2));
       
       // Check different possible response structures
       const scheduleData = res.data.schedule || res.data || [];
-      console.log('📊 Schedule data to filter:', scheduleData);
+      console.log(' Schedule data to filter:', scheduleData);
       
       // Filter for specific class only
       const classSchedule = scheduleData.filter(item => {
-        console.log('🔍 Checking item:', {
+        console.log('Checking item:', {
           itemClass: item.classAssigned,
           itemSection: item.section,
           targetClass: grade,
@@ -74,11 +79,11 @@ export default function ClassScheduleScreen({ route }) {
         return item.classAssigned === grade && item.section === section;
       });
       
-      console.log('✅ Filtered class schedule:', classSchedule);
+      console.log(' Filtered class schedule:', classSchedule);
       setSchedule(classSchedule);
       
     } catch (err) {
-      console.error('❌ Error fetching class schedule:', err);
+      console.error(' Error fetching class schedule:', err);
       console.error('Error details:', err.response?.data);
     } finally {
       setLoading(false);
@@ -86,13 +91,13 @@ export default function ClassScheduleScreen({ route }) {
   };
 
   const groupScheduleByDay = (scheduleArray) => {
-    console.log('📅 Grouping schedule:', scheduleArray);
+    console.log(' Grouping schedule:', scheduleArray);
     const grouped = {};
     scheduleArray.forEach(({ day, periods }) => {
       if (!grouped[day]) grouped[day] = [];
       grouped[day].push(...periods);
     });
-    console.log('📊 Grouped schedule:', grouped);
+    console.log('Grouped schedule:', grouped);
     return grouped;
   };
 
@@ -115,7 +120,7 @@ export default function ClassScheduleScreen({ route }) {
               </TouchableOpacity>
             </View>
             <Text style={styles.headerTitle}>
-              📘 Class {grade}-{section} Schedule
+              Class {grade}-{section} Schedule
             </Text>
           </View>
           

@@ -2,8 +2,9 @@
 import { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Pressable, Animated, Image, ActivityIndicator } from "react-native";
 import { useAuth } from "../../context/authContext";
-import axios from "axios";
+
 import { BASE_URL } from "@env"; 
+import { api } from "../../api/api";
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -19,14 +20,14 @@ export default function FacultyBanner({ navigation }) {
 
   const scaleAnim = new Animated.Value(1);
   const { decodedToken } = useAuth();
-  const facultyId = decodedToken?.userId || "UserID";
+  const facultyId = decodedToken?.preferred_username || "UserID";
 
   
   useEffect(() => {
     const fetchFacultyName = async () => {
       if (!facultyId) return;
       try {
-        const res = await axios.get(`${BASE_URL}/api/faculty/${facultyId}`);
+        const res = await api.get(`${BASE_URL}/api/faculty/${facultyId}`);
         console.log("res from faculty banner: ", res.data)
         setFacultyName(res.data?.name || "Faculty");
       } catch (err) {

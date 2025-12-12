@@ -18,7 +18,8 @@ import * as Animatable from 'react-native-animatable';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BASE_URL } from '@env';
-import { useStudent } from '../../../context/studentContext';
+import { useStudent } from '../../../context/student/studentContext';
+import { api } from '../../../api/api';
 
 const { width } = Dimensions.get('window');
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -35,7 +36,7 @@ const SUBJECT_COLORS = [
 ];
 
 export default function TimetableScreen() {
-  const { studentData } = useStudent()
+  const { studentData, studentLoading } = useStudent()
   const route = useRoute();
   const navigation = useNavigation();
   const [schedule, setSchedule] = useState(null);
@@ -53,58 +54,30 @@ export default function TimetableScreen() {
     }
   };
 
-  const fetchSchedule = async () => {
+    const fetchSchedule = async () => {
     try {
       setError(null)
       setLoading(true)
+      // Use class-based schedule endpoint only (no studentId)
+      const userData = studentData || {}
+      const grade = userData?.classAssigned || userData?.className || userData?.grade
+      const section = userData?.section
 
-      let userData = studentData
-
-      if (!userData) {
-        throw new Error('No user data found. Please try again later');
+      if (!grade || !section) {
+        throw new Error('Class and section information not found')
       }
 
-      const studentUserId = userData?.userId || userData?.studentId || userData?.id;
-      const grade = userData?.classAssigned || userData?.className || userData?.grade;
-      const section = userData?.section;
+      // primary class schedule endpoint (use axios instance with auth handlers)
+      const primaryUrl = `/api/student/schedule/class/${encodeURIComponent(grade)}/section/${encodeURIComponent(section)}`
+    
+      try {
+        const response = await api.get(primaryUrl)
+        setSchedule(response.data)
+      } catch (primaryErr) {
+        const status = primaryErr?.response?.status
+        console.log(`Class schedule fetch failed with status: ${status}. Trying fallback endpoint...`)
 
-      if (!studentUserId) {
-        throw new Error('Student ID not found in user data');
-      }
-
-      const response = await fetch(
-        `${BASE_URL}/api/schedule/student/${studentUserId}`
-      );
-
-      if (!response.ok) {
-        console.log(`⚠️ Student schedule fetch failed with status: ${response.status}. Trying class schedule...`);
-
-        if (grade && section) {
-          const classResponse = await fetch(
-            `${BASE_URL}/api/schedule/class/${encodeURIComponent(grade)}/section/${encodeURIComponent(section)}`
-          );
-
-          if (!classResponse.ok) {
-            const errorText = await classResponse.text();
-            throw new Error(`Failed to fetch class schedule. Server responded with: ${errorText}`);
-          }
-
-          const classData = await classResponse.json();
-          setSchedule(classData);
-        } else {
-          throw new Error('Class and section information not found');
-        }
-      } else {
-        let data;
-        try {
-          data = await response.json();
-        } catch (jsonError) {
-          const rawResponse = await response.text();
-          console.error('🚨 JSON PARSE FAILED. Server response was:', rawResponse);
-          throw new Error('Failed to parse server response.');
-        }
-
-        setSchedule(data);
+       
       }
     } catch (err) {
       console.error('❌ Error fetching schedule:', err.message);
@@ -115,9 +88,13 @@ export default function TimetableScreen() {
   };
 
   useEffect(() => {
+    
     debugUserData();
+
+    if (studentLoading) return;
+
     fetchSchedule();
-  }, []);
+  }, [studentData, studentLoading]);
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);

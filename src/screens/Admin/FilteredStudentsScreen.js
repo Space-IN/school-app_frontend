@@ -14,8 +14,8 @@ import {
   Alert,
   
 } from 'react-native';
-import axios from 'axios';
 import { BASE_URL } from '@env';
+import { api } from '../../api/api';
 
 export default function FilteredStudentsScreen({ route, navigation }) {
   const { grade, section } = route.params;
@@ -49,7 +49,7 @@ export default function FilteredStudentsScreen({ route, navigation }) {
       const encodedGrade = encodeURIComponent(className);
       const encodedSection = encodeURIComponent(section);
 
-      const res = await axios.get(
+      const res = await api.get(
         `${BASE_URL}/api/admin/students/grade/${encodedGrade}/section/${encodedSection}`
       );
       setStudents(res.data || []);
@@ -70,7 +70,7 @@ export default function FilteredStudentsScreen({ route, navigation }) {
 
   const handleSoftDelete = async (userId) => {
     try {
-      await axios.patch(`${BASE_URL}/api/admin/students/delete/${userId}`);
+      await api.patch(`${BASE_URL}/api/admin/students/delete/${userId}`);
       Alert.alert('Deleted', 'Student soft deleted.');
       fetchFilteredStudents();
     } catch (err) {

@@ -35,7 +35,7 @@ export default function FacultyClassDashboard({ route }) {
   const [classInfo, setClassInfo] = useState(null);
 
   // Use facultyId from auth context instead of params
-  const facultyId = decodedToken?.userId;
+  const facultyId = decodedToken?.preferred_username;
 
   // Set header with back button
   React.useLayoutEffect(() => {
@@ -58,7 +58,7 @@ export default function FacultyClassDashboard({ route }) {
 
   // Debug: Check what params we're receiving
   useEffect(() => {
-    console.log('📱 FacultyClassDashboard - Received Params:', {
+    console.log(' FacultyClassDashboard - Received Params:', {
       grade,
       section,
       facultyId, // Now from context

@@ -11,7 +11,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Calendar } from "react-native-calendars";
 import { useAuth } from "../../context/authContext";
 
-// ✅ Reusable Calendar Modal
+ 
 const CalendarModal = ({ visible, onClose }) => {
   return (
     <Modal visible={visible} transparent animationType="fade">

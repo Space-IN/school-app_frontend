@@ -9,10 +9,11 @@ import {
   Alert 
 } from 'react-native';
 import { Card, FAB } from 'react-native-paper';
-import axios from 'axios';
+ 
 import { useAuth } from "../../../../context/authContext";
 import { useScrollToTop } from '@react-navigation/native';
 import { BASE_URL } from '@env';
+import { api } from '../../../../api/api';
 
 const ManagePerformanceTab = ({ route, navigation }) => {
   const { grade, section } = route.params || {};
@@ -41,8 +42,8 @@ const ManagePerformanceTab = ({ route, navigation }) => {
 
       // console.log('Fetching students for:', { grade, section });
       
-      const response = await axios.get(
-        `${BASE_URL}/api/student/students/all/grade/${grade}/section/${section}`
+      const response = await api.get(
+        `${BASE_URL}/api/faculty/students/grade/${grade}/section/${section}`
       );
       
       // console.log('Students API response:', response.data);

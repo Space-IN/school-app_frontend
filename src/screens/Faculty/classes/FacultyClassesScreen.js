@@ -10,10 +10,11 @@ import {
   Alert,
   RefreshControl 
 } from 'react-native';
-import axios from 'axios';
+ 
 import { useAuth } from "../../../context/authContext";
 import { useScrollToTop } from '@react-navigation/native';
 import { BASE_URL } from '@env'
+import { api } from '../../../api/api';
 
 export default function FacultyClassesScreen({ navigation, route }) {
   const { decodedToken } = useAuth(); // Get user from auth context instead of params
@@ -33,7 +34,7 @@ export default function FacultyClassesScreen({ navigation, route }) {
       setLoading(true);
       
       // Use user ID from auth context instead of route params
-      const facultyId = decodedToken?.userId;
+      const facultyId = decodedToken?.preferred_username;
       
       if (!facultyId) {
         Alert.alert('Error', 'User ID not found');
@@ -43,7 +44,7 @@ export default function FacultyClassesScreen({ navigation, route }) {
       console.log('Fetching classes for faculty:', facultyId);
       
       // Option 1: Try using subjects endpoint (more reliable)
-      const response = await axios.get(`${BASE_URL}/api/subject/subjects/faculty/${facultyId}`);
+      const response = await api.get(`${BASE_URL}/api/faculty/subject/subjects/faculty/${facultyId}`);
       console.log('Subjects API response:', response.data);
       
       let classes = [];
@@ -57,7 +58,10 @@ export default function FacultyClassesScreen({ navigation, route }) {
                 classAssigned: assignment.classAssigned,
                 section: assignment.section,
                 subjectName: subject.subjectName,
-                subjectId: subject._id || subject.subjectId
+                subjectId: subject._id ,
+                subjectMasterId: subject.subjectMasterId?._id,
+                subjectCode:subject.subjectMasterId?.code
+
               });
             });
           }
@@ -98,7 +102,7 @@ export default function FacultyClassesScreen({ navigation, route }) {
   const fetchFromScheduleEndpoint = async (facultyId) => {
     try {
       console.log('Trying schedule endpoint for faculty:', facultyId);
-      const response = await axios.get(`${BASE_URL}/api/schedule/faculty/${facultyId}`);
+      const response = await api.get(`${BASE_URL}/api/faculty/schedule/faculty/${facultyId}`);
       console.log('Schedule API response:', response.data);
       
       const scheduleData = response.data?.schedule || response.data || [];
@@ -119,7 +123,7 @@ export default function FacultyClassesScreen({ navigation, route }) {
 
       setAssignedClasses(uniqueClasses);
     } catch (scheduleErr) {
-      console.error('❌ Error fetching from schedule endpoint:', scheduleErr);
+      console.error(' Error fetching from schedule endpoint:', scheduleErr);
       throw scheduleErr;
     }
   };
@@ -135,9 +139,11 @@ export default function FacultyClassesScreen({ navigation, route }) {
     grade: item.classAssigned,
     section: item.section,
     scheduleItem: item,
-    facultyId: decodedToken?.userId, // Use from auth context
+    facultyId: decodedToken?.preferred_username, // Use from auth context
     subjectName: item.subjectName, // Add if available
-    subjectId: item.subjectId, // Add if available
+    subjectId: item.subjectId,
+    subjectCode:item.subjectCode,
+    subjectMasterId:item.subjectMasterId // Add if available
   });
 };
 

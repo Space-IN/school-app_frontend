@@ -12,6 +12,8 @@ import axios from "axios";
 import { BASE_URL } from "@env";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
+import {api}  from '../../../../api/api';
+
 
 const ViewPerformanceTab = ({ route }) => {
   const { grade, section, year, subjectName } = route.params || {};
@@ -27,8 +29,8 @@ const ViewPerformanceTab = ({ route }) => {
   const fetchAssessments = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `${BASE_URL}/api/assessment/assessmentName?grade=${grade}&section=${section}&year=${year}`
+      const response = await api.get(
+        `${BASE_URL}/api/faculty/assessment/assessmentName?grade=${grade}&section=${section}&year=${year}`
       );
       console.log("📘 Assessments:", response.data);
       if (response.data.exams?.length) {
@@ -57,11 +59,11 @@ const ViewPerformanceTab = ({ route }) => {
         subjectName,
       });
 
-      const response = await axios.get(
-        `${BASE_URL}/api/assessment/faculty/assessmentScore?grade=${grade}&section=${section}&test_name=${test_name}&year=${year}&subject=${subjectName}`
+      const response = await api.get(
+        `${BASE_URL}/api/faculty/assessment/faculty/assessmentScore?grade=${grade}&section=${section}&test_name=${test_name}&year=${year}&subject=${subjectName}`
       );
 
-      console.log("✅ Response:", response.data);
+      console.log(" Response:", response.data);
 
       if (response.data.success) {
         setScores(response.data.data.scores);

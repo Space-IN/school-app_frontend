@@ -11,9 +11,9 @@ import {
   TouchableOpacity,
   Modal,
 } from 'react-native';
-import axios from 'axios';
 import { BASE_URL } from '@env';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { api } from '../../api/api';
 
 const AddStudentScreen = () => {
   const [form, setForm] = useState({
@@ -106,8 +106,8 @@ const AddStudentScreen = () => {
         parentEmail: form.parentEmail?.trim() || '',
       };
 
-      const res = await axios.post(`${BASE_URL}/api/admin/add-student`, payload);
-      Alert.alert('✅ Success', res.data.message);
+      const res = await api.post(`${BASE_URL}/api/admin/add-student`, payload);
+      Alert.alert('  Success', res.data.message);
 
       setForm({
         name: '',
@@ -133,8 +133,8 @@ const AddStudentScreen = () => {
         parentEmail: '',
       });
     } catch (err) {
-      console.error('❌ Error adding student:', err);
-      Alert.alert('❌ Error', err.response?.data?.message || 'Something went wrong');
+      console.error('  Error adding student:', err);
+      Alert.alert('  Error', err.response?.data?.message || 'Something went wrong');
     }
   };
 

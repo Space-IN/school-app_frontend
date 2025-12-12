@@ -9,10 +9,11 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
-import axios from 'axios';
+ 
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import { BASE_URL } from '@env';
+import { api } from '../../api/api';
 
 export default function AdminPosterManager() {
   const [poster, setPoster] = useState({
