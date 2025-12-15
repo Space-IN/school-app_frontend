@@ -11,12 +11,12 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
- 
+
 import { useAuth } from "../../../context/authContext";
 import { useNavigation } from '@react-navigation/native';
 import { BASE_URL } from '@env';
 import { api } from '../../../api/api';
-import { api } from '../../../api/api';
+
 
 export default function FacultyProfileScreen() {
   const { decodedToken, logout } = useAuth();
@@ -27,14 +27,14 @@ export default function FacultyProfileScreen() {
   const fetchFacultyDetails = async () => {
     try {
       const facultyId = decodedToken?.preferred_username;
-      
+
       if (!facultyId) {
         Alert.alert('Error', 'Faculty information not available');
         return;
       }
 
       console.log('Fetching faculty details for:', facultyId);
-      
+
       // Try multiple possible endpoints
       let response;
       try {
@@ -44,12 +44,12 @@ export default function FacultyProfileScreen() {
         console.log('First endpoint failed, trying alternative...');
         // response = await api.get(`${BASE_URL}/api/admin/faculty/profile/${facultyId}`);
       }
-      
+
       setFaculty(response.data);
     } catch (error) {
       console.error(' Error fetching faculty details:', error);
       console.error('Error details:', error.response?.data);
-      
+
       Alert.alert('Error', 'Failed to load faculty profile');
     } finally {
       setLoading(false);
@@ -65,14 +65,14 @@ export default function FacultyProfileScreen() {
   // Logic for handling the logout confirmation
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
-        { text: 'Cancel', style: 'cancel' },
-        {
-            text: 'Logout',
-            style: 'destructive',
-            onPress: () => {
-                logout(); // Calls the global logout function
-            },
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Logout',
+        style: 'destructive',
+        onPress: () => {
+          logout(); // Calls the global logout function
         },
+      },
     ]);
   };
 
@@ -92,9 +92,9 @@ export default function FacultyProfileScreen() {
   };
 
   const handleGoToNotices = () => {
-    navigation.navigate('NoticeBoardScreen', { 
-      userId: decodedToken?.userId, 
-      role: 'faculty' 
+    navigation.navigate('NoticeBoardScreen', {
+      userId: decodedToken?.userId,
+      role: 'faculty'
     });
   };
 
@@ -103,7 +103,7 @@ export default function FacultyProfileScreen() {
   };
 
   // --- Rendering Blocks ---
-  
+
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -137,14 +137,14 @@ export default function FacultyProfileScreen() {
     );
   }
 
- return (
+  return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar backgroundColor="#9c1006" barStyle="light-content" />
-      
+
       {/* Standard Centered Header */}
-      
-      <ScrollView 
-        style={styles.container} 
+
+      <ScrollView
+        style={styles.container}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent} // Added for bottom padding
       >
@@ -158,7 +158,7 @@ export default function FacultyProfileScreen() {
             <Text style={styles.userId}>ID: {faculty.userId || 'N/A'}</Text>
           </View>
 
-         
+
           <View style={styles.actionsSection}>
             {/* <TouchableOpacity style={styles.actionButton} onPress={handleGoToNotices}>
               <Ionicons name="megaphone-outline" size={24} color="#4a90e2" />
@@ -175,7 +175,7 @@ export default function FacultyProfileScreen() {
             <Text style={styles.sectionTitle}>
               <Ionicons name="person-outline" size={18} color="#9c1006" /> Personal Information
             </Text>
-            
+
             <DetailRow label="Email" value={faculty.email} />
             <DetailRow label="Date of Birth" value={formatDate(faculty.dateOfBirth)} />
             <DetailRow label="Gender" value={faculty.gender} />
@@ -188,7 +188,7 @@ export default function FacultyProfileScreen() {
             <Text style={styles.sectionTitle}>
               <Ionicons name="briefcase-outline" size={18} color="#9c1006" /> Professional Information
             </Text>
-            
+
             <DetailRow label="Faculty ID" value={faculty.userId} />
             <DetailRow label="Department" value={faculty.department} />
             <DetailRow label="Designation" value={faculty.designation} />
@@ -197,8 +197,8 @@ export default function FacultyProfileScreen() {
         </View>
 
         {/* NEW: Prominent Logout Button at the bottom */}
-        <TouchableOpacity 
-          onPress={handleLogout} 
+        <TouchableOpacity
+          onPress={handleLogout}
           style={styles.bottomLogoutButton}
         >
           <Ionicons name="log-out-outline" size={24} color="#ffffff" />

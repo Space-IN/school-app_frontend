@@ -13,7 +13,7 @@ import {
   Pressable
 } from "react-native";
 import * as DocumentPicker from 'expo-document-picker';
-import { BASE_ URL } from '@env';
+import { BASE_URL } from '@env';
 import { api } from "../../../api/api";
 
 const AddNoticeScreen = () => {
@@ -37,58 +37,58 @@ const AddNoticeScreen = () => {
       Alert.alert("Error", "Failed to load notices");
     }
   };
-  
-  
+
+
   useEffect(() => {
     fetchNotices();
   }, []);
 
- 
+
 
   const handleAddNotice = async () => {
-  const formData = new FormData();
+    const formData = new FormData();
 
-  formData.append('title', title);
-  formData.append('message', message);
-  formData.append('target', target);
+    formData.append('title', title);
+    formData.append('message', message);
+    formData.append('target', target);
 
-  if (target === 'specific') {
-    formData.append('specificIds', JSON.stringify(specificIds.split(',')));
-  }
+    if (target === 'specific') {
+      formData.append('specificIds', JSON.stringify(specificIds.split(',')));
+    }
 
-  if (selectedFile) {
-    const response = await fetch(selectedFile.uri);
-    const blob = await response.blob();
+    if (selectedFile) {
+      const response = await fetch(selectedFile.uri);
+      const blob = await response.blob();
 
-    formData.append('file', {
-      uri: selectedFile.uri,
-      name: selectedFile.name,
-      type: selectedFile.mimeType || 'application/octet-stream',
-      
-    });
-  }
+      formData.append('file', {
+        uri: selectedFile.uri,
+        name: selectedFile.name,
+        type: selectedFile.mimeType || 'application/octet-stream',
 
-  try {
-    console.log("Selected file:", selectedFile);
+      });
+    }
 
-    await api.post(`${BASE_URL}/api/admin/announcement/add`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
-    });
+    try {
+      console.log("Selected file:", selectedFile);
 
-    Alert.alert('Success', 'Notice added');
-    setTitle('');
-    setMessage('');
-    setTarget('all');
-    setSpecificIds('');
-    setSelectedFile(null);
-    fetchNotices();
-  } catch (err) {
-    console.error('Upload failed:', err);
-    Alert.alert('Upload Error', 'Failed to upload notice');
-  }
-};
+      await api.post(`${BASE_URL}/api/admin/announcement/add`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+      });
+
+      Alert.alert('Success', 'Notice added');
+      setTitle('');
+      setMessage('');
+      setTarget('all');
+      setSpecificIds('');
+      setSelectedFile(null);
+      fetchNotices();
+    } catch (err) {
+      console.error('Upload failed:', err);
+      Alert.alert('Upload Error', 'Failed to upload notice');
+    }
+  };
 
   const handleDeleteNotice = async (id) => {
     Alert.alert("Delete", "Are you sure you want to delete this notice?", [
@@ -99,7 +99,7 @@ const AddNoticeScreen = () => {
         onPress: async () => {
           try {
             await api.delete(`${BASE_URL}/api/admin/announcement/delete/${id}`);
-            fetchNotices(); 
+            fetchNotices();
             Alert.alert("Deleted", "Notice deleted successfully");
           } catch (error) {
             console.error("Error deleting notice:", error);
@@ -110,31 +110,31 @@ const AddNoticeScreen = () => {
     ]);
   };
 
-const pickFile = async () => {
-  try {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: '*/*',
-      copyToCacheDirectory: true,
-      multiple: false,
-    });
-
-    console.log("DocumentPicker result:", result);
-
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      const file = result.assets[0];
-      setSelectedFile({
-        uri: file.uri,
-        name: file.name,
-        mimeType: file.mimeType,
+  const pickFile = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: '*/*',
+        copyToCacheDirectory: true,
+        multiple: false,
       });
-    } else {
-      setSelectedFile(null); 
+
+      console.log("DocumentPicker result:", result);
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const file = result.assets[0];
+        setSelectedFile({
+          uri: file.uri,
+          name: file.name,
+          mimeType: file.mimeType,
+        });
+      } else {
+        setSelectedFile(null);
+      }
+    } catch (err) {
+      console.error("Error picking file:", err);
+      Alert.alert("Error", "Could not pick file.");
     }
-  } catch (err) {
-    console.error("Error picking file:", err);
-    Alert.alert("Error", "Could not pick file.");
-  }
-};
+  };
 
 
 
@@ -188,14 +188,14 @@ const pickFile = async () => {
   
 </TouchableOpacity> */}
 
-<TouchableOpacity
-  style={[styles.button, { backgroundColor: '#6c757d', marginBottom: 10 }]}
-  onPress={pickFile}
->
-  <Text style={styles.buttonText}>
-    {selectedFile ? `📎 ${selectedFile.name}` : 'Attach File (optional)'}
-  </Text>
-</TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: '#6c757d', marginBottom: 10 }]}
+        onPress={pickFile}
+      >
+        <Text style={styles.buttonText}>
+          {selectedFile ? `📎 ${selectedFile.name}` : 'Attach File (optional)'}
+        </Text>
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={handleAddNotice}>
         <Text style={styles.buttonText}>Add Notice</Text>
@@ -215,39 +215,39 @@ const pickFile = async () => {
           <Text style={styles.noticeTarget}>Target: {notice.target}</Text>
 
 
-      {notice.fileUrl && (
-  <>
-    {notice.fileUrl.endsWith('.pdf') ? (
-      <TouchableOpacity
-        onPress={() => {
-          const filename = notice.fileUrl.split('/').pop();
-          setPreviewUrl(`${BASE_URL}/api/announcement/preview/${filename}`);
+          {notice.fileUrl && (
+            <>
+              {notice.fileUrl.endsWith('.pdf') ? (
+                <TouchableOpacity
+                  onPress={() => {
+                    const filename = notice.fileUrl.split('/').pop();
+                    setPreviewUrl(`${BASE_URL}/api/announcement/preview/${filename}`);
 
-          setPreviewVisible(true);
-        }}
-        style={{
-          backgroundColor: '#007bff',
-          padding: 10,
-          borderRadius: 5,
-          marginTop: 10,
-        }}
-      >
-        <Text style={{ color: '#fff', textAlign: 'center' }}>📄 Preview PDF</Text>
-      </TouchableOpacity>
-    ) : (
-      <Text
-        style={{
-          color: '#007bff',
-          textDecorationLine: 'underline',
-          marginTop: 5,
-        }}
-        onPress={() => Linking.openURL(`${BASE_URL}/${notice.fileUrl}`)}
-      >
-        📎 Open Attachment
-      </Text>
-    )}
-  </>
-)}
+                    setPreviewVisible(true);
+                  }}
+                  style={{
+                    backgroundColor: '#007bff',
+                    padding: 10,
+                    borderRadius: 5,
+                    marginTop: 10,
+                  }}
+                >
+                  <Text style={{ color: '#fff', textAlign: 'center' }}>📄 Preview PDF</Text>
+                </TouchableOpacity>
+              ) : (
+                <Text
+                  style={{
+                    color: '#007bff',
+                    textDecorationLine: 'underline',
+                    marginTop: 5,
+                  }}
+                  onPress={() => Linking.openURL(`${BASE_URL}/${notice.fileUrl}`)}
+                >
+                  📎 Open Attachment
+                </Text>
+              )}
+            </>
+          )}
 
           <TouchableOpacity
             onPress={() => handleDeleteNotice(notice._id)}
@@ -258,54 +258,54 @@ const pickFile = async () => {
         </View>
       ))}
 
-<Modal
-  visible={previewVisible}
-  animationType="slide"
-  onRequestClose={() => setPreviewVisible(false)}
->
-  <View style={{ flex: 1 }}>
-    <View
-      style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        backgroundColor: '#f0f0f0',
-        padding: 10,
-      }}
-    >
-      <Pressable
-        onPress={() => setPreviewVisible(false)}
-        style={{
-          backgroundColor: '#dc3545',
-          paddingVertical: 8,
-          paddingHorizontal: 12,
-          borderRadius: 5,
-        }}
+      <Modal
+        visible={previewVisible}
+        animationType="slide"
+        onRequestClose={() => setPreviewVisible(false)}
       >
-        <Text style={{ color: '#fff', fontWeight: 'bold' }}>Close</Text>
-      </Pressable>
+        <View style={{ flex: 1 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              backgroundColor: '#f0f0f0',
+              padding: 10,
+            }}
+          >
+            <Pressable
+              onPress={() => setPreviewVisible(false)}
+              style={{
+                backgroundColor: '#dc3545',
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+                borderRadius: 5,
+              }}
+            >
+              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Close</Text>
+            </Pressable>
 
-      <Pressable
-        onPress={() => {
-          Linking.openURL(previewUrl);
-        }}
-        style={{
-          backgroundColor: '#28a745',
-          paddingVertical: 8,
-          paddingHorizontal: 12,
-          borderRadius: 5,
-        }}
-      >
-        <Text style={{ color: '#fff', fontWeight: 'bold' }}>Download</Text>
-      </Pressable>
-    </View>
+            <Pressable
+              onPress={() => {
+                Linking.openURL(previewUrl);
+              }}
+              style={{
+                backgroundColor: '#28a745',
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+                borderRadius: 5,
+              }}
+            >
+              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Download</Text>
+            </Pressable>
+          </View>
 
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text style={{ fontSize: 16, marginBottom: 20, textAlign: 'center' }}>
-        {previewUrl.split('/').pop()}
-      </Text>
-    </View>
-  </View>
-</Modal>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ fontSize: 16, marginBottom: 20, textAlign: 'center' }}>
+              {previewUrl.split('/').pop()}
+            </Text>
+          </View>
+        </View>
+      </Modal>
 
     </ScrollView>
   );
@@ -314,10 +314,10 @@ const pickFile = async () => {
 export default AddNoticeScreen;
 
 const styles = StyleSheet.create({
-  container: { 
+  container: {
     padding: 30,
-    backgroundColor: "#ffffffff", 
-    flexGrow: 1, 
+    backgroundColor: "#ffffffff",
+    flexGrow: 1,
   },
   heading: { fontSize: 24, marginBottom: 15, fontWeight: "bold" },
   input: {
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     marginBottom: 15,
-    backgroundColor: "#faebebff", 
+    backgroundColor: "#faebebff",
   },
   label: { fontWeight: "bold", marginBottom: 5 },
   radio: {
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   deleteText: { color: "#d00", fontWeight: "bold" },
- 
+
   noticeDate: {
     fontSize: 16,
     color: "#666",

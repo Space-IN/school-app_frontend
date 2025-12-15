@@ -18,7 +18,7 @@ import * as Animatable from 'react-native-animatable';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BASE_URL } from '@env';
-import { useStudent } from '../../../context/student/studentContext';
+import { useStudent } from '../../../context/studentContext';
 import { api } from '../../../api/api';
 
 const { width } = Dimensions.get('window');
@@ -54,7 +54,7 @@ export default function TimetableScreen() {
     }
   };
 
-    const fetchSchedule = async () => {
+  const fetchSchedule = async () => {
     try {
       setError(null)
       setLoading(true)
@@ -69,7 +69,7 @@ export default function TimetableScreen() {
 
       // primary class schedule endpoint (use axios instance with auth handlers)
       const primaryUrl = `/api/student/schedule/class/${encodeURIComponent(grade)}/section/${encodeURIComponent(section)}`
-    
+
       try {
         const response = await api.get(primaryUrl)
         setSchedule(response.data)
@@ -77,7 +77,7 @@ export default function TimetableScreen() {
         const status = primaryErr?.response?.status
         console.log(`Class schedule fetch failed with status: ${status}. Trying fallback endpoint...`)
 
-       
+
       }
     } catch (err) {
       console.error('❌ Error fetching schedule:', err.message);
@@ -88,7 +88,7 @@ export default function TimetableScreen() {
   };
 
   useEffect(() => {
-    
+
     debugUserData();
 
     if (studentLoading) return;
@@ -111,10 +111,10 @@ export default function TimetableScreen() {
     const colors = getColorForPeriod(index);
 
     return (
-      <Animatable.View 
-        animation="fadeInUp" 
+      <Animatable.View
+        animation="fadeInUp"
         delay={index * 100}
-        duration={600} 
+        duration={600}
         style={styles.periodCard}
       >
         <LinearGradient
@@ -138,7 +138,7 @@ export default function TimetableScreen() {
               <Text style={styles.subjectName}>
                 {period.subjectMasterId?.name || period.subjectName || 'Subject Not Assigned'}
               </Text>
-              
+
               <View style={styles.teacherRow}>
                 <View style={styles.teacherAvatar}>
                   <Ionicons name="person" size={16} color="#ffffff" />
@@ -225,7 +225,7 @@ export default function TimetableScreen() {
             </Text>
           </View>
           {/* This empty view helps center the title correctly */}
-          <View style={styles.headerRightPlaceholder} /> 
+          <View style={styles.headerRightPlaceholder} />
           {/* <View style={styles.headerBadge}>
             <Ionicons name="calendar" size={20} color="#667eea" />
           </View> */}
@@ -291,8 +291,8 @@ export default function TimetableScreen() {
       <ScrollView
         contentContainerStyle={styles.scheduleContainer}
         refreshControl={
-          <RefreshControl 
-            refreshing={refreshing} 
+          <RefreshControl
+            refreshing={refreshing}
             onRefresh={onRefresh}
             colors={['#d72b2b']}
             tintColor='#8b1313'
@@ -305,7 +305,7 @@ export default function TimetableScreen() {
             {renderTimeSlot(period, index)}
           </View>
         ))}
-        
+
         {daySchedule.length === 0 && (
           <Animatable.View animation="fadeIn" style={styles.emptyContainer}>
             <View style={styles.emptyIconCircle}>
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        
+
         shadowColor: '#d72b2b',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
