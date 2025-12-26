@@ -60,44 +60,49 @@ export default function LoginScreen() {
                           keyboardShouldPersistTaps="handled"
                       >
                           <View style={styles.loginBox}>
-                              <Text style={styles.title}>Login with your User ID</Text>
-                              <View style={styles.divider} />
+                            <Text style={styles.title}>Login to your portal</Text>
+                            <View style={styles.divider} />
 
+                            <TextInput
+                                placeholder="User ID"
+                                value={userId}
+                                onChangeText={setUserId}
+                                style={styles.input}
+                                autoCapitalize="none"
+                            />
+
+                            <TouchableOpacity style={styles.setPassword}>
+                              <Text style={styles.setPasswordTextLink}>New User/Forgot Password?</Text>
+                            </TouchableOpacity>
+
+                            <View style={styles.passwordContainer}>
                               <TextInput
-                                  placeholder="User ID"
-                                  value={userId}
-                                  onChangeText={setUserId}
+                                  placeholder="Password"
+                                  value={password}
+                                  onChangeText={setPassword}
+                                  secureTextEntry={!showPassword}
                                   style={styles.input}
-                                  autoCapitalize="none"
                               />
-                              <View style={styles.passwordContainer}>
-                                <TextInput
-                                    placeholder="Password"
-                                    value={password}
-                                    onChangeText={setPassword}
-                                    secureTextEntry={!showPassword}
-                                    style={styles.input}
+
+                              <TouchableOpacity
+                                style={styles.eyeIcon}
+                                onPress={() => setShowPassword(!showPassword)}
+                              >
+                                <Ionicons
+                                  name={showPassword ? "eye-sharp" : "eye-off-sharp"}
+                                  size={24}
+                                  color="black"
                                 />
+                              </TouchableOpacity>
+                            </View>
 
-                                <TouchableOpacity
-                                  style={styles.eyeIcon}
-                                  onPress={() => setShowPassword(!showPassword)}
-                                >
-                                  <Ionicons
-                                    name={showPassword ? "eye-sharp" : "eye-off-sharp"}
-                                    size={24}
-                                    color="black"
-                                  />
+                            {loading ? (
+                                <ActivityIndicator size="large" color="#9c1006ff" style={{ marginTop: 10 }} />
+                            ) : (
+                                <TouchableOpacity style={[styles.loginButton, { width: '100%', backgroundColor: "#9c1006" } ]} onPress={handleLogin}>
+                                  <Text style={styles.loginButtonText}>Login</Text>
                                 </TouchableOpacity>
-                              </View>
-
-                              {loading ? (
-                                  <ActivityIndicator size="large" color="#9c1006ff" style={{ marginTop: 10 }} />
-                              ) : (
-                                  <TouchableOpacity style={[styles.loginButton, { width: '100%', backgroundColor: "#9c1006" } ]} onPress={handleLogin}>
-                                    <Text style={styles.loginButtonText}>Login</Text>
-                                  </TouchableOpacity>
-                              )}
+                            )}
                           </View>
                       </ScrollView>
                   </TouchableWithoutFeedback>
@@ -186,10 +191,22 @@ const styles = StyleSheet.create({
     width: "100%",
     position: "relative", 
     justifyContent: "center",
+    marginTop: 5,
   },
   eyeIcon: {
     position: "absolute",
     right: 15,
     top: 18,
   },
+  setPassword: {
+    width: "100%",
+    height: "auto",
+    marginTop: 5,
+  },
+  setPasswordTextLink: {
+    alignSelf: "flex-end",
+    textDecorationLine: "underline",
+    color: "#9c1006",
+    fontWeight: 800,
+  }
 })
