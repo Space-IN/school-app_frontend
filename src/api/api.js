@@ -9,5 +9,7 @@ export const api = axios.create({
     timeout: 15000,
 })
 
+console.log("🌍 AXIOS BASE URL USED:", api.defaults.baseURL);
+
 setupRequestInterceptor(api, getHandlers)
 setupResponseInterceptor(api, getHandlers)

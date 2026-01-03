@@ -12,6 +12,7 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
 import { BASE_URL } from '@env';
+import {api} from '../../api/api'
 
 export default function EditFacultyScreen({ route, navigation }) {
   const { faculty } = route.params;
@@ -43,7 +44,7 @@ export default function EditFacultyScreen({ route, navigation }) {
     };
 
     try {
-      await axios.put(`${BASE_URL}/api/faculty/${faculty.userId}`, updated);
+      await api.put(`${BASE_URL}/api/faculty/${faculty.userId}`, updated);
       Alert.alert('✅ Success', 'Faculty updated successfully');
       navigation.goBack();
     } catch (err) {

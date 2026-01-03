@@ -15,6 +15,8 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import axios from 'axios';
 import { BASE_URL } from '@env';
+import {api} from '../../../api/api'
+
 
 export default function ClassScheduleXLSXUpload() {
   const [selectedClass, setSelectedClass] = useState('');
@@ -37,7 +39,7 @@ export default function ClassScheduleXLSXUpload() {
 
   const fetchAll = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/schedule/all`);
+      const res = await api.get(`${BASE_URL}/api/schedule/all`);
       setAllSchedules(res.data);
     } catch (err) {
       console.error("Error fetching schedules:", err.message);
@@ -50,7 +52,7 @@ export default function ClassScheduleXLSXUpload() {
 
   const validateClassSection = async (cls, section) => {
     try {
-      const res = await axios.post(`${BASE_URL}/api/subject/check-class-section`, {
+      const res = await api.post(`${BASE_URL}/api/subject/check-class-section`, {
         classAssigned: cls,
         section,
       });
@@ -123,7 +125,7 @@ export default function ClassScheduleXLSXUpload() {
       });
 
       // Upload with multipart/form-data
-      const res = await axios.post(
+      const res = await api.post(
         `${BASE_URL}/api/schedule/admin/set`,
         formData,
         {
@@ -156,7 +158,7 @@ export default function ClassScheduleXLSXUpload() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await axios.delete(`${BASE_URL}/api/schedule/delete`, {
+              await api.delete(`${BASE_URL}/api/schedule/delete`, {
                 data: { classAssigned: cls, section },
               });
               Alert.alert('Deleted', 'Schedule deleted successfully.');

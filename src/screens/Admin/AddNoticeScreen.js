@@ -12,10 +12,10 @@ import {
   Modal,
   Pressable
 } from "react-native";
-import axios from "axios";
 import { io } from "socket.io-client";
 import * as DocumentPicker from 'expo-document-picker';
 import { BASE_URL } from '@env';
+import {api} from '../../api/api'
 
 const AddNoticeScreen = () => {
   const [title, setTitle] = useState("");
@@ -34,7 +34,7 @@ const AddNoticeScreen = () => {
 
   const fetchNotices = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/announcement/`);
+      const res = await api.get(`${BASE_URL}/api/announcement/`);
       setNotices(res.data || []);
     } catch (error) {
       console.error("Error fetching notices:", error);
@@ -106,7 +106,7 @@ const AddNoticeScreen = () => {
   try {
     console.log("Selected file:", selectedFile);
 
-    await axios.post(`${BASE_URL}/api/announcement/add`, formData, {
+    await api.post(`${BASE_URL}/api/announcement/add`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       },
@@ -133,7 +133,7 @@ const AddNoticeScreen = () => {
         style: "destructive",
         onPress: async () => {
           try {
-            await axios.delete(`${BASE_URL}/api/announcement/delete/${id}`);
+            await api.delete(`${BASE_URL}/api/announcement/delete/${id}`);
             fetchNotices(); 
             Alert.alert("Deleted", "Notice deleted successfully");
           } catch (error) {

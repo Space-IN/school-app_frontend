@@ -6,28 +6,36 @@ import { api } from "../api/api"
 
 
 export async function loginUser(username, password) {
-    try {
-        const response = await api.post(
-            `${KEYCLOAK_SERVER_URL}/realms/vishwachetana-vidyaniketana/protocol/openid-connect/token`,
-            new URLSearchParams({
-                client_id: keycloakConfig.clientId,
-                grant_type: "password",
-                username,
-                password,
-                scope: "offline_access"
-            }),
-            {
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-            },
-        )
-        return response.data
-    } catch(err) {
-        console.error("error logging in: ", err)
-        throw err
-    }
+  console.log("🔐 loginUser called");
+  console.log("🌐 KEYCLOAK_SERVER_URL:", KEYCLOAK_SERVER_URL);
+  console.log(
+    "➡️ FULL URL:",
+    `${KEYCLOAK_SERVER_URL}/realms/vishwachetana-vidyaniketana/protocol/openid-connect/token`
+  );
+
+  try {
+    const response = await api.post(
+      `${KEYCLOAK_SERVER_URL}/realms/vishwachetana-vidyaniketana/protocol/openid-connect/token`,
+      new URLSearchParams({
+        client_id: keycloakConfig.clientId,
+        grant_type: "password",
+        username,
+        password,
+        scope: "offline_access",
+      }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
+    return response.data;
+  } catch (err) {
+    console.error("❌ error logging in:", err.message);
+    throw err;
+  }
 }
+
 
 
 export async function logoutUser(refreshToken) {

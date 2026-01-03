@@ -11,6 +11,8 @@ import {
 import axios from "axios";
 import { BASE_URL } from '@env';
 import { Picker } from "@react-native-picker/picker";
+import {api} from '../../../api/api'
+
 
 export default function ClassScheduleViewScreen() {
   const [classList, setClassList] = useState([]);
@@ -33,7 +35,7 @@ export default function ClassScheduleViewScreen() {
 
   const fetchAssignedClasses = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/subject/assigned-classes`);
+      const res = await api.get(`${BASE_URL}/api/subject/assigned-classes`);
       console.log("✅ Class list fetched:", res.data);
       setClassList(res.data || []);
     } catch (err) {
@@ -47,7 +49,7 @@ export default function ClassScheduleViewScreen() {
       const encodedClass = encodeURIComponent(classAssigned.trim());
       const encodedSection = encodeURIComponent(section.trim());
       const url = `${BASE_URL}/api/schedule/class/${encodedClass}/section/${encodedSection}`;
-      const res = await axios.get(url);
+      const res = await api.get(url);
       console.log("📅 Schedule data:", res.data);
       setSchedule(res.data.weeklySchedule || []);
     } catch (err) {

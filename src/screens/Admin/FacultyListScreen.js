@@ -12,6 +12,7 @@ import {
 import axios from "axios";
 import { Ionicons } from "@expo/vector-icons";
 import { BASE_URL } from '@env';
+import {api} from '../../api/api'
 
 const FacultyListScreen = ({ route, navigation }) => {
   const { classId, section } = route.params; // passed from previous screen
@@ -21,7 +22,7 @@ const FacultyListScreen = ({ route, navigation }) => {
   useEffect(() => {
     const fetchFaculty = async () => {
       try {
-        const res = await axios.get(
+        const res = await api.get(
           `${BASE_URL}/api/schedule/class/${classId}/section/${section}/subjects-with-faculty`
         );
 

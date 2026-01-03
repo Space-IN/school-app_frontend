@@ -24,7 +24,7 @@ import FacultyScoreScreen from "../../screens/Admin/FacultyScoreScreen";
 import FacultyProfileViewScreen from '../../screens/Admin/FacultyProfileViewScreen';
 import AdminAttendanceScreen from '../../screens/Admin/AdminAttendanceScreen';
 import BoardSelectionScreen from '../../screens/Admin/BoardSelectionScreen';
-import AdminFeesScreen from "../../screens/Admin/AdminFeesScreen";
+import AdminFeesScreen from "../../screens/Admin/fees/AdminFeesScreen";
 
 // import AdminPosterManager from "../../screens/Admin/AdminPosterManager";
 

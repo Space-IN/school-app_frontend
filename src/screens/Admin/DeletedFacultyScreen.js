@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import { BASE_URL } from '@env';
+import {api} from '../../api/api'
 
 export default function DeletedFacultyScreen({ navigation }) {
   const [faculty, setFaculty] = useState([]);
@@ -25,7 +26,7 @@ export default function DeletedFacultyScreen({ navigation }) {
 
   const fetchDeletedFaculty = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/faculty/deleted`);
+      const res = await api.get(`${BASE_URL}/api/faculty/deleted`);
       setFaculty(res.data || []);
     } catch (err) {
       console.error('❌ Error fetching deleted faculty:', err.message);
@@ -36,7 +37,7 @@ export default function DeletedFacultyScreen({ navigation }) {
 
   const handleRestore = async (userId) => {
     try {
-      await axios.patch(`${BASE_URL}/api/faculty/restore/${userId}`);
+      await api.patch(`${BASE_URL}/api/faculty/restore/${userId}`);
       Alert.alert('Restored', 'Faculty has been restored successfully.');
       fetchDeletedFaculty();
     } catch (err) {

@@ -5,6 +5,7 @@ import {
 import RNPickerSelect from 'react-native-picker-select';
 import axios from 'axios';
 import { BASE_URL } from '@env';
+import {api} from '../../../api/api'
 
 const AssignSubjectScreen = () => {
   const [subjectList, setSubjectList] = useState([]);
@@ -19,8 +20,8 @@ const AssignSubjectScreen = () => {
     const fetchData = async () => {
       try {
         const [subjectsRes, facultyRes] = await Promise.all([
-          axios.get(`${BASE_URL}/api/subject/subject-master`),
-          axios.get(`${BASE_URL}/api/faculty/all`),
+          api.get(`${BASE_URL}/api/subject/subject-master`),
+          api.get(`${BASE_URL}/api/faculty/all`),
         ]);
         setSubjectList(subjectsRes.data || []);
         setFacultyList(facultyRes.data || []);
@@ -73,7 +74,7 @@ const AssignSubjectScreen = () => {
         classSectionAssignments,
       };
 
-      const res = await axios.post(`${BASE_URL}/api/subject/assign-subject`, payload);
+      const res = await api.post(`${BASE_URL}/api/subject/assign-subject`, payload);
       Alert.alert('✅ Success', res.data.message);
 
       setSubjectId('');

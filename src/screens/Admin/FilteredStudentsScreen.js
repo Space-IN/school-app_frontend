@@ -12,7 +12,8 @@ import {
   Alert,
 } from 'react-native';
 import axios from 'axios';
-import { BASE_URL } from '@env';
+import {BASE_URL} from '@env';
+import {api} from '../../api/api'
 
 export default function FilteredStudentsScreen({ route, navigation }) {
   const { grade, section, board } = route.params;
@@ -49,8 +50,19 @@ export default function FilteredStudentsScreen({ route, navigation }) {
       // Add board as query param if it exists
       const boardQuery = board ? `?board=${encodeURIComponent(board)}` : '';
 
-      const res = await axios.get(
+      console.log(
+      "📡 Fetching students from:",
+      api.defaults.baseURL +
+        `/api/admin/students/grade/${encodedGrade}/section/${encodedSection}${boardQuery}`
+    );
+
+     console.log("🧪 Board received in screen:", board);
+
+
+      const res = await api.get(
+        
         `${BASE_URL}/api/admin/students/grade/${encodedGrade}/section/${encodedSection}${boardQuery}`
+        
       );
 
       let fetchedStudents = res.data || [];
@@ -94,7 +106,7 @@ export default function FilteredStudentsScreen({ route, navigation }) {
 
   const handleSoftDelete = async (userId) => {
     try {
-      await axios.patch(`${BASE_URL}/api/admin/students/delete/${userId}`);
+      await api.patch(`${BASE_URL}/api/admin/students/delete/${userId}`);
       Alert.alert('Deleted', 'Student soft deleted.');
       fetchFilteredStudents();
     } catch (err) {

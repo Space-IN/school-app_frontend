@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import { BASE_URL } from '@env';
+import {api} from '../../api/api'
 
 export default function FacultyProfileViewScreen({ route }) {
   const { userId } = route.params;
@@ -19,7 +20,7 @@ export default function FacultyProfileViewScreen({ route }) {
   useEffect(() => {
     const fetchFaculty = async () => {
       try {
-        const res = await axios.get(`${BASE_URL}/api/faculty/${userId}`);
+        const res = await api.get(`${BASE_URL}/api/faculty/${userId}`);
         setFaculty(res.data);
       } catch (err) {
         console.error('❌ Error fetching faculty profile:', err);

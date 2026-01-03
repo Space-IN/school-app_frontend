@@ -15,6 +15,7 @@ import * as Animatable from 'react-native-animatable';
 import { useStudent } from '../../../context/student/studentContext';
 import { BASE_URL } from '@env';
 import axios from 'axios';
+import { api } from '../../../api/api';
 
 const AttendanceScreen = () => {
   const { studentData } = useStudent();
@@ -32,7 +33,7 @@ const AttendanceScreen = () => {
       }
 
       try {
-        const response = await axios.get(
+        const response = await api.get(
           `${BASE_URL}/api/attendance/student/${studentData?.userId}?grade=${studentData?.className}&section=${studentData?.section}`
         );
         const data = await response.data;
