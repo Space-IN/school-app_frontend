@@ -22,15 +22,11 @@ export default function ViewFeesTab() {
   const [totalFee, setTotalFee] = useState("");
   const [installments, setInstallments] = useState([]);
 
- 
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-
   const [paymentHistory, setPaymentHistory] = useState([]);
-  const [showHistory, setShowHistory] = useState(false);
 
-  /*Fetch students*/
   const fetchStudents = async () => {
     if (!board || !cls || !section || !academicYear) return;
 
@@ -42,27 +38,20 @@ export default function ViewFeesTab() {
       setStudents(Array.isArray(res.data?.data) ? res.data.data : []);
     } catch (err) {
       console.log("Fetch students error:", err);
-      setStudents([]);
     } finally {
       setLoading(false);
     }
   };
 
-  /*AUTO FETCH*/
   useEffect(() => {
-    if (board && cls && section && academicYear) {
-      fetchStudents();
-    }
+    fetchStudents();
   }, [board, cls, section, academicYear]);
 
-  /*FILTER LOGIC*/
   const filteredStudents = useMemo(() => {
     const search = searchText.trim().toLowerCase();
-
     return students.filter((s) => {
       const name = (s.name || "").toLowerCase();
       const userId = (s.userId || "").toLowerCase();
-
       const searchMatch =
         !search || name.includes(search) || userId.includes(search);
 
@@ -81,7 +70,6 @@ export default function ViewFeesTab() {
     });
   }, [students, searchText, statusFilter]);
 
-  /* Open modal*/
   const openModal = async (student) => {
     try {
       const res = await api.get(
@@ -95,10 +83,9 @@ export default function ViewFeesTab() {
           ...i,
           paymentMode: i.paymentMode || "CASH",
           remarks: i.remarks || "",
-          }))
+        }))
       );
       setPaymentHistory(res.data.paymentHistory || []);
-      setShowHistory(false);
       setEditMode(false);
       setModalVisible(true);
     } catch (err) {
@@ -112,41 +99,32 @@ export default function ViewFeesTab() {
     setSelectedStudent(null);
     setInstallments([]);
     setPaymentHistory([]);
-    setShowHistory(false);
   };
 
-  /*Local edit  */
-  const updateInstallmentField = (index, field, value) => {
-    if (!editMode) return;
-    const copy = [...installments];
-    copy[index] = { ...copy[index], [field]: value };
-    setInstallments(copy);
-  };
+const saveChanges = async ({ totalFee, installments }) => {
+  try {
+    await api.put(
+      `/api/admin/student/student-fee/${selectedStudent.studentId}/override`,
+      {
+        totalFee: Number(totalFee),
+        installments: installments.map((i) => ({
+          order: i.order,
+          amount: Number(i.amount || 0),
+          paid: Number(i.paid || 0),
+          dueDate: i.dueDate,
+          paymentMode: i.paymentMode || "CASH",
+          remarks: i.remarks || "",
+        })),
+      }
+    );
 
-  /*Save changes */
-  const saveChanges = async () => {
-    try {
-      await api.put(
-        `/api/admin/student/student-fee/${selectedStudent.studentId}/override`,
-        {
-          totalFee: Number(totalFee),
-          installments: installments.map((i) => ({
-            order: i.order,
-            amount: Number(i.amount),
-            paid: Number(i.paid),
-            dueDate: i.dueDate,
-            paymentMode: i.paymentMode || "CASH",
-            remarks: i.remarks || "",
-          })),
-        }
-      );
+    closeModal();
+    fetchStudents();
+  } catch (err) {
+    console.log("Save changes error:", err);
+  }
+};
 
-      closeModal();
-      fetchStudents();
-    } catch (err) {
-      console.log("Save changes error:", err);
-    }
-  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -180,10 +158,7 @@ export default function ViewFeesTab() {
           keyExtractor={(i) => i.studentId}
           contentContainerStyle={{ paddingBottom: 120 }}
           renderItem={({ item }) => (
-            <StudentFeeCard
-              student={item}
-              onPress={() => openModal(item)}
-            />
+            <StudentFeeCard student={item} onPress={() => openModal(item)} />
           )}
         />
       )}
@@ -194,12 +169,9 @@ export default function ViewFeesTab() {
         totalFee={totalFee}
         installments={installments}
         paymentHistory={paymentHistory}
-        showHistory={showHistory}
-        setShowHistory={setShowHistory}
         editMode={editMode}
         setEditMode={setEditMode}
         setTotalFee={setTotalFee}
-        updateInstallmentField={updateInstallmentField}
         onSave={saveChanges}
         onClose={closeModal}
       />

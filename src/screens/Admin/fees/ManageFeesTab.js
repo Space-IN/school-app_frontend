@@ -23,11 +23,19 @@ const BOARD_COLORS = {
 
 export default function ManageFeesTab() {
   const [loading, setLoading] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [resultMessage, setResultMessage] = useState("");
+
   const [feeTemplates, setFeeTemplates] = useState([]);
-  const [selectedBoard, setSelectedBoard] = useState("CBSE"); 
+  const [selectedBoard, setSelectedBoard] = useState("CBSE");
   const [expandedCardId, setExpandedCardId] = useState(null);
+
+  /* 🔹 Result modal */
+  const [resultModalVisible, setResultModalVisible] = useState(false);
+  const [resultMessage, setResultMessage] = useState("");
+
+  /* 🔹 Upload confirmation modal */
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [pickedFile, setPickedFile] = useState(null);
+  const [uploadType, setUploadType] = useState(null);
 
   useEffect(() => {
     fetchFeeTemplates();
@@ -36,102 +44,129 @@ export default function ManageFeesTab() {
   const fetchFeeTemplates = async () => {
     try {
       setLoading(true);
-      console.log("API BASE URL:", api.defaults.baseURL);
       const res = await api.get("/api/admin/student/fee-template");
-      const templates = res.data.data || [];
-      setFeeTemplates(templates);
+      setFeeTemplates(res.data.data || []);
     } catch (err) {
-      console.log("Error fetching fee templates:", err);
       setResultMessage("Failed to fetch fee templates.");
-      setModalVisible(true);
+      setResultModalVisible(true);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUpload = async (type) => {
+  /* ================= FILE PICK ================= */
+  const pickFile = async (type) => {
     try {
-      const file = await DocumentPicker.getDocumentAsync({
-        type:
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
 
-      if (file.type === "success") {
-        setLoading(true);
+      if (result.canceled) return;
 
-        const formData = new FormData();
-        formData.append("file", {
-          uri: file.uri,
-          name: file.name,
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        });
+      const file = result.assets?.[0];
+      if (!file) return;
 
-        let endpoint = "";
-        if (type === "template") endpoint = "api/admin/student/fee-template/upload";
-        if (type === "installment") endpoint = "/api/admin/student/student-fee/upload";
-
-        const res = await api.post(endpoint, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-
-        const { updated, skipped } = res.data || {};
-        setResultMessage(
-          `${type === "template" ? "Fee Template" : "Installments"} Upload Complete!\nUpdated: ${
-            updated || 0
-          }\nSkipped: ${skipped || 0}`
-        );
-        setModalVisible(true);
-
-        if (type === "template") fetchFeeTemplates(); 
-      }
+      setPickedFile(file);
+      setUploadType(type);
+      setConfirmVisible(true);
     } catch (err) {
-      console.log("Upload error:", err);
-      setResultMessage("Upload failed. Please try again.");
-      setModalVisible(true);
-    } finally {
-      setLoading(false);
+      setResultMessage("File selection failed.");
+      setResultModalVisible(true);
     }
   };
+
+  /* ================= CONFIRMED UPLOAD ================= */
+  const confirmUpload = async () => {
+  if (!pickedFile || !uploadType) return;
+
+  // ✅ Validate file type early
+  if (!pickedFile.name?.endsWith(".xlsx")) {
+    setConfirmVisible(false);
+    setResultMessage("Invalid file type. Please upload a .xlsx Excel file.");
+    setResultModalVisible(true);
+    return;
+  }
+
+  try {
+    setConfirmVisible(false);
+    setLoading(true);
+
+    // ✅ VERY IMPORTANT: wait one tick for file to be readable
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    const formData = new FormData();
+    formData.append("file", {
+      uri: pickedFile.uri,
+      name: pickedFile.name,
+      type:
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const endpoint =
+      uploadType === "template"
+        ? "/api/admin/student/fee-template/upload"
+        : "/api/admin/student/student-fee/upload";
+
+    const res = await api.post(endpoint, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    const data = res.data || {};
+
+if (uploadType === "template") {
+  const {
+    templatesProcessed = 0,
+    studentFeesCreated = 0,
+    rowsSkipped = 0,
+  } = data;
+
+  setResultMessage(
+    `Fee Template Upload Successful 🎉\n\n` +
+    `Templates Processed: ${templatesProcessed}\n` +
+    `Student Fees Created: ${studentFeesCreated}\n` +
+    `Rows Skipped: ${rowsSkipped}`
+  );
+
+  fetchFeeTemplates(); // refresh list
+} else {
+  const {
+    updatedCount = 0,
+    skippedCount = 0,
+  } = data;
+
+  setResultMessage(
+    `Bulk Installment Update Successful ✅\n\n` +
+    `Updated Records: ${updatedCount}\n` +
+    `Skipped Records: ${skippedCount}`
+  );
+}
+
+setResultModalVisible(true);
+
+    if (uploadType === "template") {
+      fetchFeeTemplates();
+    }
+  } catch (err) {
+    setResultMessage(
+      err?.response?.data?.message ||
+        "Upload failed. Please check Excel format."
+    );
+    setResultModalVisible(true);
+  } finally {
+    setLoading(false);
+    setPickedFile(null);
+    setUploadType(null);
+  }
+};
+
 
   const displayedTemplates = feeTemplates
     .filter((t) => t.board === selectedBoard)
-    .sort((a, b) => CLASS_ORDER.indexOf(a.className) - CLASS_ORDER.indexOf(b.className));
-
-  const renderTemplateCard = (item) => {
-    const isExpanded = expandedCardId === item._id;
-
-    return (
-      <TouchableOpacity
-        key={item._id}
-        style={[styles.templateCard, { borderLeftColor: BOARD_COLORS[item.board] || "#000" }]}
-        onPress={() => setExpandedCardId(isExpanded ? null : item._id)}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.cardTitle}>
-          Academic Year: {item.academicYear} | Class: {item.className}
-        </Text>
-        <Text>Board: {item.board}</Text>
-        <Text>Total Fee: ₹{item.totalFee}</Text>
-        <Text>Status: {item.active ? "Active" : "Inactive"}</Text>
-
-        {isExpanded && (
-          <View style={{ marginTop: 8 }}>
-            <Text style={{ fontWeight: "600" }}>Installments:</Text>
-            {item.installments && item.installments.length > 0 ? (
-              item.installments.map((inst, index) => (
-                <Text key={index}>
-                  {inst.title}: ₹{inst.amount} | Due:{" "}
-                  {inst.dueDate ? new Date(inst.dueDate).toLocaleDateString() : "N/A"}
-                </Text>
-              ))
-            ) : (
-              <Text>No installments defined</Text>
-            )}
-          </View>
-        )}
-      </TouchableOpacity>
+    .sort(
+      (a, b) =>
+        CLASS_ORDER.indexOf(a.className) -
+        CLASS_ORDER.indexOf(b.className)
     );
-  };
 
   return (
     <View style={styles.container}>
@@ -142,7 +177,9 @@ export default function ManageFeesTab() {
             key={board}
             style={[
               styles.boardButton,
-              selectedBoard === board && { backgroundColor: BOARD_COLORS[board] },
+              selectedBoard === board && {
+                backgroundColor: BOARD_COLORS[board],
+              },
             ]}
             onPress={() => setSelectedBoard(board)}
           >
@@ -158,94 +195,140 @@ export default function ManageFeesTab() {
         ))}
       </View>
 
-      {/* Fee Template List */}
-      <ScrollView style={styles.listContainer} contentContainerStyle={{ paddingBottom: 100 }}>
+      {/* Templates */}
+      <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         {displayedTemplates.length === 0 ? (
-          <Text style={styles.text}>No templates uploaded for {selectedBoard}.</Text>
+          <Text style={styles.text}>No templates for {selectedBoard}</Text>
         ) : (
-          displayedTemplates.map(renderTemplateCard)
+          displayedTemplates.map((item) => (
+            <TouchableOpacity
+              key={item._id}
+              style={[
+                styles.templateCard,
+                { borderLeftColor: BOARD_COLORS[item.board] },
+              ]}
+              onPress={() =>
+                setExpandedCardId(
+                  expandedCardId === item._id ? null : item._id
+                )
+              }
+            >
+              <Text style={styles.cardTitle}>
+                {item.academicYear} | Class {item.className}
+              </Text>
+              <Text>Total Fee: ₹{item.totalFee}</Text>
+
+              {expandedCardId === item._id && (
+                <View style={{ marginTop: 8 }}>
+                  {item.installments?.map((i, idx) => (
+                    <Text key={idx}>
+                      {i.title}: ₹{i.amount}
+                    </Text>
+                  ))}
+                </View>
+              )}
+            </TouchableOpacity>
+          ))
         )}
       </ScrollView>
 
-      {/* Upload Buttons at Bottom */}
+      {/* Upload Buttons */}
       <View style={styles.uploadContainer}>
         <Button
           mode="contained"
-          icon={() => <Ionicons name="cloud-upload-outline" size={18} color="#fff" />}
           buttonColor="#49a85e"
-          style={styles.button}
-          onPress={() => handleUpload("template")}
-          loading={loading}
+          icon={() => (
+            <Ionicons name="cloud-upload-outline" size={18} color="#fff" />
+          )}
+          onPress={() => pickFile("template")}
         >
           Upload Fee Template
         </Button>
 
         <Button
           mode="contained"
-          icon={() => <Ionicons name="cloud-upload-outline" size={18} color="#fff" />}
           buttonColor="#4a90e2"
-          style={styles.button}
-          onPress={() => handleUpload("installment")}
-          loading={loading}
+          icon={() => (
+            <Ionicons name="cloud-upload-outline" size={18} color="#fff" />
+          )}
+          style={{ marginTop: 8 }}
+          onPress={() => pickFile("installment")}
         >
           Upload Installments
         </Button>
       </View>
 
-      {/* Result Modal */}
-      <Modal
-        visible={modalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setModalVisible(false)}
-      >
+      {/* 🔹 CONFIRM MODAL */}
+      <Modal transparent visible={confirmVisible}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Confirm Upload</Text>
+            <Text>File: {pickedFile?.name}</Text>
+            <Text>Type: {uploadType}</Text>
+
+            <View style={{ flexDirection: "row", marginTop: 20 }}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setConfirmVisible(false)}
+              >
+                <Text style={styles.btnText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.confirmBtn}
+                onPress={confirmUpload}
+              >
+                <Text style={styles.btnText}>Upload</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* 🔹 RESULT MODAL */}
+      <Modal transparent visible={resultModalVisible}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalText}>{resultMessage}</Text>
             <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setModalVisible(false)}
+              style={styles.confirmBtn}
+              onPress={() => setResultModalVisible(false)}
             >
-              <Text style={{ color: "#fff", fontWeight: "700" }}>Close</Text>
+              <Text style={styles.btnText}>OK</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
-      {loading && (
-        <ActivityIndicator size="large" color="#0000ff" style={styles.loading} />
-      )}
+      {loading && <ActivityIndicator size="large" style={styles.loading} />}
     </View>
   );
 }
 
+/* ================= STYLES ================= */
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
-  button: { marginVertical: 8 },
-  boardSelector: { flexDirection: "row", marginBottom: 12, justifyContent: "space-around" },
+  boardSelector: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 12,
+  },
   boardButton: {
-    paddingVertical: 8,
     paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: "#ccc",
   },
   boardButtonText: { fontSize: 14 },
-  listContainer: { flex: 1 },
-  text: { color: "#777", textAlign: "center", marginTop: 20 },
   templateCard: {
-    padding: 16,
-    marginVertical: 8,
-    borderRadius: 10,
     backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    padding: 16,
+    borderRadius: 10,
+    marginVertical: 6,
     borderLeftWidth: 5,
   },
-  cardTitle: { fontWeight: "700", fontSize: 16, marginBottom: 4 },
+  cardTitle: { fontWeight: "700" },
   uploadContainer: {
     position: "absolute",
     bottom: 16,
@@ -258,8 +341,26 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  modalContent: { width: "80%", backgroundColor: "#fff", borderRadius: 12, padding: 20, alignItems: "center" },
-  modalText: { fontSize: 16, marginBottom: 20, textAlign: "center" },
-  closeButton: { backgroundColor: "#49a85e", paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
+  modalContent: {
+    width: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 20,
+    alignItems: "center",
+  },
+  modalTitle: { fontSize: 18, fontWeight: "700", marginBottom: 10 },
+  modalText: { textAlign: "center", marginBottom: 20 },
+  confirmBtn: {
+    backgroundColor: "#28a745",
+    padding: 10,
+    borderRadius: 8,
+    marginLeft: 10,
+  },
+  cancelBtn: {
+    backgroundColor: "#dc3545",
+    padding: 10,
+    borderRadius: 8,
+  },
+  btnText: { color: "#fff", fontWeight: "700" },
   loading: { position: "absolute", top: "50%", left: "50%" },
 });

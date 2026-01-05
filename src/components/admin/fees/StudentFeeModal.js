@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, memo, useMemo } from "react";
 import {
   View,
   Text,
@@ -19,162 +19,218 @@ const PAYMENT_MODES = [
   { label: "Cheque", value: "CHEQUE" },
 ];
 
+/* ---------------- Installment Row ---------------- */
+const InstallmentRow = memo(({ item, index, editMode, onLocalChange }) => (
+  <View style={styles.card}>
+    <Text style={styles.instTitle}>{item.title}</Text>
+
+    <Row label="Amount">
+      <TextInput
+        style={[styles.smallInput, !editMode && styles.disabled]}
+        editable={editMode}
+        keyboardType="numeric"
+        blurOnSubmit={false}
+        returnKeyType="done"
+        value={item.amount}
+        onChangeText={(v) => onLocalChange(index, "amount", v)}
+      />
+    </Row>
+
+    <Row label="Paid">
+      <TextInput
+        style={[styles.smallInput, !editMode && styles.disabled]}
+        editable={editMode}
+        keyboardType="numeric"
+        blurOnSubmit={false}
+        returnKeyType="done"
+        value={item.paid}
+        onChangeText={(v) => onLocalChange(index, "paid", v)}
+      />
+    </Row>
+
+    {editMode && (
+      <>
+        <Text style={styles.subLabel}>Payment Mode</Text>
+        <RNPickerSelect
+          value={item.paymentMode}
+          onValueChange={(v) =>
+            onLocalChange(index, "paymentMode", v)
+          }
+          items={PAYMENT_MODES}
+          style={pickerStyles}
+          useNativeAndroidPickerStyle={false}
+          fixAndroidTouchableBug
+        />
+
+        <Text style={styles.subLabel}>Remarks</Text>
+        <TextInput
+          style={styles.remarkInput}
+          value={item.remarks}
+          onChangeText={(v) =>
+            onLocalChange(index, "remarks", v)
+          }
+        />
+      </>
+    )}
+  </View>
+));
+
+/* ---------------- MAIN MODAL ---------------- */
 export default function StudentFeeModal({
   visible,
   student,
-  totalFee,
   installments,
+  totalFee,
   editMode,
   paymentHistory,
   setEditMode,
-  setTotalFee,
-  updateInstallmentField,
   onSave,
   onClose,
 }) {
+  const [localInstallments, setLocalInstallments] = useState([]);
+  const [localTotalFee, setLocalTotalFee] = useState("");
+  const [initialSnapshot, setInitialSnapshot] = useState("");
   const [showHistory, setShowHistory] = useState(false);
 
-  if (!student) return null;
+  useEffect(() => {
+    if (visible && student) {
+      const prepared = installments.map((i) => ({
+        ...i,
+        amount: String(i.amount ?? ""),
+        paid: String(i.paid ?? ""),
+        remarks: i.remarks ?? "",
+        paymentMode: i.paymentMode || "CASH",
+      }));
 
-  /* ---------------- Header ---------------- */
-  const Header = () => (
-    <View>
-      {/* Title + Actions */}
-      <View style={styles.header}>
-        <Text style={styles.title}>
-          {student.name} ({student.userId})
-        </Text>
+      setLocalInstallments(prepared);
+      setLocalTotalFee(String(totalFee ?? ""));
+      setInitialSnapshot(
+        JSON.stringify(prepared) + String(totalFee ?? "")
+      );
+      setShowHistory(false); // reset history on open
+    }
+  }, [visible, student]);
 
-        <View style={styles.headerActions}>
-          {/* History */}
-          <TouchableOpacity onPress={() => setShowHistory(!showHistory)}>
-            <Text style={styles.icon}>🕘</Text>
-          </TouchableOpacity>
+  const hasChanges = useMemo(() => {
+    return (
+      JSON.stringify(localInstallments) + localTotalFee !==
+      initialSnapshot
+    );
+  }, [localInstallments, localTotalFee, initialSnapshot]);
 
-          {/* Edit (ONLY when not editing) */}
-          {!editMode && (
-            <TouchableOpacity
-              style={styles.editBtnSmall}
-              onPress={() => setEditMode(true)}
-            >
-              <Text style={styles.btnText}>Edit</Text>
-            </TouchableOpacity>
-          )}
+  const onLocalChange = (index, field, value) => {
+    setLocalInstallments((prev) => {
+      const copy = [...prev];
+      copy[index] = { ...copy[index], [field]: value ?? "" };
+      return copy;
+    });
+  };
 
-          {/* Close */}
-          <TouchableOpacity onPress={onClose}>
-            <Text style={styles.icon}>✕</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+  const handleSave = () => {
+    if (!hasChanges) return;
 
-      {/* Total Fee */}
-      <Text style={styles.label}>Total Fee</Text>
-      <TextInput
-        value={totalFee}
-        editable={editMode}
-        keyboardType="numeric"
-        onChangeText={setTotalFee}
-        style={[styles.input, !editMode && styles.disabled]}
-      />
+    onSave({
+      totalFee: localTotalFee,
+      installments: localInstallments,
+    });
+  };
 
-      <Text style={styles.label}>Installments</Text>
-    </View>
-  );
-
-  /* ---------------- Footer ---------------- */
-  const Footer = () => (
-    <View>
-      {/* History */}
-      {showHistory && (
-        <>
-          <Text style={styles.label}>Payment History</Text>
-          <PaymentHistoryPanel history={paymentHistory || []} />
-        </>
-      )}
-
-      {/* Save / Cancel ONLY in edit mode */}
-      {editMode && (
-        <View style={styles.actions}>
-          <TouchableOpacity style={styles.saveBtn} onPress={onSave}>
-            <Text style={styles.btnText}>Save</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.cancelBtn}
-            onPress={() => setEditMode(false)}
-          >
-            <Text style={styles.btnText}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
-  );
-
-  /* ---------------- Installment Row ---------------- */
-  const renderInstallment = ({ item, index }) => (
-    <View style={styles.card}>
-      <Text style={styles.instTitle}>{item.title}</Text>
-
-      <Row label="Amount">
-        <TextInput
-          style={[styles.smallInput, !editMode && styles.disabled]}
-          editable={editMode}
-          keyboardType="numeric"
-          value={String(item.amount)}
-          onChangeText={(v) =>
-            updateInstallmentField(index, "amount", v)
-          }
-        />
-      </Row>
-
-      <Row label="Paid">
-        <TextInput
-          style={[styles.smallInput, !editMode && styles.disabled]}
-          editable={editMode}
-          keyboardType="numeric"
-          value={String(item.paid)}
-          onChangeText={(v) =>
-            updateInstallmentField(index, "paid", v)
-          }
-        />
-      </Row>
-
-      {editMode && (
-        <>
-          <Text style={styles.subLabel}>Payment Mode</Text>
-          <RNPickerSelect
-            onValueChange={(v) =>
-              updateInstallmentField(index, "paymentMode", v)
-            }
-            value={item.paymentMode || "CASH"}
-            items={PAYMENT_MODES}
-            style={pickerStyles}
-          />
-
-          <Text style={styles.subLabel}>Remarks</Text>
-          <TextInput
-            style={styles.remarkInput}
-            placeholder="Optional remark"
-            value={item.remarks || ""}
-            onChangeText={(v) =>
-              updateInstallmentField(index, "remarks", v)
-            }
-          />
-        </>
-      )}
-    </View>
-  );
+  if (!visible || !student) return null;
 
   return (
     <Modal visible={visible} transparent animationType="slide">
       <View style={styles.overlay}>
         <FlatList
-          data={installments}
-          keyExtractor={(item) => item.order.toString()}
-          renderItem={renderInstallment}
-          ListHeaderComponent={Header}
-          ListFooterComponent={Footer}
+          data={localInstallments}
+          keyExtractor={(i) => i.order.toString()}
+          renderItem={({ item, index }) => (
+            <InstallmentRow
+              item={item}
+              index={index}
+              editMode={editMode}
+              onLocalChange={onLocalChange}
+            />
+          )}
+          ListHeaderComponent={
+            <>
+              <View style={styles.header}>
+                <Text style={styles.title}>
+                  {student.name} ({student.userId})
+                </Text>
+
+                <View style={styles.headerActions}>
+                  {/* 🕘 History (ONLY in view mode) */}
+                  {!editMode && (
+                    <TouchableOpacity
+                      onPress={() => setShowHistory((p) => !p)}
+                    >
+                      <Text style={styles.icon}>🕘</Text>
+                    </TouchableOpacity>
+                  )}
+
+                  {!editMode && (
+                    <TouchableOpacity
+                      style={styles.editBtnSmall}
+                      onPress={() => setEditMode(true)}
+                    >
+                      <Text style={styles.btnText}>Edit</Text>
+                    </TouchableOpacity>
+                  )}
+
+                  <TouchableOpacity onPress={onClose}>
+                    <Text style={styles.icon}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <Text style={styles.label}>Total Fee</Text>
+              <TextInput
+                value={localTotalFee}
+                editable={editMode}
+                keyboardType="numeric"
+                onChangeText={setLocalTotalFee}
+                style={[styles.input, !editMode && styles.disabled]}
+              />
+
+              <Text style={styles.label}>Installments</Text>
+            </>
+          }
+          ListFooterComponent={
+            <>
+              {/* 🧾 Payment History */}
+              {!editMode && showHistory && (
+                <>
+                  <Text style={styles.label}>Payment History</Text>
+                  <PaymentHistoryPanel history={paymentHistory || []} />
+                </>
+              )}
+
+              {/* Actions */}
+              {editMode && (
+                <View style={styles.actions}>
+                  <TouchableOpacity
+                    style={[
+                      styles.saveBtn,
+                      !hasChanges && styles.saveDisabled,
+                    ]}
+                    onPress={handleSave}
+                    disabled={!hasChanges}
+                  >
+                    <Text style={styles.btnText}>
+                      {hasChanges ? "Save" : "No Changes"}
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.cancelBtn}
+                    onPress={() => setEditMode(false)}
+                  >
+                    <Text style={styles.btnText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </>
+          }
           contentContainerStyle={styles.box}
           showsVerticalScrollIndicator={false}
         />
@@ -270,6 +326,9 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
     marginRight: 10,
+  },
+  saveDisabled: {
+    backgroundColor: "#9ca3af",
   },
   cancelBtn: {
     backgroundColor: "#dc3545",
