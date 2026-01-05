@@ -1,6 +1,7 @@
 import axios from "axios"
-import { KEYCLOAK_SERVER_URL } from "@env"
+import { KEYCLOAK_SERVER_URL, BASE_URL } from "@env"
 import { keycloakConfig } from "../config/keycloak"
+import { api } from "../api/api"
 
 
 
@@ -67,6 +68,28 @@ export async function refreshUser(refreshToken) {
         return response.data
     } catch(err) {
         console.error("refresh token failed: ", err?.response?.data || err.message)
+        throw err
+    }
+}
+
+
+export async function getMaskedPhone(userId) {
+    try {
+        const response = await api.get(`/api/auth/otp/meta/${userId}`)
+        return response.data
+    } catch(err) {
+        console.error("could not get masked phone number: ", err?.response?.data || err.message)
+        throw err
+    }
+}
+
+
+export async function sendOtp(userId) {
+    try {
+        const response = await api.post(`/api/auth/otp/send`, { userId })
+        return response.data
+    } catch(err) {
+        console.error("could not send otp request: ", err?.response?.data || err.message)
         throw err
     }
 }
