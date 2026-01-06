@@ -93,3 +93,29 @@ export async function sendOtp(userId) {
         throw err
     }
 }
+
+
+export async function verifyOtp(userId, otp) {
+    try {
+        const response = await api.post("/api/auth/otp/verify", { userId, otp })
+        return response.data
+    } catch(err) {
+        console.error("could not send otp verify request: ", err?.response?.data || err.message)
+        throw err
+    }
+}
+
+
+export async function resetPassword(newPassword, resetToken) {
+    try {
+        const response = await api.post(
+            "/api/auth/account/set-password",
+            { newPassword, },
+            { headers: { Authorization: `Bearer ${resetToken}`} }
+        )
+        return response.data
+    } catch(err) {
+        console.error("set-password request failed: ", err?.response?.data || err.message)
+        throw err
+    }
+}

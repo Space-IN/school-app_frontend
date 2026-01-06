@@ -99,7 +99,7 @@ export default function LoginScreen() {
               keyboardShouldPersistTaps="handled"
             >
               <View style={styles.loginBox}>
-                <Text style={styles.title}>Login to your portal</Text>
+                <Text style={styles.title}>Login to your Portal</Text>
                 <View style={styles.divider} />
 
                 <View style={styles.fieldContainer}>
