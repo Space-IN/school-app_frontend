@@ -1,104 +1,51 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  ActivityIndicator,
-  Alert,
-  Modal,
-  TouchableOpacity,
-} from 'react-native';
-import { Calendar } from 'react-native-calendars';
-import * as Animatable from 'react-native-animatable';
-import { useStudent } from '../../../context/studentContext';
-import { useAuth } from '../../../context/authContext'
-import { BASE_URL } from '@env'
-
-import { api } from '../../../api/api';
+import React, { useState, useEffect, useMemo } from 'react'
+import { View, Text, StyleSheet, ActivityIndicator, Alert, Modal, TouchableOpacity, } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { Calendar } from 'react-native-calendars'
+import * as Animatable from 'react-native-animatable'
+import { useStudent } from '../../../context/studentContext'
+import { api } from '../../../api/api'
 
 
-const AttendanceScreen = () => {
+
+
+export default function AttendanceScreen() {
   const { studentData, studentLoading } = useStudent()
-  const [attendanceData, setAttendanceData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [attendanceData, setAttendanceData] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [selectedDate, setSelectedDate] = useState(null)
+  const [isModalVisible, setIsModalVisible] = useState(false)
 
-  const { decodedToken } = useAuth()
-
-  useEffect(() => {
-    // don't act until the student context finishes loading
-    if (studentLoading) return
-
-    // resolve id: prefer studentData, fallback to token
-    const idToUse = studentData?.preferred_username || decodedToken?.preferred_username
-
-    if (!idToUse) {
-      setLoading(false)
-      Alert.alert('Error', 'Could not identify student.')
-      return
-    }
-
-    const fetchAttendance = async () => {
-      setLoading(true)
-
-      try {
-        // build url with optional query params (grade & section)
-        let url = `${BASE_URL}/api/student/attendance/${encodeURIComponent(idToUse)}`
-        const params = []
-        if (studentData?.className) params.push(`grade=${encodeURIComponent(studentData.className)}`)
-        if (studentData?.section) params.push(`section=${encodeURIComponent(studentData.section)}`)
-        if (params.length) url += `?${params.join('&')}`
-
-        const response = await api.get(url)
-        const data = response.data
-
-        if (response.status === 200) {
-          setAttendanceData(data)
-        } else {
-          Alert.alert('Error', data?.message || 'Failed to fetch attendance.')
-        }
-      } catch (error) {
-        console.error('Error fetching attendance:', error)
-        Alert.alert('Error', 'An unexpected error occurred.')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchAttendance()
-  }, [studentData, studentLoading, decodedToken])
 
   const { markedDates, attendanceStats } = useMemo(() => {
-    const dates = {};
-    let presentSessions = 0;
-    let absentSessions = 0;
+    const dates = {}
+    let presentSessions = 0
+    let absentSessions = 0
 
     attendanceData.forEach(record => {
-      const date = record.date.split('T')[0];
-      let dailyPresent = 0;
-      let dailyAbsent = 0;
+      const date = record.date.split('T')[0]
+      let dailyPresent = 0
+      let dailyAbsent = 0
 
       record.sessions.forEach(session => {
         if (session.status === 'present') {
-          presentSessions++;
-          dailyPresent++;
+          presentSessions++
+          dailyPresent++
         } else {
-          absentSessions++;
-          dailyAbsent++;
+          absentSessions++
+          dailyAbsent++
         }
-      });
+      })
 
       if (dailyAbsent > 0) {
-        dates[date] = { marked: true, dotColor: '#ef4444', activeOpacity: 0.5 };
+        dates[date] = { marked: true, dotColor: '#ef4444', activeOpacity: 0.5 }
       } else if (dailyPresent > 0) {
-        dates[date] = { marked: true, dotColor: '#22c55e', activeOpacity: 0.5 };
+        dates[date] = { marked: true, dotColor: '#22c55e', activeOpacity: 0.5 }
       }
-    });
+    })
 
-    const totalSessions = presentSessions + absentSessions;
-    const percentage = totalSessions > 0 ? (presentSessions / totalSessions) * 100 : 0;
+    const totalSessions = presentSessions + absentSessions
+    const percentage = totalSessions > 0 ? (presentSessions / totalSessions) * 100 : 0
 
     return {
       markedDates: dates,
@@ -108,20 +55,22 @@ const AttendanceScreen = () => {
         total: totalSessions,
         percentage: percentage.toFixed(1),
       },
-    };
-  }, [attendanceData]);
+    }
+  }, [attendanceData])
+
 
   const onDayPress = day => {
-    setSelectedDate(day.dateString);
-    setIsModalVisible(true);
-  };
+    setSelectedDate(day.dateString)
+    setIsModalVisible(true)
+  }
+
 
   const renderSessionDetails = () => {
-    if (!selectedDate) return null;
+    if (!selectedDate) return null
 
-    const record = attendanceData.find(r => r.date.startsWith(selectedDate));
+    const record = attendanceData.find(r => r.date.startsWith(selectedDate))
     if (!record) {
-      return <Text style={styles.modalText}>No attendance recorded for this day.</Text>;
+      return <Text style={styles.modalText}>No attendance recorded for this day.</Text>
     }
 
     return record.sessions.map((session, index) => (
@@ -136,15 +85,54 @@ const AttendanceScreen = () => {
           {session.status}
         </Text>
       </View>
-    ));
-  };
+    ))
+  }
+
+
+  useEffect(() => {
+    if (studentLoading) return
+    if(!studentData) return Alert.alert("Error", "User Data not found. Please try again later.")
+
+    const fetchAttendance = async () => {
+      setLoading(true)
+      try {
+        const idToUse = studentData?.userId
+        if(!idToUse) return Alert.alert("Error", "Could not identify student.")
+        
+        const response = await api.get(
+          `/api/student/attendance/${idToUse}`,
+          {
+            params: {
+              grade: studentData?.className,
+              section: studentData?.section,
+            }
+          }
+        )
+        const data = response.data
+
+        if (response.status === 200) {
+          setAttendanceData(data)
+        } else {
+          Alert.alert("Error", data?.message || "Failed to fetch attendance.")
+        }
+      } catch(err) {
+        console.error("Error fetching attendance:", err?.message)
+        Alert.alert("Error", "An unexpected error occurred.")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchAttendance()
+  }, [studentData, studentLoading,])
+
 
   if (loading) {
     return (
       <View style={[styles.container, styles.centered]}>
         <ActivityIndicator size="large" color="#c01e12" />
       </View>
-    );
+    )
   }
 
   return (
@@ -213,8 +201,8 @@ const AttendanceScreen = () => {
         </View>
       </Modal>
     </SafeAreaView>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -312,6 +300,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
   },
-});
-
-export default AttendanceScreen;
+})
