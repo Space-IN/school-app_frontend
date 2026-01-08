@@ -1,119 +1,209 @@
+import { useEffect, useRef, useState } from "react"
+import { LinearGradient } from "expo-linear-gradient"
+import { View, StyleSheet, Text, TouchableOpacity, ActivityIndicator, Platform, StatusBar as RNStatusBar } from "react-native"
+import { useStudent } from "../../../context/studentContext"
+import { useNavigation } from "@react-navigation/native"
+import { Ionicons } from "@expo/vector-icons"
+import { fetchFeeDetails } from "../../../controllers/studentDataController"
+import FeeDetails from "../../../components/student/feeDetails"
 
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { Card } from 'react-native-paper';
-import { LinearGradient } from 'expo-linear-gradient';
+
+
 
 export default function FeesScreen() {
-  const feeDetails = {
-    tuition: 'N/A',
-    hostel: 'N/A',
-    transport: 'N/A',
-    other: 'N/A',
-    total: 'N/A'
-  };
+  const navigation = useNavigation()
+  const { studentData } = useStudent()
+  const [loading, setLoading] = useState(false)
+  const [err, setErr] = useState(null)
+  const [feeDetails, setFeeDetails] = useState(null)
+
+
+  useEffect(() => {
+      const loadFeeDetails = async () => {
+        setLoading(true)
+        try {
+          const response = await fetchFeeDetails(studentData?.userId)
+          if(response) setFeeDetails(response.data)
+        } catch(err) {
+          setErr(err.message || "an error occured while fetching assessment.")
+        } finally {
+          setLoading(false)
+        }
+      }
+      loadFeeDetails()
+  }, [])
 
   return (
-    <View
-      style={styles.container}
-    >
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <Text style={styles.title}>Fees Details</Text>
-        
-        <Card style={styles.card}>
-          <Card.Content>
-            <View style={styles.feeRow}>
-              <Text style={styles.feeType}>Tuition Fee</Text>
-              <Text style={styles.feeAmount}>{feeDetails.tuition}</Text>
-            </View>
-            <View style={styles.separator} />
-            
-            <View style={styles.feeRow}>
-              <Text style={styles.feeType}>Hostel Fee</Text>
-              <Text style={styles.feeAmount}>{feeDetails.hostel}</Text>
-            </View>
-            <View style={styles.separator} />
-            
-            <View style={styles.feeRow}>
-              <Text style={styles.feeType}>Transport Fee</Text>
-              <Text style={styles.feeAmount}>{feeDetails.transport}</Text>
-            </View>
-            <View style={styles.separator} />
-            
-            <View style={styles.feeRow}>
-              <Text style={styles.feeType}>Other Fees</Text>
-              <Text style={styles.feeAmount}>{feeDetails.other}</Text>
-            </View>
-          </Card.Content>
-        </Card>
+    <View style={styles.safeArea}>
+      <LinearGradient
+        colors={['#d72b2b', '#8b1313']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
+        <View style={styles.headerContent}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name="caret-back-outline" size={30} color="white" />
+          </TouchableOpacity>
+          <View style={styles.headerTitleContainer}>
+            <Text style={styles.headerTitle}>Fees</Text>
+            <Text style={styles.headerSubtitle}>
+              {studentData?.name} - {studentData?.userId}
+            </Text>
+          </View>
+        </View>
+      </LinearGradient>
 
-        <Card style={[styles.card, styles.totalCard]}>
-          <Card.Content>
-            <View style={styles.feeRow}>
-              <Text style={[styles.feeType, styles.totalText]}>Total Fees</Text>
-              <Text style={[styles.feeAmount, styles.totalText]}>{feeDetails.total}</Text>
-            </View>
-          </Card.Content>
-        </Card>
+      <View style={styles.installmentsContainer}>
+        {loading ? (
+          <ActivityIndicator size="large" color="#9c1006ff" />
+        ) : err ? (
+          <View style={styles.noDataContainer}>
+            <Text style={styles.errText}>{err}</Text>
+          </View>
+        ) : !feeDetails ? (
+          <View style={styles.noDataContainer}>
+            <Text style={styles.noDataText}>Fee Data is not available.</Text>
+          </View>
+        ) : (
+          feeDetails.installments.map((ele, idx) => {
+            const amountDetails = [
+              {label: "Amount to be Paid", value: ele.amount}, {label: "Amount Paid", value: ele.paid},
+            ]
+            return (
+              <FeeDetails
+                title={ele.title}
+                dueDate={ele.dueDate} lastPaid={ele.lastPaidOn}
+                details={amountDetails} status={ele.status}
+              />
+            )
+          })
+        )}
+      </View>
 
-        <Text style={styles.note}>* All amounts are in INR (₹)</Text>
-      </ScrollView>
+      {feeDetails && (
+        <View style={styles.feeSummaryContainer}>
+          <View style={styles.feeCurrentStateContainer}>
+            <View style={[styles.feeValueContainer, { width: "48%", backgroundColor: "#e0e7ff" }]}>
+              <Text style={{ fontSize: 12, fontWeight: "600", }}>PAID</Text>
+              <Text style={{ fontSize: 20, fontWeight: "900" }}>{feeDetails.totalPaid}</Text>
+            </View>
+            <View style={[styles.feeValueContainer, { width: "48%", backgroundColor: "#e0e7ff" }]}>
+              <Text style={{ fontSize: 12, fontWeight: "600", }}>PENDING</Text>
+              <Text style={{ fontSize: 20, fontWeight: "900" }}>{feeDetails.totalPending}</Text>
+            </View>
+          </View>
+          <View style={[styles.feeValueContainer, { width: "100%", backgroundColor: "#9c1006ff" }]}>
+            <Text style={{ fontSize: 12, fontWeight: "600", alignSelf: "center", color: "white" }}>TOTAL</Text>
+            <Text style={{ fontSize: 20, fontWeight: "900", alignSelf: "center", color: "white" }}>{feeDetails.totalFee}</Text>
+          </View>
+        </View>
+      )}
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    backgroundColor: "#F9FAFB",
   },
-  scrollViewContent: {
-    padding: 20,
+  header: {
+    paddingHorizontal: 20,
+    paddingVertical: 35,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    paddingTop: Platform.OS === "android" ? RNStatusBar.currentHeight + 24 : 60
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#8f1b1bff',
-    marginBottom: 20,
-    textAlign: 'center',
+  headerContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+    alignSelf: "center",
   },
-  card: {
-    backgroundColor: 'white',
-    borderRadius: 10,
-    elevation: 3,
-    marginBottom: 20,
+  backButton: {
+    position: "absolute",
+    left: 0,
+    zIndex: 1,
+    padding: 8,
   },
-  totalCard: {
-    backgroundColor: '#8f1b1bff',
-    paddingHorizontal: 10
+  headerTitleContainer: {
+    flex: 1,
+    alignItems: "center",
   },
-  feeRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#ffffff",
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  headerSubtitle: {
+    fontSize: 15,
+    color: "#e0e7ff",
+    fontWeight: "500",
+  },
+  installmentsContainer: {
+    marginTop: -25,
+    alignSelf: "center",
+    backgroundColor: "white",
+    borderRadius: 20,
+    paddingHorizontal: 10,
     paddingVertical: 15,
+    width: "90%",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
+    gap: 6,
   },
-  feeType: {
+  noDataContainer: {
+    borderRadius: 15,
+    marginTop: 15,
+    padding: 15
+  },
+  noDataText: {
     fontSize: 16,
-    color: '#475569',
+    fontWeight: "500",
+    alignSelf: "center",
+    color: "#383636ff"
   },
-  feeAmount: {
+  errText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#8f1b1bff',
+    fontWeight: "500",
+    alignSelf: "center",
+    color: "#d12828ff"
   },
-  totalText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 18,
+  feeSummaryContainer: {
+    display: "flex",
+    flexDirection: "column",
+    borderRadius: 20,
+    alignSelf: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
+    width: "90%",
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: "white",
+    marginTop: 30,
+    gap: 20
   },
-  separator: {
-    height: 1,
-    backgroundColor: '#f0f0f0',
+  feeCurrentStateContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    height: "auto",
   },
-  note: {
-    textAlign: 'center',
-    color: '#475569',
-    marginTop: 20,
-  },
-});
+  feeValueContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    padding: 5,
+    justifyContent: "flex-start",
+    borderRadius: 10,
+    height: "fit-content",
+    paddingVertical: 8
+  }
+})

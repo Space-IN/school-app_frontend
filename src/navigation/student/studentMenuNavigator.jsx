@@ -28,7 +28,7 @@ export default function StudentMenuNavigator() {
       <Stack.Screen name="studentPerformanceScreen" component={AssessmentScreen} options={{ headerShown: false }} />
       <Stack.Screen name="settingsScreen" component={SettingsScreen} />
       <Stack.Screen name="academicCalendarScreen" component={AcademicCalendarScreen} />
-      <Stack.Screen name="feesScreen" component={FeesScreen} />
+      <Stack.Screen name="feesScreen" component={FeesScreen} options={{ headerShown: false }} />
       <Stack.Screen name="privacyPolicyScreen" component={PrivacyPolicyScreen} />
       <Stack.Screen name="termsScreen" component={TermsScreen} />
       <Stack.Screen name="aboutScreen" component={AboutScreen} />
