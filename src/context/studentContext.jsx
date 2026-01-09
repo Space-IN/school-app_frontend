@@ -11,17 +11,16 @@ export const StudentProvider = ({ children }) => {
     const [studentLoading, setStudentLoading] = useState(true)
     const [studentErr, setStudentErr] = useState(null)
     const { decodedToken } = useAuth()
-
-    const loadStudentData = async (decodedToken) => {
-        if(!decodedToken) {
+    
+    const loadStudentData = async () => {
+        const studentId = decodedToken?.preferred_username
+        if(!studentId) {
             setStudentLoading(false)
             return
         }
 
         setStudentLoading(true)
         try {
-            const studentId = decodedToken?.preferred_username
-
             const studentRes = await fetchStudentData(studentId)
             const cgpaRes = await fetchOverallCPGA(studentId)
 
@@ -42,11 +41,11 @@ export const StudentProvider = ({ children }) => {
 
     
     useEffect(() => {
-        loadStudentData(decodedToken)
+        loadStudentData()
     }, [decodedToken])
 
     return (
-        <StudentContext.Provider value={{ studentData, studentLoading, studentErr }}>
+        <StudentContext.Provider value={{ studentData, studentLoading, studentErr, loadStudentData }}>
             {children}
         </StudentContext.Provider>
     )

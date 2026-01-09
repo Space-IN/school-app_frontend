@@ -9,7 +9,7 @@ import TodaySchedule from "../../../components/student/todaySchedule"
 
 
 export default function StudentHome() {
-  const { studentData, studentLoading, studentErr } = useStudent()
+  const { studentData, studentLoading, studentErr, loadStudentData } = useStudent()
   const [refreshing, setRefreshing] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
 
@@ -38,13 +38,17 @@ export default function StudentHome() {
     >
       <View key={`userBanner-${refreshKey}`} style={styles.userBannerContainer}>
         <UserBanner
-          studentData={studentData} loading={studentLoading} err={studentErr}
+          studentData={studentData} loading={studentLoading} err={studentErr} loadStudentData={loadStudentData}
           refreshKey={refreshKey}
         />
       </View>
       
       <View key={`performanceGrid-${refreshKey}`} style={styles.userPerformanceGrid}>
-        <PerformanceGrid />
+        <PerformanceGrid
+          studentLoading={studentLoading}
+          attendancePercentage={studentData?.attendancePercentage}
+          grade={studentData?.grade}
+        />
       </View>
 
       <View key={`announcements-${refreshKey}`} style={styles.announcementsContainer}>

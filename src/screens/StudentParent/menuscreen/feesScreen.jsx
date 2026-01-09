@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { LinearGradient } from "expo-linear-gradient"
-import { View, StyleSheet, Text, TouchableOpacity, ActivityIndicator, Platform, StatusBar as RNStatusBar } from "react-native"
+import { ScrollView, View, StyleSheet, Text, TouchableOpacity, ActivityIndicator, Platform, StatusBar as RNStatusBar } from "react-native"
 import { useStudent } from "../../../context/studentContext"
 import { useNavigation } from "@react-navigation/native"
 import { Ionicons } from "@expo/vector-icons"
@@ -34,7 +34,7 @@ export default function FeesScreen() {
   }, [])
 
   return (
-    <View style={styles.safeArea}>
+    <ScrollView style={styles.safeArea}>
       <LinearGradient
         colors={['#d72b2b', '#8b1313']}
         start={{ x: 0, y: 0 }}
@@ -72,6 +72,7 @@ export default function FeesScreen() {
             ]
             return (
               <FeeDetails
+                key={idx}
                 title={ele.title}
                 dueDate={ele.dueDate} lastPaid={ele.lastPaidOn}
                 details={amountDetails} status={ele.status}
@@ -99,7 +100,7 @@ export default function FeesScreen() {
           </View>
         </View>
       )}
-    </View>
+    </ScrollView>
   )
 }
 
@@ -188,7 +189,8 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     backgroundColor: "white",
     marginTop: 30,
-    gap: 20
+    gap: 20,
+    marginBottom: 10,
   },
   feeCurrentStateContainer: {
     display: "flex",

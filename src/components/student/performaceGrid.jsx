@@ -1,66 +1,63 @@
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from "react-native"
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6'
-import { useStudent } from "../../context/studentContext"
 
 
 
-export default function PerformanceGrid() {
-    const { studentData, studentLoading } = useStudent()
-    const assignmentsNum = "-"
-    const remarks = "-"
+export default function PerformanceGrid({ studentLoading, attendancePercentage, grade, feeStatus }) {
+  const remarks = "-"
 
-    return (
-        <ScrollView contentContainerStyle={styles.container}>
-            <View style={styles.row}>
-                <View style={[styles.card, { backgroundColor: !studentData?.attendancePercentage ? "#909691" : studentData?.attendancePercentage>75 ? "#10b981" : studentData?.attendancePercentage>45 ? "#f59e0b" : "#e23333ff" }]}>
-                    <Text style={styles.cardTitle}>ATTENDANCE</Text>
-                    <View style={styles.divider} />
-                    <View style={styles.metricContainer}>
-                      <FontAwesome name="calendar-o" size={22} color="white" />
-                      {studentLoading ? (
-                        <ActivityIndicator size="small" color="#9c1006" />
-                      ) : (
-                        <Text style={[styles.metricText, { marginLeft: 5 }]}>{!studentData?.attendancePercentage ? "-" : `${studentData?.attendancePercentage}%`}</Text>
-                      )}
-                    </View>
-                </View>
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.row}>
+        <View style={[styles.card, { backgroundColor: !attendancePercentage ? "#909691" : attendancePercentage>75 ? "#10b981" : attendancePercentage>45 ? "#f59e0b" : "#e23333ff" }]}>
+          <Text style={styles.cardTitle}>ATTENDANCE</Text>
+          <View style={styles.divider} />
+          <View style={styles.metricContainer}>
+            <FontAwesome name="calendar-o" size={22} color="white" />
+            {studentLoading ? (
+              <ActivityIndicator size="small" color="#9c1006" />
+            ) : (
+              <Text style={[styles.metricText, { marginLeft: 5 }]}>{!attendancePercentage ? "-" : `${attendancePercentage}%`}</Text>
+            )}
+          </View>
+        </View>
 
-                <View style={[styles.card, { backgroundColor: !studentData?.grade?.cgpa ? "#909691" : studentData?.grade>8 ? "#10b981" : studentData?.grade>5 ? "#f59e0b"  : "#DC2626" }]}>
-                    <Text style={styles.cardTitle}>CGPA</Text>
-                    <View style={styles.divider} />
-                    <View style={styles.metricContainer}>
-                      <FontAwesome name="graduation-cap" size={22} color="white" />
-                      {studentLoading ? (
-                        <ActivityIndicator size="small" color="#9c1006" />
-                      ) : (
-                        <Text style={[styles.metricText, { marginLeft: 5 }]}>{!studentData?.grade?.cgpa ? "-" : `${(studentData?.grade?.cgpa).toFixed(2)}`}</Text>
-                      )}
-                    </View>
-                </View>
-            </View>
-            
-            <View style={styles.row2}>
-              <View style={[styles.card, { backgroundColor: assignmentsNum>0 ? "#f59e0b" : assignmentsNum<0 ? "#DC2626" : assignmentsNum==="-" ? "#909691" : "#10b981" }]}>
-                  <Text style={styles.cardTitle}>ASSIGNMENTS</Text>
-                  <View style={styles.divider} />
-                  <View style={styles.metricContainer}>
-                    <FontAwesome name="book" size={22} color="white" />
-                    <Text style={styles.metricText}>{assignmentsNum<0 ? `${Math.abs(assignmentsNum)} UNSUBMITTED` : assignmentsNum>0 ? `${assignmentsNum} PENDING` : assignmentsNum==="-" ? "NO ASSIGNMENTS" : "SUBMITTED"}</Text>
-                  </View>
-              </View>
+        <View style={[styles.card, { backgroundColor: !grade?.cgpa ? "#909691" : grade>8 ? "#10b981" : grade>5 ? "#f59e0b"  : "#DC2626" }]}>
+          <Text style={styles.cardTitle}>CGPA</Text>
+          <View style={styles.divider} />
+          <View style={styles.metricContainer}>
+            <FontAwesome name="graduation-cap" size={22} color="white" />
+            {studentLoading ? (
+              <ActivityIndicator size="small" color="#9c1006" />
+            ) : (
+              <Text style={[styles.metricText, { marginLeft: 5 }]}>{!grade?.cgpa ? "-" : `${(grade?.cgpa).toFixed(2)}`}</Text>
+            )}
+          </View>
+        </View>
+      </View>
+      
+      <View style={styles.row2}>
+        <View style={[styles.card, { backgroundColor: feeStatus==="PENDING" ? "#f59e0b" : feeStatus==="OVERDUE" ? "#DC2626" : feeStatus==="PAID" ? "#10b981" : "#909691" }]}>
+          <Text style={styles.cardTitle}>FEES</Text>
+          <View style={styles.divider} />
+          <View style={styles.metricContainer}>
+            <FontAwesome name="rupee" size={24} color="white" />
+            <Text style={styles.metricText}>{!feeStatus ? "-" : feeStatus}</Text>
+          </View>
+        </View>
 
-              <View style={[styles.card, { backgroundColor: remarks==="-" ? "#909691" : "#f59e0b" }]}>
-                  <Text style={styles.cardTitle}>REMARKS</Text>
-                  <View style={styles.divider} />
-                  <View style={styles.metricContainer}>
-                    <FontAwesome6 name="chalkboard-user" size={22} color="white" />
-                    <Text style={styles.metricText}>{remarks==="-" ? "NO REMARKS" : `${remarks} REMARKS`}</Text>
-                  </View>
-              </View>
-            </View>
-        </ScrollView>
-    )
+        <View style={[styles.card, { backgroundColor: remarks==="-" ? "#909691" : "#f59e0b" }]}>
+          <Text style={styles.cardTitle}>REMARKS</Text>
+          <View style={styles.divider} />
+          <View style={styles.metricContainer}>
+            <FontAwesome6 name="chalkboard-user" size={22} color="white" />
+            <Text style={styles.metricText}>{remarks==="-" ? "NO REMARKS" : `${remarks} REMARKS`}</Text>
+          </View>
+        </View>
+      </View>
+    </ScrollView>
+  )
 }
 
 
