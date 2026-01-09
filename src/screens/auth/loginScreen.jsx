@@ -54,7 +54,7 @@ export default function LoginScreen() {
     try {
       const maskedPhone = await getMaskedPhone(userId)
       if(maskedPhone)
-        navigation.navigate('otp', { maskedPhone: maskedPhone.data, userId })
+        navigation.navigate('otp', { phone: maskedPhone.data, userId, uiFlow: "auth", })
     } catch(err) {
       const status = err.response?.status
       const serverMessage = err.response?.data?.error || err.response?.data?.message

@@ -36,7 +36,7 @@ export default function MenuScreen({ navigation, route }) {
             style={styles.menuItem}
             onPress={() =>
               navigation.navigate(item.screen, {
-                studentData
+                studentData,
               })
             }
           >
