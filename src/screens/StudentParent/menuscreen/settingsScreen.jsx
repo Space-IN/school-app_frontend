@@ -9,7 +9,16 @@ export default function SettingsScreen({ navigation, route }) {
     const flatListRef = useRef(null)
 
     const accountSettingsItems = [
-        { title: 'CHANGE PASSWORD', screen: 'otp', icon: 'password', },
+        {
+            title: 'CHANGE PASSWORD',
+            screen: 'otp',
+            icon: 'password',
+            data: {
+                phone: studentData?.fatherContact,
+                userId: studentData?.userId,
+                uiFlow: 'settings',
+            },
+        },
     ]
 
     
@@ -35,7 +44,7 @@ export default function SettingsScreen({ navigation, route }) {
                         <TouchableOpacity
                             style={styles.item}
                             onPress={() =>
-                                navigation.navigate(item.screen, {studentData})
+                                navigation.navigate(item.screen, item.data)
                             }
                         >
                             <View style={styles.content}>

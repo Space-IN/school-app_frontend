@@ -5,7 +5,7 @@ import { sendOtp, verifyOtp } from "../../controllers/authController"
 
 
 
-export default function OtpTab({ phoneNumber, userId, navigation }) {
+export default function OtpTab({ phoneNumber, userId, navigation, uiFlow }) {
     const [otpState, setOtpState] = useState("idle")
     const [otp, setOtp] = useState(["", "", "", "", "", ""])
     const [timer, setTimer] = useState(30)
@@ -52,7 +52,7 @@ export default function OtpTab({ phoneNumber, userId, navigation }) {
 
         try {
             const res = await verifyOtp(userId, code)
-            navigation.replace("setPassword", { resetToken: res.resetToken, })
+            navigation.replace("setPassword", { resetToken: res.resetToken, uiFlow: uiFlow, })
         } catch(err) {
             setError(err.response?.data?.error || "Invalid OTP. Please try again.")
             setOtp(["", "", "", "", "", ""])
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     container: {
         width: "90%",
         height: "fit-content",
-        backgroundColor: 'rgba(255, 255, 255, 0.85)',
+        backgroundColor: 'rgba(226, 226, 226, 0.85)',
         borderRadius: 20,
     },
     otpContainer: {
