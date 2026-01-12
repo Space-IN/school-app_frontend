@@ -28,7 +28,7 @@ export default function BoardSelectionScreen({ navigation, route }) {
 
                 <TouchableOpacity
                     style={styles.card}
-                    onPress={() => handleSelectBoard('State Board')}
+                    onPress={() => handleSelectBoard('STATE')}
                 >
                     <View style={styles.iconContainer}>
                         <Ionicons name="business" size={32} color="#1e3a8a" />

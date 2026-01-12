@@ -203,11 +203,17 @@ export default function AdminWorkbenchScreen({ navigation }) {
                             <Ionicons name="calendar-number-outline" size={20} color="#333" />
                             <Text style={styles.dropdownText}>Exam Schedule</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.dropdownItem} onPress={() => navigation.navigate('MarksEntryScreen')}>
+                        <TouchableOpacity style={styles.dropdownItem} onPress={() => navigation.navigate('BoardSelectionScreen', {
+                            nextScreen: 'MarksEntryScreen',
+                            title: 'Marks Entry - Select Board'
+                        })}>
                             <Ionicons name="pencil-outline" size={20} color="#333" />
                             <Text style={styles.dropdownText}>Marks Entry</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.dropdownItem} onPress={() => Alert.alert('Coming Soon', 'Report Cards feature is under development')}>
+                        <TouchableOpacity style={styles.dropdownItem} onPress={() => navigation.navigate('BoardSelectionScreen', {
+                            nextScreen: 'ReportCardLandingScreen',
+                            title: 'Report Cards - Select Board'
+                        })}>
                             <Ionicons name="document-text-outline" size={20} color="#333" />
                             <Text style={styles.dropdownText}>Report Cards</Text>
                         </TouchableOpacity>
