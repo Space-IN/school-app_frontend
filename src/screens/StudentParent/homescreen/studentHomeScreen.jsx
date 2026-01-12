@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ScrollView, StyleSheet, View, RefreshControl } from "react-native"
 import { useStudent } from "../../../context/studentContext"
 import UserBanner from "../../../components/student/userBanner"
@@ -24,6 +24,10 @@ export default function StudentHome() {
     }
   }
 
+  useEffect(() => {
+    console.log("student's data: ", studentData?.grade)
+  }, [])
+
 
   return (
     <ScrollView
@@ -48,6 +52,7 @@ export default function StudentHome() {
           studentLoading={studentLoading}
           attendancePercentage={studentData?.attendancePercentage}
           grade={studentData?.grade}
+          feeStatus={studentData?.feeDetails?.overallStatus}
         />
       </View>
 
