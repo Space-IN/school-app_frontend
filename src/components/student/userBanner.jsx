@@ -16,7 +16,7 @@ const getGreeting = () => {
 
 
 
-export default function UserBanner({ studentData, loading, err, refreshKey }) {
+export default function UserBanner({ studentData, loading, err, refreshKey, loadStudentData }) {
   const [greeting, setGreeting] = useState(getGreeting())
   const scaleAnim = useRef(new Animated.Value(1)).current
   const navigation = useNavigation()
@@ -35,6 +35,7 @@ export default function UserBanner({ studentData, loading, err, refreshKey }) {
   }, [])
 
   useEffect(() => {
+    loadStudentData(studentData?.userId)
     setGreeting(getGreeting())
   }, [refreshKey])
 

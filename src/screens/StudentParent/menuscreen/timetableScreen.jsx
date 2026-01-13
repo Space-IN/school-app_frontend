@@ -1,28 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-  Dimensions,
-  TouchableOpacity,
-  RefreshControl,
-  SafeAreaView,
-  Platform,
-  StatusBar,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import * as Animatable from 'react-native-animatable';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LinearGradient } from 'expo-linear-gradient';
-import { BASE_URL } from '@env';
-import { useStudent } from '../../../context/studentContext';
-import { api } from '../../../api/api';
+import { useState, useEffect, useCallback } from 'react'
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, RefreshControl, Platform, StatusBar, } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import * as Animatable from 'react-native-animatable'
+import { useNavigation } from '@react-navigation/native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { Ionicons } from '@expo/vector-icons'
+import { useStudent } from '../../../context/studentContext'
+import { api } from '../../../api/api'
 
-const { width } = Dimensions.get('window');
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 const SUBJECT_COLORS = [
   ['#667eea', '#764ba2'],
@@ -33,81 +19,57 @@ const SUBJECT_COLORS = [
   ['#30cfd0', '#330867'],
   ['#a8edea', '#fed6e3'],
   ['#ff9a9e', '#fecfef'],
-];
+]
+
+
+
 
 export default function TimetableScreen() {
   const { studentData, studentLoading } = useStudent()
-  const route = useRoute();
-  const navigation = useNavigation();
-  const [schedule, setSchedule] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [selectedDay, setSelectedDay] = useState(DAYS[0]);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(null);
+  const navigation = useNavigation()
+  const [schedule, setSchedule] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [selectedDay, setSelectedDay] = useState(DAYS[0])
+  const [refreshing, setRefreshing] = useState(false)
+  const [error, setError] = useState(null)
 
-  const debugUserData = async () => {
-    try {
-      const keys = await AsyncStorage.getAllKeys();
-      const result = await AsyncStorage.multiGet(keys);
-    } catch (err) {
-      console.error('Debug error:', err);
-    }
-  };
 
   const fetchSchedule = async () => {
     try {
       setError(null)
       setLoading(true)
-      // Use class-based schedule endpoint only (no studentId)
-      const userData = studentData || {}
-      const grade = userData?.classAssigned || userData?.className || userData?.grade
-      const section = userData?.section
 
-      if (!grade || !section) {
-        throw new Error('Class and section information not found')
-      }
-
-      // primary class schedule endpoint (use axios instance with auth handlers)
-      const primaryUrl = `/api/student/schedule/class/${encodeURIComponent(grade)}/section/${encodeURIComponent(section)}`
-
-      try {
-        const response = await api.get(primaryUrl)
-        setSchedule(response.data)
-      } catch (primaryErr) {
-        const status = primaryErr?.response?.status
-        console.log(`Class schedule fetch failed with status: ${status}. Trying fallback endpoint...`)
-
-      }
-    } catch (err) {
-      console.error('❌ Error fetching schedule:', err.message);
-      setError(err.message || 'Failed to load timetable');
+      const grade = studentData?.className
+      const section = studentData?.section
+      if (!grade || !section) throw new Error('Class and section information not found')
+      
+      const response = await api.get(
+        `/api/student/schedule/class/${grade}/section/${section}`
+      )
+      setSchedule(response.data)
+    } catch(err) {
+      console.error('error fetching schedule:', err)
+      setError(err.response.data.message || 'Failed to load timetable')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => {
 
-    debugUserData();
+  const onRefresh = useCallback(() => {
+    setRefreshing(true)
+    fetchSchedule().finally(() => setRefreshing(false))
+  }, [])
 
-    if (studentLoading) return;
-
-    fetchSchedule();
-  }, [studentData, studentLoading]);
-
-  const onRefresh = React.useCallback(() => {
-    setRefreshing(true);
-    fetchSchedule().finally(() => setRefreshing(false));
-  }, []);
 
   const getColorForPeriod = (index) => {
-    return SUBJECT_COLORS[index % SUBJECT_COLORS.length];
-  };
+    return SUBJECT_COLORS[index % SUBJECT_COLORS.length]
+  }
 
   const renderTimeSlot = (period, index) => {
-    if (!period) return null;
+    if (!period) return null
 
-    const colors = getColorForPeriod(index);
+    const colors = getColorForPeriod(index)
 
     return (
       <Animatable.View
@@ -157,16 +119,25 @@ export default function TimetableScreen() {
           </View>
         </LinearGradient>
       </Animatable.View>
-    );
-  };
+    )
+  }
 
   const getDaySchedule = () => {
-    if (!schedule?.weeklySchedule) return [];
+    if (!schedule?.weeklySchedule) return []
     const daySchedule = schedule.weeklySchedule.find(
       (day) => day.day === selectedDay
-    );
-    return daySchedule?.periods || [];
-  };
+    )
+    return daySchedule?.periods || []
+  }
+
+  const daySchedule = getDaySchedule()
+  const totalPeriods = daySchedule.length
+
+
+  useEffect(() => {
+    if (studentLoading) return
+    fetchSchedule()
+  }, [studentData, studentLoading])
 
   if (loading) {
     return (
@@ -178,7 +149,7 @@ export default function TimetableScreen() {
         </Animatable.View>
         <Text style={styles.loadingText}>Loading your timetable...</Text>
       </View>
-    );
+    )
   }
 
   if (error) {
@@ -198,11 +169,8 @@ export default function TimetableScreen() {
           </TouchableOpacity>
         </Animatable.View>
       </View>
-    );
+    )
   }
-
-  const daySchedule = getDaySchedule();
-  const totalPeriods = daySchedule.length;
 
   return (
     <SafeAreaView style={styles.container}>

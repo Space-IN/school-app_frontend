@@ -61,13 +61,14 @@ export const fetchEvents = async (studentId) => {
 
 export const fetchAssessments = async (grade, section, year) => {
     try {
-        const res = await api.get(`${BASE_URL}/api/student/assessment/assessmentNames?grade=${grade}&section=${section}&year=${year}`)
+        const res = await api.get(`/api/student/assessment/assessmentNames?grade=${grade}&section=${section}&year=${year}`)
         return res.data
     } catch(err) {
         console.error(`failed to fetch student's assessment: `, err.response?.data)
         throw err.response?.data || { message: `something went wrong while fetching student's assessments.` }
     }
 }
+
 
 export const fetchAssessmentScore = async (studentId, grade, section, testName, year) => {
     try {
@@ -81,3 +82,13 @@ export const fetchAssessmentScore = async (studentId, grade, section, testName, 
     }
 }
 
+
+export const fetchFeeDetails = async (studentId) => {
+    try {
+        const res = await api.get(`/api/student/fee/${studentId}`)
+        return res.data
+    } catch(err) {
+        console.error(`failed to fetch student's assessment: `, err.response?.data)
+        throw err.response?.data || { message: `something went wrong while fetching student's assessments.` }
+    }
+}
