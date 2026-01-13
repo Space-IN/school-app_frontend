@@ -36,6 +36,7 @@ import AddEventScreen from "../../screens/Admin/Eventmanagement/AddEventScreen"
 import AddNoticeScreen from "../../screens/Admin/NoticeManagement/AddNoticeScreen"
 import AddSubjectMasterScreen from "../../screens/Admin/subjectManagement/AddSubjectMasterScreen"
 import AssignSubjectScreen from "../../screens/Admin/subjectManagement/AssignSubjectScreen"
+import MarksEntryScreen from "../../screens/Admin/MarksEntryScreen"
 
 
 import { StatusBar } from "react-native";
@@ -86,7 +87,7 @@ export default function AdminNavigator() {
             <Stack.Screen name="AdminAttendanceScreen" component={AdminAttendanceScreen} />
             <Stack.Screen name="BoardSelectionScreen" component={BoardSelectionScreen} options={{ title: 'Select Board' }} />
             <Stack.Screen name="AdminFeesScreen" component={AdminFeesScreen} />
-
+            <Stack.Screen name="MarksEntryScreen" component={MarksEntryScreen} />
             <Stack.Screen name="ReportCardLandingScreen" component={ReportCardLandingScreen} options={{ headerShown: false }} />
             <Stack.Screen name="ReportCardEditorScreen" component={ReportCardEditorScreen} options={{ headerShown: false }} />
 
