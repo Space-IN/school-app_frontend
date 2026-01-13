@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, TextInput, Button, Alert, StyleSheet, Dimensions, Text } from 'react-native';
 import axios from 'axios';
 import { BASE_URL } from '@env';
+import {api} from '../../../api/api'
 
 const AddSubjectMasterScreen = () => {
   const [name, setName] = useState('');
@@ -14,7 +15,7 @@ const AddSubjectMasterScreen = () => {
     }
 
     try {
-      const res = await axios.post(`${BASE_URL}/api/subject/subject-master`, {
+      const res = await api.post(`${BASE_URL}/api/subject/subject-master`, {
         name: name.trim(),
         code: code.trim().toUpperCase(),
       });

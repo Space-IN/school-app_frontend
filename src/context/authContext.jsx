@@ -56,6 +56,7 @@ export const AuthProvider = ({ children }) => {
             if(stored) {
                 const parsed = JSON.parse(stored)
                 const decoded = decodeToken(parsed.access_token)
+                console.log("decoded token on loadUser: ", decoded)
                 if(decoded) {
                     setAccessToken(parsed.access_token)
                     setDecodedToken(decoded)

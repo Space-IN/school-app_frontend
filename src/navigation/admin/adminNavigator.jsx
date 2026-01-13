@@ -28,25 +28,14 @@ import ClassScheduleViewScreen from '../../screens/Admin/classScheduleManagement
 
 // Other screens
 import BoardSelectionScreen from '../../screens/Admin/BoardSelectionScreen';
-import MarksEntryScreen from '../../screens/Admin/MarksEntryScreen';
+import AdminFeesScreen from "../../screens/Admin/fees/AdminFeesScreen";
 
+// import AdminPosterManager from "../../screens/Admin/AdminPosterManager";
 
+import AdminStudentProfileView from "../../screens/Admin/AdminStudentProfileView";
 
-//EventManagement Related imports
-import AddEventScreen from '../../screens/Admin/Eventmanagement/AddEventScreen';
-
-
-// Admin/subjectManagement Related imports 
-import AddSubjectMasterScreen from '../../screens/Admin/subjectManagement/AddSubjectMasterScreen';
-import AssignSubjectScreen from '../../screens/Admin/subjectManagement/AssignSubjectScreen';
-
-
-
-// Admin/NoticeManagement Related imports 
-import AddNoticeScreen from '../../screens/Admin/NoticeManagement/AddNoticeScreen';
-
-
-
+import { StatusBar } from "react-native";
+import { SafeAreaFrameContext } from "react-native-safe-area-context";
 
 
 
@@ -88,7 +77,7 @@ export default function AdminNavigator() {
             <Stack.Screen name="AdminStudentProfileView" component={AdminStudentProfileView} />
             <Stack.Screen name="AdminAttendanceScreen" component={AdminAttendanceScreen} />
             <Stack.Screen name="BoardSelectionScreen" component={BoardSelectionScreen} options={{ title: 'Select Board' }} />
-            <Stack.Screen name="MarksEntryScreen" component={MarksEntryScreen} />
+            <Stack.Screen name="AdminFeesScreen" component={AdminFeesScreen} />
 
 
         </Stack.Navigator>
