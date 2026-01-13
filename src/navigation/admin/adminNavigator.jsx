@@ -21,6 +21,9 @@ import FilteredStudentsScreen from '../../screens/Admin/StudentManagement/Filter
 import DeletedStudentsScreen from '../../screens/Admin/StudentManagement/DeletedStudentsScreen';
 import AdminAttendanceScreen from '../../screens/Admin/StudentManagement/AdminAttendanceScreen';
 import AdminStudentProfileView from "../../screens/Admin/StudentManagement/AdminStudentProfileView";
+import StudentEntryHubScreen from "../../screens/Admin/StudentManagement/StudentEntryHubScreen";
+import BulkStudentUploadScreen from "../../screens/Admin/StudentManagement/BulkUpload/BulkStudentUploadScreen";
+import BatchDetailsScreen from "../../screens/Admin/StudentManagement/BulkUpload/BatchDetailsScreen";
 
 // Admin/classSchedule related imports
 import ClassScheduleScreen from '../../screens/Admin/classScheduleManagement/ClassScheduleScreen';
@@ -89,7 +92,9 @@ export default function AdminNavigator() {
             <Stack.Screen name="AdminAttendanceScreen" component={AdminAttendanceScreen} />
             <Stack.Screen name="BoardSelectionScreen" component={BoardSelectionScreen} options={{ title: 'Select Board' }} />
             <Stack.Screen name="MarksEntryScreen" component={MarksEntryScreen} />
-
+            <Stack.Screen name="StudentEntryHubScreen" component={StudentEntryHubScreen} />
+            <Stack.Screen name="BulkStudentUploadScreen" component={BulkStudentUploadScreen} />
+            <Stack.Screen name="BatchDetailsScreen" component={BatchDetailsScreen} />
 
         </Stack.Navigator>
 

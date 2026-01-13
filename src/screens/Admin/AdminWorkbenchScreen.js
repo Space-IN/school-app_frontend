@@ -62,10 +62,7 @@ export default function AdminWorkbenchScreen({ navigation }) {
 
     // ✅ Navigation handlers
     const handleAddStudent = () => {
-        navigation.navigate('BoardSelectionScreen', {
-            nextScreen: 'AddStudentScreen',
-            title: 'Add Student - Select Board',
-        });
+       navigation.navigate('StudentEntryHubScreen');
     };
 
     const handleAddFaculty = () => navigation.navigate('AddFacultyScreen');
@@ -244,8 +241,8 @@ export default function AdminWorkbenchScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#ffffff',
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+        backgroundColor: '#9c1006',
+        // paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     },
 
     scrollContent: {
