@@ -43,6 +43,10 @@ import { SafeAreaFrameContext } from "react-native-safe-area-context";
 
 
 
+// Report Card Imports
+import ReportCardLandingScreen from '../../screens/Admin/ReportCard/ReportCardLandingScreen';
+import ReportCardEditorScreen from '../../screens/Admin/ReportCard/ReportCardEditorScreen';
+
 const Stack = createNativeStackNavigator()
 
 export default function AdminNavigator() {
@@ -82,6 +86,9 @@ export default function AdminNavigator() {
             <Stack.Screen name="AdminAttendanceScreen" component={AdminAttendanceScreen} />
             <Stack.Screen name="BoardSelectionScreen" component={BoardSelectionScreen} options={{ title: 'Select Board' }} />
             <Stack.Screen name="AdminFeesScreen" component={AdminFeesScreen} />
+
+            <Stack.Screen name="ReportCardLandingScreen" component={ReportCardLandingScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="ReportCardEditorScreen" component={ReportCardEditorScreen} options={{ headerShown: false }} />
 
 
         </Stack.Navigator>
