@@ -77,7 +77,6 @@ export default function TimetableScreen() {
         const status = primaryErr?.response?.status
         console.log(`Class schedule fetch failed with status: ${status}. Trying fallback endpoint...`)
 
-
       }
     } catch (err) {
       console.error('❌ Error fetching schedule:', err.message);

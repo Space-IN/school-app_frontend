@@ -476,7 +476,7 @@ export default function LectureRecordingScreen({ route }) {
         type: 'audio/m4a',
       });
 
-      const resp = await fetch(`${BASE_URL}/api/lecture-recordings`, {
+      const resp = await fetch(`${BASE_URL}/api/faculty/lecture-recordings`, {
         method: 'POST',
         body: form,
       });
