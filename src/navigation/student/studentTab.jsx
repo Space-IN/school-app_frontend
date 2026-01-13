@@ -4,7 +4,7 @@ import Entypo from '@expo/vector-icons/Entypo'
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import StudentProfileNavigator from "./studentProfileNavigator"
 import StudentMenuNavigator from "./studentMenuNavigator"
-import StudentHomeStack from "./studentHomeStack"
+import StudentHomeNavigator from "./studentHomeNavigator"
 
 const Tab = createBottomTabNavigator()
 
@@ -23,7 +23,7 @@ export default function StudentTab() {
         >
             <Tab.Screen
                 name="Home"
-                component={StudentHomeStack}
+                component={StudentHomeNavigator}
                 options={{
                     tabBarLabel: "HOME",
                     tabBarIcon: ({ color, size }) => (

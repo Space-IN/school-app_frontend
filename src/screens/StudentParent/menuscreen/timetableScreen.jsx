@@ -251,8 +251,6 @@ export default function TimetableScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-          <RefreshControl
-            refreshing={refreshing}
             onRefresh={onRefresh}
             colors={['#d72b2b']}
             tintColor='#8b1313'

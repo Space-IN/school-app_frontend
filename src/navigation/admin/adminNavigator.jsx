@@ -32,7 +32,11 @@ import AdminFeesScreen from "../../screens/Admin/fees/AdminFeesScreen";
 
 // import AdminPosterManager from "../../screens/Admin/AdminPosterManager";
 
-import AdminStudentProfileView from "../../screens/Admin/AdminStudentProfileView";
+import AddEventScreen from "../../screens/Admin/Eventmanagement/AddEventScreen"
+import AddNoticeScreen from "../../screens/Admin/NoticeManagement/AddNoticeScreen"
+import AddSubjectMasterScreen from "../../screens/Admin/subjectManagement/AddSubjectMasterScreen"
+import AssignSubjectScreen from "../../screens/Admin/subjectManagement/AssignSubjectScreen"
+
 
 import { StatusBar } from "react-native";
 import { SafeAreaFrameContext } from "react-native-safe-area-context";
