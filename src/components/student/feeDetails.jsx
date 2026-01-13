@@ -18,23 +18,25 @@ const DetailRow = ({ label, value }) => (
 
 
 export default function FeeDetails({ title, dueDate, details, lastPaid, status }) {
-    const installmentStatusColor = status==="PAID" ? "#27AE60" : status==="PENDING" ? "#F2C94C" : status==="OVERDUE" ? "#D64545" : "#e4e6e9ff"
+    const installmentStatusColor = status==="PAID" ? "#27AE60" : status==="PARTIAL" ? "#F2C94C" : status==="OVERDUE" ? "#D64545" : "#e4e6e9ff"
     return (
-        <View style={[styles.installment, { backgroundColor: installmentStatusColor }]}>
-            <View style={styles.installmentTitleContainer}>
-                <Text style={styles.installmentTitle}>{title}</Text>
-                <Text style={{ fontSize: 13, color: "#595959", fontWeight: "800", }}>{readableDate(dueDate)}</Text>
-            </View>
-            <View style={styles.installmentDetail}>
-                {details.map((ele, idx) => (
-                    <DetailRow key={idx} label={ele.label} value={ele.value} />
-                ))}
-            <View style={styles.lastPayment}>
-                <Text style={styles.lastPaymentText}>Last Payment</Text>
-                <Text style={styles.lastPaymentText}>{readableDate(lastPaid)}</Text>
-            </View>
-            </View>
+      <View style={[styles.installment, { backgroundColor: installmentStatusColor }]}>
+        <View style={styles.installmentTitleContainer}>
+          <Text style={styles.installmentTitle}>{title}</Text>
+          <Text style={{ fontSize: 13, color: "#595959", fontWeight: "800", }}>{readableDate(dueDate)}</Text>
         </View>
+        <View style={styles.installmentDetail}>
+          {details.map((ele, idx) => (
+            <DetailRow key={idx} label={ele.label} value={ele.value} />
+          ))}
+          {lastPaid && (
+            <View style={styles.lastPayment}>
+              <Text style={styles.lastPaymentText}>Last Payment</Text>
+              <Text style={styles.lastPaymentText}>{readableDate(lastPaid)}</Text>
+            </View>
+          )}
+        </View>
+      </View>
     )
 }
 

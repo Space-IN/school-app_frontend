@@ -1,18 +1,17 @@
-import { createStackNavigator } from '@react-navigation/stack';
-import MenuScreen from '../../screens/StudentParent/menuscreen/MenuScreen';
-import AttendanceScreen from '../../screens/StudentParent/menuscreen/attendanceScreen';
-import SettingsScreen from '../../screens/StudentParent/menuscreen/settings/SettingsScreen';
+import { createStackNavigator } from '@react-navigation/stack'
+import MenuScreen from '../../screens/StudentParent/menuscreen/menuScreen'
+import AttendanceScreen from '../../screens/StudentParent/menuscreen/attendanceScreen'
 import TimetableScreen from '../../screens/StudentParent/menuscreen/timetableScreen'
-import AssessmentScreen from '../../screens/StudentParent/menuscreen/assessmentScreen';
-import AcademicCalendarScreen from '../../screens/StudentParent/menuscreen/academicCalendarScreen';
-import FeesScreen from '../../screens/StudentParent/menuscreen/feesScreen';
-import PrivacyPolicyScreen from '../../screens/StudentParent/menuscreen/settings/PrivacyPolicyScreen';
-import TermsScreen from '../../screens/StudentParent/menuscreen/settings/TermsScreen';
-import AboutScreen from '../../screens/StudentParent/menuscreen/settings/AboutScreen';
-import StudentHeader from '../../components/student/header';
-import ChangePasswordScreen from '../../screens/StudentParent/menuscreen/settings/ChangePasswordScreen';
+import AssessmentScreen from '../../screens/StudentParent/menuscreen/assessmentScreen'
+import AcademicCalendarScreen from '../../screens/StudentParent/menuscreen/academicCalendarScreen'
+import FeesScreen from '../../screens/StudentParent/menuscreen/feesScreen'
+import StudentHeader from '../../components/student/header'
+import SettingsScreen from '../../screens/StudentParent/menuscreen/settingsScreen'
+import OptScreen from '../../screens/auth/otpScreen'
+import SetPasswordScreen from '../../screens/auth/setPasswordScreen'
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator()
+
 
 export default function StudentMenuNavigator() {
   return (
@@ -26,13 +25,11 @@ export default function StudentMenuNavigator() {
       <Stack.Screen name="attendanceScreen" component={AttendanceScreen} />
       <Stack.Screen name="timetableScreen" component={TimetableScreen} options={{ headerShown: false }} />
       <Stack.Screen name="studentPerformanceScreen" component={AssessmentScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="settingsScreen" component={SettingsScreen} />
       <Stack.Screen name="academicCalendarScreen" component={AcademicCalendarScreen} />
       <Stack.Screen name="feesScreen" component={FeesScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="privacyPolicyScreen" component={PrivacyPolicyScreen} />
-      <Stack.Screen name="termsScreen" component={TermsScreen} />
-      <Stack.Screen name="aboutScreen" component={AboutScreen} />
-      <Stack.Screen name="changePasswordScreen" component={ChangePasswordScreen} />
+      <Stack.Screen name="settingsScreen" component={SettingsScreen} />
+      <Stack.Screen name="otp" component={OptScreen} />
+      <Stack.Screen name="setPassword" component={SetPasswordScreen} />
     </Stack.Navigator>
-  );
+  )
 }

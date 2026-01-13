@@ -38,12 +38,12 @@ export default function PerformanceGrid({ studentLoading, attendancePercentage, 
       </View>
       
       <View style={styles.row2}>
-        <View style={[styles.card, { backgroundColor: feeStatus==="PENDING" ? "#f59e0b" : feeStatus==="OVERDUE" ? "#DC2626" : feeStatus==="PAID" ? "#10b981" : "#909691" }]}>
+        <View style={[styles.card, { backgroundColor: feeStatus==="PARTIAL" ? "#f59e0b" : feeStatus==="OVERDUE" ? "#DC2626" : feeStatus==="PAID" ? "#10b981" : "#909691" }]}>
           <Text style={styles.cardTitle}>FEES</Text>
           <View style={styles.divider} />
           <View style={styles.metricContainer}>
             <FontAwesome name="rupee" size={24} color="white" />
-            <Text style={styles.metricText}>{!feeStatus ? "-" : feeStatus}</Text>
+            <Text style={styles.metricText}>{!feeStatus || feeStatus==="PENDING" ? "-" : feeStatus}</Text>
           </View>
         </View>
 

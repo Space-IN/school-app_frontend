@@ -1,6 +1,6 @@
 import { createContext, useState, useEffect, useContext } from "react"
 import { useAuth } from "./authContext"
-import { fetchStudentData, fetchOverallCPGA } from "../controllers/studentDataController"
+import { fetchStudentData, fetchOverallCPGA, fetchFeeDetails } from "../controllers/studentDataController"
 
 export const StudentContext = createContext()
 
@@ -11,26 +11,25 @@ export const StudentProvider = ({ children }) => {
     const [studentLoading, setStudentLoading] = useState(true)
     const [studentErr, setStudentErr] = useState(null)
     const { decodedToken } = useAuth()
+
     
     const loadStudentData = async () => {
         const studentId = decodedToken?.preferred_username
-        if(!studentId) {
-            setStudentLoading(false)
-            return
-        }
+        if(!studentId) return
 
         setStudentLoading(true)
         try {
-            const studentRes = await fetchStudentData(studentId)
-            const cgpaRes = await fetchOverallCPGA(studentId)
-
-            let studentObj = studentRes?.data || {}
-            const overall = { grade: cgpaRes }
-
-            studentObj = { ...studentObj, ...overall }
-            if(studentObj) {
-                setStudentData(studentObj)
+            const [studentRes, feeRes, cgpaRes] = await Promise.all([
+                fetchStudentData(studentId), fetchFeeDetails(studentId), fetchOverallCPGA(studentId),
+            ])
+            const mergedData = {
+                ...(studentRes?.data ?? {}),
+                ...(feeRes ? { feeDetails: feeRes?.data, } : {}),
+                ...(cgpaRes ? { grade: cgpaRes, } : {}),
             }
+            setStudentData(prev => ({
+                ...(prev || {}), ...mergedData,
+            }))
         } catch(err) {
             console.error("error setting student data: ", err)
             setStudentErr(err)
