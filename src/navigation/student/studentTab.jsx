@@ -1,10 +1,10 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
-import StudentHomeNavigator from "./studentHomeNavigator"
 import { Ionicons } from "@expo/vector-icons"
 import Entypo from '@expo/vector-icons/Entypo'
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import StudentProfileNavigator from "./studentProfileNavigator"
 import StudentMenuNavigator from "./studentMenuNavigator"
+import StudentHomeNavigator from "./studentHomeNavigator"
 
 const Tab = createBottomTabNavigator()
 

@@ -11,14 +11,11 @@ import {
     ScrollView,
     SafeAreaView,
     LayoutAnimation,
-    UIManager,
     Alert
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/authContext';
-
-
 
 export default function AdminWorkbenchScreen({ navigation }) {
     const [userId, setUserId] = useState(null);
@@ -48,9 +45,7 @@ export default function AdminWorkbenchScreen({ navigation }) {
             {
                 text: 'Logout',
                 style: 'destructive',
-                onPress: async () => {
-                    logout();
-                },
+                onPress: async () => logout(),
             },
         ]);
     };
@@ -66,14 +61,12 @@ export default function AdminWorkbenchScreen({ navigation }) {
     };
 
     const handleAddFaculty = () => navigation.navigate('AddFacultyScreen');
-
     const handleViewStudents = () => {
         navigation.navigate('BoardSelectionScreen', {
             nextScreen: 'AllStudentsScreen',
             title: 'View Students - Select Board',
         });
     };
-
     const handleViewFaculty = () => navigation.navigate('AllFacultyScreen');
     const handleClassSchedule = () => navigation.navigate('ClassScheduleScreen');
     const handleAddSubjectMaster = () => navigation.navigate('AddSubjectMasterScreen');
@@ -82,6 +75,7 @@ export default function AdminWorkbenchScreen({ navigation }) {
     const handleViewClassSchedule = () => navigation.navigate('ClassScheduleViewScreen');
     const handleAddNotice = () => navigation.navigate('AddNoticeScreen');
     const handleFacultyPerformance = () => navigation.navigate('FacultyPerformance');
+    const handleManageFees = () => navigation.navigate('AdminFeesScreen');
 
     const renderSectionHeader = (title, icon, sectionKey) => (
         <TouchableOpacity
@@ -103,8 +97,6 @@ export default function AdminWorkbenchScreen({ navigation }) {
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
-
-
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <View style={styles.profileCard}>
@@ -200,11 +192,17 @@ export default function AdminWorkbenchScreen({ navigation }) {
                             <Ionicons name="calendar-number-outline" size={20} color="#333" />
                             <Text style={styles.dropdownText}>Exam Schedule</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.dropdownItem} onPress={() => navigation.navigate('MarksEntryScreen')}>
+                        <TouchableOpacity style={styles.dropdownItem} onPress={() => navigation.navigate('BoardSelectionScreen', {
+                            nextScreen: 'MarksEntryScreen',
+                            title: 'Marks Entry - Select Board'
+                        })}>
                             <Ionicons name="pencil-outline" size={20} color="#333" />
                             <Text style={styles.dropdownText}>Marks Entry</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.dropdownItem} onPress={() => Alert.alert('Coming Soon', 'Report Cards feature is under development')}>
+                        <TouchableOpacity style={styles.dropdownItem} onPress={() => navigation.navigate('BoardSelectionScreen', {
+                            nextScreen: 'ReportCardLandingScreen',
+                            title: 'Report Cards - Select Board'
+                        })}>
                             <Ionicons name="document-text-outline" size={20} color="#333" />
                             <Text style={styles.dropdownText}>Report Cards</Text>
                         </TouchableOpacity>
@@ -232,7 +230,16 @@ export default function AdminWorkbenchScreen({ navigation }) {
                         </TouchableOpacity>
                     </View>
                 )}
-
+                {/* Fees Section */}
+                {renderSectionHeader("Fees Management", "cash", "feesManagement")}
+{expandedSection === "feesManagement" && (
+    <View style={styles.dropdownContent}>
+        <TouchableOpacity style={styles.dropdownItem} onPress={handleManageFees}>
+            <Ionicons name="cash-outline" size={20} color="#333" />
+            <Text style={styles.dropdownText}>Manage Fees</Text>
+        </TouchableOpacity>
+    </View>
+)}
             </ScrollView>
         </SafeAreaView>
     );
@@ -244,11 +251,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#9c1006',
         // paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     },
-
     scrollContent: {
         paddingBottom: 30,
         paddingHorizontal: 16,
-        backgroundColor: '#ffffffff'
+        backgroundColor: '#ffffff'
     },
     profileHeader: {
         flexDirection: 'row',
@@ -270,11 +276,11 @@ const styles = StyleSheet.create({
     greeting: {
         fontSize: 20,
         fontWeight: '700',
-        color: '#ffffffff',
+        color: '#ffffff',
     },
     subtitle: {
         fontSize: 14,
-        color: '#ffffffff',
+        color: '#ffffff',
         marginTop: 4,
     },
     sectionHeader: {

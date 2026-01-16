@@ -154,15 +154,29 @@ export default function ClassScheduleViewScreen() {
                       </View>
                       <View style={[styles.cell, styles.col3]}>
                         <Text numberOfLines={1} ellipsizeMode="tail" style={styles.cellText}>
-                          {period.subjectMasterId?.name ||
-                            period.subjectMasterId}
+                          {period.subjectName || 'N/A'}
+                            {/* period.subjectMasterId}
                         </Text>
                       </View>
-                      <View style={[styles.cell, styles.col4]}>
-                        <Text numberOfLines={1} ellipsizeMode="tail"   style={styles.cellText}>
-                          {period.facultyName || period.facultyId}
-                        </Text>
-                      </View>
+                      <View style={[styles.cell, styles.col3]}>
+  <Text numberOfLines={1} ellipsizeMode="tail" style={styles.cellText}>
+    {period.subjectName || 'N/A'} */}
+  </Text>
+</View>
+
+<View style={[styles.cell, styles.col4]}>
+  {period.facultyNames?.length ? (
+    period.facultyNames.map((name, i) => (
+      <Text key={i} style={styles.cellText}>
+        {name}
+      </Text>
+    ))
+  ) : (
+    <Text style={styles.cellText}>N/A</Text>
+  )}
+</View>
+
+
                     </View>
                   ))}
                 </View>

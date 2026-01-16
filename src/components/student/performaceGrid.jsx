@@ -60,58 +60,57 @@ export default function PerformanceGrid({ studentLoading, attendancePercentage, 
   )
 }
 
-
 const styles = StyleSheet.create({
-  container: {
-    padding: 12,
-    width: "100%",
-    marginTop: 0,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 2,
-    flexWrap: "wrap",
-  },
-  row2: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    flexWrap: "wrap",
-    marginTop: -6,
-  },
-  card: {
-    flex: 1,
-    backgroundColor: "#909691",
-    borderRadius: 12,
-    marginHorizontal: 6,
-    height: 110,
-    alignItems: "center",
-    width: "48%",
-    marginBottom: 12
-  },
-  cardTitle: {
-    color: "#f5f5f5",
-    fontSize: 12,
-    fontWeight: "900",
-    marginBottom: 2,
-    padding: 3
-  },
-  metricText: {
-    color: "#f5f5f5",
-    fontSize: 15,
-    marginTop: 10,
-    fontWeight: "700"
-  },
-  divider: {
-    width: "100%",
-    height: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
-    marginBottom: 15,
-  },
-  metricContainer: {
-    display: "flex",
-    justifyContent: "center",
-    flexDirection: "column",
-    alignItems: "center",
-  }
-})
+    container: {
+        padding: 12,
+        width: "100%",
+        marginTop: 0,
+    },
+    row: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginTop: 2,
+        flexWrap: "wrap",
+    },
+    row2: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        flexWrap: "wrap",
+        marginTop: -6,
+    },
+    card: {
+        flex: 1,
+        backgroundColor: "#909691",
+        borderRadius: 12,
+        marginHorizontal: 6,
+        height: 110,
+        alignItems: "center",
+        width: "48%",
+        marginBottom: 12,
+    },
+    cardTitle: {
+        color: "#f5f5f5",
+        fontSize: 12,
+        fontWeight: "900",
+        marginBottom: 2,
+        padding: 3,
+    },
+    metricText: {
+        color: "#f5f5f5",
+        fontSize: 15,
+        marginTop: 10,
+        fontWeight: "700",
+    },
+    divider: {
+        width: "100%",
+        height: 1,
+        backgroundColor: "rgba(255, 255, 255, 0.3)",
+        marginBottom: 15,
+    },
+    metricContainer: {
+        display: "flex",
+        justifyContent: "center",
+        flexDirection: "column",
+        alignItems: "center",
+    },
+});

@@ -21,6 +21,8 @@ import axios from 'axios';
 import { BASE_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import {api} from '../../api/api'
+
 
 const { width } = Dimensions.get('window');
 
@@ -56,11 +58,11 @@ export default function AdminInsightsScreen() {
 
         try {
             const results = await Promise.allSettled([
-                axios.get(`${BASE_URL}/api/admin/students/count`),
-                axios.get(`${BASE_URL}/api/faculty/all`),
-                axios.get(`${BASE_URL}/api/events`),
-                axios.get(`${BASE_URL}/api/announcement/active`),
-                axios.get(`${BASE_URL}/api/admin/attendance/overall`)
+                api.get(`${BASE_URL}/api/admin/students/count`),
+                api.get(`${BASE_URL}/api/faculty/all`),
+                api.get(`${BASE_URL}/api/events`),
+                api.get(`${BASE_URL}/api/announcement/active`),
+                api.get(`${BASE_URL}/api/admin/attendance/overall`)
             ]);
 
             // 1. Total Students

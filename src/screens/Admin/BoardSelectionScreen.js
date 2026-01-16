@@ -28,12 +28,12 @@ export default function BoardSelectionScreen({ navigation, route }) {
 
                 <TouchableOpacity
                     style={styles.card}
-                    onPress={() => handleSelectBoard('State Board')}
+                    onPress={() => handleSelectBoard('STATE')}
                 >
                     <View style={styles.iconContainer}>
                         <Ionicons name="business" size={32} color="#1e3a8a" />
                     </View>
-                    <Text style={styles.cardText}>State Board</Text>
+                    <Text style={styles.cardText}>STATE</Text>
                     <Ionicons name="chevron-forward" size={24} color="#ccc" />
                 </TouchableOpacity>
             </View>

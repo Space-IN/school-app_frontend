@@ -51,6 +51,7 @@ export default function FilteredStudentsScreen({ route, navigation }) {
 
       const res = await api.get(
         `${BASE_URL}/api/admin/students/grade/${encodedGrade}/section/${encodedSection}${boardQuery}`
+        
       );
 
       let fetchedStudents = res.data || [];
@@ -94,6 +95,7 @@ export default function FilteredStudentsScreen({ route, navigation }) {
 
   const handleSoftDelete = async (userId) => {
     try {
+      await api.patch(`${BASE_URL}/api/admin/students/delete/${userId}`);
       await api.patch(`${BASE_URL}/api/admin/students/delete/${userId}`);
       Alert.alert('Deleted', 'Student soft deleted.');
       fetchFilteredStudents();

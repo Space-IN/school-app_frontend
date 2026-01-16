@@ -36,8 +36,8 @@ export default function TimetableScreen() {
 
   const fetchSchedule = async () => {
     try {
-      setError(null)
-      setLoading(true)
+      setError(null);
+      setLoading(true);
 
       const grade = studentData?.className
       const section = studentData?.section
@@ -105,7 +105,7 @@ export default function TimetableScreen() {
                   <Ionicons name="person" size={16} color="#ffffff" />
                 </View>
                 <Text style={styles.teacherName}>
-                  {period.facultyId?.name || period.facultyName || period.facultyId || 'Teacher TBD'}
+                  {facultyNames.length > 0 ? facultyNames.join(", ") : "Teacher TBD"}
                 </Text>
               </View>
             </View>
@@ -174,13 +174,7 @@ export default function TimetableScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header with Gradient */}
-      <LinearGradient
-        colors={['#d72b2b', '#8b1313']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.header}
-      >
+      <LinearGradient colors={['#d72b2b', '#8b1313']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.header}>
         <View style={styles.headerContent}>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
             <Ionicons name="caret-back-outline" size={30} color="white" />
@@ -199,14 +193,13 @@ export default function TimetableScreen() {
         </View>
       </LinearGradient>
 
-      {/* Day Selector */}
       <View style={styles.daySelectorWrapper}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.daySelector}
         >
-          {DAYS.map((day, index) => {
+          {DAYS.map((day) => {
             const isSelected = selectedDay === day;
             return (
               <TouchableOpacity
@@ -233,7 +226,6 @@ export default function TimetableScreen() {
         </ScrollView>
       </View>
 
-      {/* Schedule Stats */}
       {totalPeriods > 0 && (
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
@@ -254,7 +246,6 @@ export default function TimetableScreen() {
         </View>
       )}
 
-      {/* Schedule Content */}
       <ScrollView
         contentContainerStyle={styles.scheduleContainer}
         refreshControl={
@@ -273,6 +264,7 @@ export default function TimetableScreen() {
           </View>
         ))}
 
+
         {daySchedule.length === 0 && (
           <Animatable.View animation="fadeIn" style={styles.emptyContainer}>
             <View style={styles.emptyIconCircle}>
@@ -288,7 +280,6 @@ export default function TimetableScreen() {
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -596,7 +587,7 @@ const styles = StyleSheet.create({
   },
   teacherName: {
     fontSize: 14,
-    color: '#64748b',
+    color: '#000000ff',
     fontWeight: '500',
   },
   periodFooter: {

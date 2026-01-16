@@ -50,7 +50,7 @@ export default function FacultyClassesScreen({ navigation, route }) {
       let classes = [];
       
       if (response.data && Array.isArray(response.data)) {
-        // Extract classes from subjects data
+        
         response.data.forEach(subject => {
           if (subject.classSectionAssignments && Array.isArray(subject.classSectionAssignments)) {
             subject.classSectionAssignments.forEach(assignment => {
