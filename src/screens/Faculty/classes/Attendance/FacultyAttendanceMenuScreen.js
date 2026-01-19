@@ -56,7 +56,7 @@ export default function FacultyAttendanceMenuScreen({ route }) {
       const currentFacultyId = decodedToken?.preferred_username || facultyId;
 
       const response = await api.get(
-        `${BASE_URL}/api/faculty/subject/subjects/faculty/${currentFacultyId}`
+        `/api/faculty/subject/subjects/faculty/${currentFacultyId}`
       );
 
       const assignedSubjects = response.data || [];
@@ -96,10 +96,10 @@ export default function FacultyAttendanceMenuScreen({ route }) {
       // Check both sessions
       const [session1Response, session2Response] = await Promise.all([
         api.get(
-          `${BASE_URL}/api/faculty/attendance/check?grade=${grade}&section=${section}&date=${date}&sessionNumber=1`
+          `/api/faculty/attendance/check?grade=${grade}&section=${section}&date=${date}&sessionNumber=1`
         ).catch(() => ({ data: { exists: false } })),
         api.get(
-          `${BASE_URL}/api/faculty/attendance/check?grade=${grade}&section=${section}&date=${date}&sessionNumber=2`
+          `/api/faculty/attendance/check?grade=${grade}&section=${section}&date=${date}&sessionNumber=2`
         ).catch(() => ({ data: { exists: false } })),
       ]);
 

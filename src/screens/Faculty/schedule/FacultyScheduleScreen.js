@@ -43,7 +43,7 @@ export default function FacultySchedulesScreen() {
 
       console.log('Fetching schedule for faculty:', facultyId);
       
-      const res = await api.get(`${BASE_URL}/api/faculty/schedule/faculty/${facultyId}`);
+      const res = await api.get(`/api/faculty/schedule/faculty/${facultyId}`);
       console.log('Schedule API response:', res.data);
       
       setFacultyName(res.data.facultyName);

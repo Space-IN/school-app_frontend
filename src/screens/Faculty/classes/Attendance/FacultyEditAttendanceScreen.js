@@ -66,7 +66,7 @@ export default function FacultyEditAttendanceScreen({ route }) {
   const loadStudents = async () => {
     try {
       const { data } = await api.get(
-        `${BASE_URL}/api/faculty/students/grade/${grade}/section/${section}`
+        `/api/faculty/students/grade/${grade}/section/${section}`
       );
       setStudents(data);
     } catch (err) {
@@ -98,14 +98,14 @@ const loadAttendanceData = async (date) => {
     setLoading(true);
     const dateStr = date.toISOString().split('T')[0];
     
-    console.log('📥 Fetching attendance for:', { 
+    console.log(' Fetching attendance for:', { 
       grade, 
       section, 
       date: dateStr,
-      url: `${BASE_URL}/api/faculty/attendance/edit`
+      url: `/api/faculty/attendance/edit`
     });
     
-    const response = await api.get(`${BASE_URL}/api/faculty/attendance/edit`, {
+    const response = await api.get(`/api/faculty/attendance/edit`, {
       params: {
         grade: grade,        // ✅ FIXED: Changed from classAssigned
         section: section,
@@ -285,7 +285,7 @@ const openEditModal = (sessionNumber) => {
 
       console.log(' Sending edit payload:', payload);
 
-      const response = await api.post(`${BASE_URL}/api/faculty/attendance/mark`, payload);
+      const response = await api.post(`/api/faculty/attendance/mark`, payload);
 
       console.log(' Edit response:', response.data);
       

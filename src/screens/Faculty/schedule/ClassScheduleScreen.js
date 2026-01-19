@@ -60,7 +60,7 @@ export default function ClassScheduleScreen({ route }) {
       const facultyId = decodedToken?.preferred_username;
       console.log(' Fetching schedule for faculty:', facultyId);
       
-      const res = await api.get(`${BASE_URL}/api/faculty/schedule/faculty/${facultyId}`);
+      const res = await api.get(`/api/faculty/schedule/faculty/${facultyId}`);
       console.log(' Full API Response:', JSON.stringify(res.data, null, 2));
       
       // Check different possible response structures

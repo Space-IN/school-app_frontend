@@ -6,7 +6,7 @@ import { getHandlers } from "./handlers"
 
 export const api = axios.create({
     baseURL: BASE_URL,
-    timeout: 15000,
+    timeout: 20000,
 })
 
 setupRequestInterceptor(api, getHandlers)
