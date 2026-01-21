@@ -40,6 +40,9 @@ import AddNoticeScreen from "../../screens/Admin/NoticeManagement/AddNoticeScree
 import AddSubjectMasterScreen from "../../screens/Admin/subjectManagement/AddSubjectMasterScreen"
 import AssignSubjectScreen from "../../screens/Admin/subjectManagement/AssignSubjectScreen"
 import MarksEntryScreen from "../../screens/Admin/MarksEntryScreen"
+import ExamTemplatesHomeScreen from "../../screens/Admin/Exams/ExamTemplatesHomeScreen";
+import CreateExamTemplateScreen from "../../screens/Admin/Exams/CreateExamTemplateScreen";
+import CreateExamTemplateSubjectsScreen from "../../screens/Admin/Exams/CreateExamTemplateSubjectsScreen";
 
 
 import { StatusBar } from "react-native";
@@ -94,7 +97,10 @@ export default function AdminNavigator() {
             <Stack.Screen name="StudentEntryHubScreen" component={StudentEntryHubScreen} />
             <Stack.Screen name="BulkStudentUploadScreen" component={BulkStudentUploadScreen} />
             <Stack.Screen name="BatchDetailsScreen" component={BatchDetailsScreen} />
-
+            <Stack.Screen name="ExamTemplatesHomeScreen" component={ExamTemplatesHomeScreen} />
+            <Stack.Screen name="CreateExamTemplateScreen" component={CreateExamTemplateScreen} />
+            <Stack.Screen name="CreateExamTemplateSubjectsScreen" component={CreateExamTemplateSubjectsScreen} />
+        
         </Stack.Navigator>
 
     )

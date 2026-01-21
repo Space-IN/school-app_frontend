@@ -77,6 +77,13 @@ export default function AdminWorkbenchScreen({ navigation }) {
     const handleFacultyPerformance = () => navigation.navigate('FacultyPerformance');
     const handleManageFees = () => navigation.navigate('AdminFeesScreen');
 
+    const handleExamTemplates = () => {
+      navigation.navigate('BoardSelectionScreen', {
+      nextScreen: 'ExamTemplatesHomeScreen',
+      title: 'Exam Templates - Select Board',
+     });
+    };
+
     const renderSectionHeader = (title, icon, sectionKey) => (
         <TouchableOpacity
             style={styles.sectionHeader}
@@ -191,6 +198,11 @@ export default function AdminWorkbenchScreen({ navigation }) {
                         <TouchableOpacity style={styles.dropdownItem} onPress={() => Alert.alert('Coming Soon', 'Exam Schedule feature is under development')}>
                             <Ionicons name="calendar-number-outline" size={20} color="#333" />
                             <Text style={styles.dropdownText}>Exam Schedule</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.dropdownItem} onPress={handleExamTemplates}>
+                            <Ionicons name="layers-outline" size={20} color="#333" />
+                            <Text style={styles.dropdownText}>Exam Templates</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.dropdownItem} onPress={() => navigation.navigate('BoardSelectionScreen', {
                             nextScreen: 'MarksEntryScreen',

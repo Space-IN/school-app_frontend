@@ -58,11 +58,11 @@ export default function AdminInsightsScreen() {
 
         try {
             const results = await Promise.allSettled([
-                api.get(`${BASE_URL}/api/admin/students/count`),
-                api.get(`${BASE_URL}/api/faculty/all`),
-                api.get(`${BASE_URL}/api/events`),
-                api.get(`${BASE_URL}/api/announcement/active`),
-                api.get(`${BASE_URL}/api/admin/attendance/overall`)
+                api.get(`/api/admin/students/count`),
+                api.get(`/api/faculty/all`),
+                api.get(`/api/events`),
+                api.get(`/api/announcement/active`),
+                api.get(`/api/admin/attendance/overall`)
             ]);
 
             // 1. Total Students
@@ -132,7 +132,7 @@ export default function AdminInsightsScreen() {
             const d = new Date();
             const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-            const res = await axios.get(`${BASE_URL}/api/attendance`, {
+            const res = await axios.get(`/api/attendance`, {
                 params: {
                     grade: attendanceGrade,
                     section: attendanceSection,
