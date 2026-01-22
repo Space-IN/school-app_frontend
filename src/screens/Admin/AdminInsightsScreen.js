@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
     View,
     Text,
@@ -17,17 +18,41 @@ import {
     UIManager,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import axios from 'axios';
+import { api } from '../../api/api';
 import { BASE_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
 
+// --- Corporate Brand Palette ---
+const PRO_COLORS = {
+    background: '#F8FAFC', // Slate-50/100
+    textPrimary: '#0F172A', // Slate-900
+    textSecondary: '#64748B', // Slate-500
+    cardBg: '#FFFFFF',
 
+    // Brand Colors
+    corporateBlue: ['#1e3a8a', '#2563eb'], // Navy to Royal Blue
+    corporateTeal: ['#0f766e', '#14b8a6'], // Deep Teal to Teal-500
+    corporateRed: ['#991b1b', '#ef4444'],  // Deep Red for alerts/critical
+};
 
-export default function AdminInsightsScreen() {
+export default function AdminInsightsScreen({ navigation }) {
+    // Enable Header for Dashboard Tab (Insights) whenever it's focused
+    // AND disable it when we leave (bluring this screen)
+    useFocusEffect(
+        useCallback(() => {
+            navigation.getParent()?.setOptions({ headerShown: true, title: 'Admin Dashboard' });
+
+            return () => {
+                navigation.getParent()?.setOptions({ headerShown: false });
+            };
+        }, [navigation])
+    );
+
     const [loading, setLoading] = useState(true);
+
     const [stats, setStats] = useState({
         totalStudents: 0,
         totalFaculty: 0,
@@ -39,13 +64,16 @@ export default function AdminInsightsScreen() {
     // Attendance Checker State
     const [attendanceGrade, setAttendanceGrade] = useState('');
     const [attendanceSection, setAttendanceSection] = useState('');
+    const [attendanceBoard, setAttendanceBoard] = useState(''); // New Board State
     const [attendanceStatus, setAttendanceStatus] = useState(null);
     const [checkingAttendance, setCheckingAttendance] = useState(false);
     const [showGradeModal, setShowGradeModal] = useState(false);
     const [showSectionModal, setShowSectionModal] = useState(false);
+    const [showBoardModal, setShowBoardModal] = useState(false); // New Board Modal State
 
     const grades = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
     const sections = ['A', 'B', 'C', 'D'];
+    const boards = ['All / None', 'CBSE', 'STATE']; // Added 'All / None' option
 
     useEffect(() => {
         fetchStats();
@@ -56,11 +84,11 @@ export default function AdminInsightsScreen() {
 
         try {
             const results = await Promise.allSettled([
-                axios.get(`${BASE_URL}/api/admin/students/count`),
-                axios.get(`${BASE_URL}/api/faculty/all`),
-                axios.get(`${BASE_URL}/api/events`),
-                axios.get(`${BASE_URL}/api/announcement/active`),
-                axios.get(`${BASE_URL}/api/admin/attendance/overall`)
+                api.get(`${BASE_URL}/api/admin/students/count`),
+                api.get(`${BASE_URL}/api/admin/faculty/all`),
+                api.get(`${BASE_URL}/api/admin/events`),
+                api.get(`${BASE_URL}/api/admin/announcement/active`),
+                api.get(`${BASE_URL}/api/admin/attendance/overall`)
             ]);
 
             // 1. Total Students
@@ -119,8 +147,8 @@ export default function AdminInsightsScreen() {
     };
 
     const checkAttendanceStatus = async () => {
-        if (!attendanceGrade || !attendanceSection) {
-            Alert.alert('Error', 'Please enter both Grade and Section');
+        if (!attendanceGrade || !attendanceSection || !attendanceBoard) {
+            Alert.alert('Error', 'Please select Board, Grade, and Section');
             return;
         }
 
@@ -130,30 +158,83 @@ export default function AdminInsightsScreen() {
             const d = new Date();
             const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-            const res = await axios.get(`${BASE_URL}/api/attendance`, {
+            const res = await api.get(`${BASE_URL}/api/admin/attendance`, {
                 params: {
                     grade: attendanceGrade,
                     section: attendanceSection,
+                    board: attendanceBoard === 'All / None' ? '' : attendanceBoard, // Send empty if All is selected
                     date: today,
                 }
             });
 
             LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
 
+            // 14-01-2026 Fix because backend returns nested { success: true, count: 1, data: [...] }
+            const attendanceList = Array.isArray(res.data.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []);
+
+
+
             // Filter to find the EXACT match for grade and section
-            // This handles cases where "Grade 5" might return "Grade 15" or other partial matches if backend fuzzy search is on
-            const matchingDoc = Array.isArray(res.data) ? res.data.find(doc => {
+            const matchingDoc = attendanceList.find(doc => {
                 const docGrade = String(doc.grade || doc.classAssigned || '').replace(/Grade\s?/i, '').trim();
                 const docSection = String(doc.section || '').trim();
+
                 const reqGrade = String(attendanceGrade).trim();
                 const reqSection = String(attendanceSection).trim();
+
                 return docGrade === reqGrade && docSection === reqSection;
-            }) : null;
+            });
 
             const records = matchingDoc?.records || [];
+            const markedBy = matchingDoc?.markedBy || [];
+            const stats = matchingDoc?.stats || null;
 
-            if (records.length > 0) {
-                // Initialize counters
+
+
+            // detailed check if stats actually has data inside
+            const hasStats = stats && Object.keys(stats).length > 0;
+
+
+
+            if (hasStats) {
+                // Use backend provided stats
+                const details = [];
+                if (stats['1']) {
+                    details.push(`Session 1: Present: ${stats['1'].present}, Absent: ${stats['1'].absent}`);
+                }
+                if (stats['2']) {
+                    details.push(`Session 2: Present: ${stats['2'].present}, Absent: ${stats['2'].absent}`);
+                }
+
+                // If markedBy info is available, append it to the details for richer context
+                if (markedBy.length > 0) {
+                    markedBy.forEach(m => {
+                        // Find the existing line for this session and append name
+                        const idx = details.findIndex(d => d.startsWith(`Session ${m.session}:`));
+                        if (idx !== -1) {
+                            details[idx] += ` (by ${m.facultyName})`;
+                        }
+                    });
+                }
+
+                setAttendanceStatus({
+                    status: 'marked',
+                    message: '✅ Attendance Marked',
+                    details: details
+                });
+
+            } else if (markedBy.length > 0) {
+                // Fallback: Stats empty, but MarkedBy exists (Old record or backend issue)
+                const details = markedBy.map(m => `Session ${m.session}: Marked by ${m.facultyName}`);
+
+                setAttendanceStatus({
+                    status: 'marked',
+                    message: '✅ Attendance Marked',
+                    details: details
+                });
+
+            } else if (records.length > 0) {
+                // Calculation Fallback (if stats missing but records exist)
                 let s1Present = 0, s1Absent = 0;
                 let s2Present = 0, s2Absent = 0;
 
@@ -204,6 +285,8 @@ export default function AdminInsightsScreen() {
         );
     }
 
+
+
     const currentDate = new Date().toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
@@ -222,57 +305,94 @@ export default function AdminInsightsScreen() {
                 {/* Header Section */}
                 <View style={styles.headerSection}>
                     <Text style={styles.dateText}>{currentDate}</Text>
-                    <Text style={styles.welcomeText}>Dashboard Overview</Text>
+                    <Text style={styles.welcomeText}>Overview</Text>
                 </View>
 
-                {/* Metrics Row */}
-                <View style={styles.metricsRow}>
+                {/* Metrics Grid */}
+                <View style={styles.metricsGrid}>
+                    {/* Students - Blue Theme */}
                     <LinearGradient
-                        colors={['#3b82f6', '#1e3a8a']}
-                        style={styles.metricCard}
+                        colors={PRO_COLORS.corporateBlue}
+                        style={styles.metricCardBig}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
                     >
-                        <View style={styles.iconCircle}>
-                            <Ionicons name="school" size={20} color="#1e3a8a" />
+                        <View style={styles.metricHeader}>
+                            <View style={styles.iconCircle}>
+                                <Ionicons name="school" size={18} color={PRO_COLORS.corporateBlue[0]} />
+                            </View>
+                            <Ionicons name="ellipsis-horizontal" size={20} color="rgba(255,255,255,0.6)" />
                         </View>
-                        <Text style={styles.metricValue}>{stats.totalStudents}</Text>
-                        <Text style={styles.metricLabel}>Students</Text>
+                        <View>
+                            <Text style={styles.metricValue}>{stats.totalStudents || '0'}</Text>
+                            <Text style={styles.metricLabel}>Total Students</Text>
+                        </View>
                     </LinearGradient>
 
+                    {/* Faculty - Teal Theme */}
                     <LinearGradient
-                        colors={['#ec4899', '#be185d']}
-                        style={styles.metricCard}
+                        colors={PRO_COLORS.corporateTeal}
+                        style={styles.metricCardBig}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
                     >
-                        <View style={styles.iconCircle}>
-                            <Ionicons name="people" size={20} color="#be185d" />
+                        <View style={styles.metricHeader}>
+                            <View style={styles.iconCircle}>
+                                <Ionicons name="people" size={18} color={PRO_COLORS.corporateTeal[0]} />
+                            </View>
+                            <Ionicons name="ellipsis-horizontal" size={20} color="rgba(255,255,255,0.6)" />
                         </View>
-                        <Text style={styles.metricValue}>{stats.totalFaculty}</Text>
-                        <Text style={styles.metricLabel}>Faculty</Text>
+                        <View>
+                            <Text style={styles.metricValue}>{stats.totalFaculty || '0'}</Text>
+                            <Text style={styles.metricLabel}>Total Faculty</Text>
+                        </View>
                     </LinearGradient>
 
+                    {/* Attendance - Red/Warning Theme if low, else Blue */}
                     <LinearGradient
-                        colors={['#10b981', '#047857']}
-                        style={styles.metricCard}
+                        colors={stats.overallAttendance && stats.overallAttendance < 75 ? PRO_COLORS.corporateRed : ['#3b82f6', '#1d4ed8']}
+                        style={[styles.metricCardWide, { marginTop: 12 }]}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
                     >
-                        <View style={styles.iconCircle}>
-                            <Ionicons name="stats-chart" size={20} color="#047857" />
+                        <View style={styles.metricFlex}>
+                            <View style={[styles.iconCircle, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+                                <Ionicons name="stats-chart" size={20} color="#fff" />
+                            </View>
+                            <View style={{ marginLeft: 12 }}>
+                                <Text style={styles.metricLabelWide}>Overall Attendance</Text>
+                                <Text style={styles.metricValueWide}>
+                                    {stats.overallAttendance ? `${stats.overallAttendance}%` : 'N/A'}
+                                </Text>
+                            </View>
                         </View>
-                        <Text style={styles.metricValue}>
-                            {stats.overallAttendance ? `${stats.overallAttendance} % ` : 'N/A'}
-                        </Text>
-                        <Text style={styles.metricLabel}>Attendance</Text>
+                        <View style={styles.trendBadge}>
+                            <Ionicons name="trending-up" size={16} color="#fff" />
+                            <Text style={styles.trendText}>Today</Text>
+                        </View>
                     </LinearGradient>
                 </View>
 
-                {/* Attendance Checker */}
+                {/* Quick Attendance Check - Tool Style */}
                 <View style={styles.sectionContainer}>
-                    <Text style={styles.sectionTitle}>Quick Attendance Check</Text>
-                    <View style={styles.card}>
+                    <Text style={styles.sectionTitle}>Attendance Verification Tool</Text>
+                    <View style={styles.toolCard}>
+
+                        <View style={styles.toolHeader}>
+                            <Ionicons name="qr-code-outline" size={22} color={PRO_COLORS.corporateBlue[0]} />
+                            <Text style={styles.toolHeaderText}>Instant Check</Text>
+                        </View>
+
+                        <TouchableOpacity
+                            style={[styles.dropdownInput, { marginBottom: 12 }]}
+                            onPress={() => setShowBoardModal(true)}
+                        >
+                            <Text style={attendanceBoard ? styles.inputText : styles.placeholderText}>
+                                {attendanceBoard ? `Board: ${attendanceBoard}` : 'Select Board (CBSE/STATE)'}
+                            </Text>
+                            <Ionicons name="chevron-down" size={18} color="#94A3B8" />
+                        </TouchableOpacity>
+
                         <View style={styles.inputRow}>
                             <TouchableOpacity
                                 style={styles.dropdownInput}
@@ -281,7 +401,7 @@ export default function AdminInsightsScreen() {
                                 <Text style={attendanceGrade ? styles.inputText : styles.placeholderText}>
                                     {attendanceGrade ? `Grade ${attendanceGrade}` : 'Select Grade'}
                                 </Text>
-                                <Ionicons name="chevron-down" size={18} color="#64748b" />
+                                <Ionicons name="chevron-down" size={18} color="#94A3B8" />
                             </TouchableOpacity>
 
                             <TouchableOpacity
@@ -291,7 +411,7 @@ export default function AdminInsightsScreen() {
                                 <Text style={attendanceSection ? styles.inputText : styles.placeholderText}>
                                     {attendanceSection ? `Section ${attendanceSection}` : 'Select Section'}
                                 </Text>
-                                <Ionicons name="chevron-down" size={18} color="#64748b" />
+                                <Ionicons name="chevron-down" size={18} color="#94A3B8" />
                             </TouchableOpacity>
                         </View>
 
@@ -303,38 +423,46 @@ export default function AdminInsightsScreen() {
                             {checkingAttendance ? (
                                 <ActivityIndicator color="#fff" size="small" />
                             ) : (
-                                <Text style={styles.checkButtonText}>Verify Status</Text>
+                                <>
+                                    <Ionicons name="search" size={18} color="#fff" style={{ marginRight: 8 }} />
+                                    <Text style={styles.checkButtonText}>Verify Now</Text>
+                                </>
                             )}
                         </TouchableOpacity>
 
                         {attendanceStatus && (
                             <View style={[
                                 styles.statusResult,
-                                { backgroundColor: attendanceStatus.status === 'marked' ? '#f0fdf4' : '#fef2f2' }
+                                {
+                                    backgroundColor: attendanceStatus.status === 'marked' ? '#F0FDF4' : '#FEF2F2',
+                                    borderColor: attendanceStatus.status === 'marked' ? '#BBF7D0' : '#FECACA',
+                                    borderWidth: 1
+                                }
                             ]}>
-                                <View style={{ alignItems: 'center' }}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                                <View style={{ alignItems: 'center', width: '100%' }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
                                         <Ionicons
-                                            name={attendanceStatus.status === 'marked' ? "checkmark-circle" : "alert-circle"}
-                                            size={20}
+                                            name={attendanceStatus.status === 'marked' ? "checkmark-circle" : "warning"}
+                                            size={22}
                                             color={attendanceStatus.status === 'marked' ? "#166534" : "#991b1b"}
                                         />
                                         <Text style={[
                                             styles.statusText,
-                                            { color: attendanceStatus.status === 'marked' ? "#166534" : "#991b1b" }
+                                            { color: attendanceStatus.status === 'marked' ? "#15803d" : "#b91c1c" }
                                         ]}>
                                             {attendanceStatus.message}
                                         </Text>
                                     </View>
-                                    {attendanceStatus.details && attendanceStatus.details.length > 0 ? (
-                                        <View style={{ marginTop: 5 }}>
+
+                                    {attendanceStatus.details && attendanceStatus.details.length > 0 && (
+                                        <View style={styles.statusDetailsContainer}>
                                             {attendanceStatus.details.map((line, idx) => (
-                                                <Text key={idx} style={{ color: '#334155', fontSize: 13, fontWeight: '500', textAlign: 'center' }}>
+                                                <Text key={idx} style={styles.statusDetailText}>
                                                     {line}
                                                 </Text>
                                             ))}
                                         </View>
-                                    ) : null}
+                                    )}
                                 </View>
                             </View>
                         )}
@@ -346,49 +474,57 @@ export default function AdminInsightsScreen() {
                     <Text style={styles.sectionTitle}>Upcoming Events</Text>
                     {stats.upcomingEvents.length > 0 ? (
                         stats.upcomingEvents.map((event, index) => (
-                            <View key={event._id || event.id || index} style={styles.eventCard}>
-                                <View style={styles.eventDateBox}>
+                            <View key={event._id || event.id || index} style={styles.eventRow}>
+                                <View style={styles.eventDateBadge}>
                                     <Text style={styles.eventDay}>{new Date(event.date).getDate()}</Text>
                                     <Text style={styles.eventMonth}>
                                         {new Date(event.date).toLocaleString('default', { month: 'short' }).toUpperCase()}
                                     </Text>
                                 </View>
                                 <View style={styles.eventInfo}>
-                                    <Text style={styles.eventTitle}>{event.title}</Text>
+                                    <Text style={styles.eventTitle} numberOfLines={1}>{event.title}</Text>
                                     <Text style={styles.eventSubtext}>
                                         {new Date(event.date).toLocaleDateString(undefined, { weekday: 'long' })}
                                     </Text>
                                 </View>
-                                <Ionicons name="chevron-forward" size={20} color="#cbd5e1" />
                             </View>
                         ))
                     ) : (
-                        <Text style={styles.emptyText}>No upcoming events</Text>
+                        <View style={styles.emptyState}>
+                            <Ionicons name="calendar-outline" size={40} color="#CBD5E1" />
+                            <Text style={styles.emptyText}>No upcoming events</Text>
+                        </View>
                     )}
                 </View>
 
                 {/* Recent Activities */}
                 <View style={styles.sectionContainer}>
-                    <Text style={styles.sectionTitle}>Recent Activities</Text>
-                    <View style={styles.card}>
+                    <Text style={styles.sectionTitle}>Activity Feed</Text>
+                    <View style={styles.feedCard}>
                         {stats.recentActivities.length > 0 ? (
                             stats.recentActivities.map((activity, index) => (
-                                <View key={activity.id || index} style={[
-                                    styles.activityItem,
-                                    index === stats.recentActivities.length - 1 && { borderBottomWidth: 0 }
-                                ]}>
-                                    <View style={styles.timelineDot} />
-                                    <View style={styles.activityContent}>
-                                        <Text style={styles.activityText}>{activity.text}</Text>
-                                        <Text style={styles.activityTime}>{activity.time}</Text>
+                                <View key={activity.id || index} style={styles.feedItem}>
+                                    <View style={styles.feedTimeBox}>
+                                        <Text style={styles.feedTimeText}>{activity.time}</Text>
+                                    </View>
+                                    <View style={[
+                                        styles.feedContent,
+                                        index === stats.recentActivities.length - 1 && { borderLeftWidth: 0 } // Remove line for last item if desired, but here we keep left border usually
+                                    ]}>
+                                        <Text style={styles.feedText}>{activity.text}</Text>
                                     </View>
                                 </View>
                             ))
                         ) : (
-                            <Text style={styles.emptyText}>No recent activities</Text>
+                            <View style={styles.emptyState}>
+                                <Ionicons name="notifications-off-outline" size={40} color="#CBD5E1" />
+                                <Text style={styles.emptyText}>No recent activity</Text>
+                            </View>
                         )}
                     </View>
                 </View>
+
+                <View style={{ height: 40 }} />
             </ScrollView>
 
             {/* Modals */}
@@ -455,6 +591,38 @@ export default function AdminInsightsScreen() {
                     </View>
                 </TouchableOpacity>
             </Modal>
+
+            <Modal
+                visible={showBoardModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowBoardModal(false)}
+            >
+                <TouchableOpacity
+                    style={styles.modalOverlay}
+                    activeOpacity={1}
+                    onPress={() => setShowBoardModal(false)}
+                >
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Select Board</Text>
+                        <FlatList
+                            data={boards}
+                            keyExtractor={(item) => item}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity
+                                    style={styles.modalItem}
+                                    onPress={() => {
+                                        setAttendanceBoard(item);
+                                        setShowBoardModal(false);
+                                    }}
+                                >
+                                    <Text style={styles.modalItemText}>{item}</Text>
+                                </TouchableOpacity>
+                            )}
+                        />
+                    </View>
+                </TouchableOpacity>
+            </Modal>
         </SafeAreaView>
     );
 }
@@ -462,125 +630,201 @@ export default function AdminInsightsScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f8fafc',
+        backgroundColor: PRO_COLORS.background,
     },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#f8fafc',
+        backgroundColor: PRO_COLORS.background,
     },
     scrollContent: {
         padding: 20,
         paddingBottom: 40,
     },
     headerSection: {
+        marginTop: 10,
         marginBottom: 24,
     },
     dateText: {
-        fontSize: 14,
-        color: '#64748b',
+        fontSize: 13,
+        color: PRO_COLORS.textSecondary,
         fontWeight: '600',
         textTransform: 'uppercase',
-        letterSpacing: 1,
+        letterSpacing: 1.2,
     },
     welcomeText: {
-        fontSize: 28,
+        fontSize: 32,
         fontWeight: '800',
-        color: '#0f172a',
-        marginTop: 4,
+        color: PRO_COLORS.textPrimary,
+        letterSpacing: -1,
     },
-    metricsRow: {
+
+    /* Metrics Grid */
+    metricsGrid: {
         flexDirection: 'row',
+        flexWrap: 'wrap',
         justifyContent: 'space-between',
         marginBottom: 30,
     },
-    metricCard: {
-        width: (width - 40 - 24) / 3,
-        padding: 12,
-        borderRadius: 16,
-        alignItems: 'center',
-        justifyContent: 'center',
-        elevation: 4,
+    metricCardBig: {
+        width: (width - 40 - 15) / 2, // 2 columns with 15px gap
+        padding: 16,
+        borderRadius: 20,
+        height: 140,
+        justifyContent: 'space-between',
+        // Shadows
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        elevation: 6,
+    },
+    metricCardWide: {
+        width: '100%',
+        padding: 16,
+        borderRadius: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        // Shadows
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        elevation: 6,
+    },
+    metricHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
     },
     iconCircle: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: 'rgba(255,255,255,0.9)',
+        width: 38,
+        height: 38,
+        borderRadius: 12,
+        backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 8,
     },
     metricValue: {
-        fontSize: 20,
+        fontSize: 28,
         fontWeight: '800',
         color: '#ffffff',
-        marginBottom: 2,
+        letterSpacing: -0.5,
     },
     metricLabel: {
-        fontSize: 12,
+        fontSize: 13,
+        color: 'rgba(255,255,255,0.85)',
+        fontWeight: '600',
+        marginTop: 2,
+    },
+    metricFlex: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    metricValueWide: {
+        fontSize: 24,
+        fontWeight: '800',
+        color: '#ffffff',
+    },
+    metricLabelWide: {
+        fontSize: 13,
         color: 'rgba(255,255,255,0.9)',
         fontWeight: '600',
     },
+    trendBadge: {
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    trendText: {
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: '700',
+        marginLeft: 4,
+    },
+
+
+    /* Section Titles */
     sectionContainer: {
-        marginBottom: 24,
+        marginBottom: 28,
     },
     sectionTitle: {
-        fontSize: 18,
+        fontSize: 16, // Smaller, more refined title
         fontWeight: '700',
-        color: '#1e293b',
-        marginBottom: 12,
+        color: PRO_COLORS.textSecondary,
+        marginBottom: 16,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
     },
-    card: {
-        backgroundColor: '#ffffff',
-        borderRadius: 16,
-        padding: 16,
-        elevation: 2,
-        shadowColor: '#64748b',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
+
+    /* Tool Card (Attendance) */
+    toolCard: {
+        backgroundColor: '#fff',
+        borderRadius: 24,
+        padding: 20,
+        shadowColor: '#64748B',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 3,
+        borderWidth: 1,
+        borderColor: '#F1F5F9',
+    },
+    toolHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    toolHeaderText: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: PRO_COLORS.textPrimary,
+        marginLeft: 10,
     },
     inputRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 12,
+        marginBottom: 16,
     },
     dropdownInput: {
         flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: '#f1f5f9',
+        backgroundColor: '#F8FAFC',
         borderRadius: 12,
         paddingHorizontal: 16,
         paddingVertical: 14,
-        marginRight: 10,
+        marginRight: 8,
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
     },
     inputText: {
-        color: '#334155',
+        color: PRO_COLORS.textPrimary,
         fontSize: 14,
-        fontWeight: '500',
+        fontWeight: '600',
     },
     placeholderText: {
         color: '#94a3b8',
         fontSize: 14,
     },
     checkButton: {
-        backgroundColor: '#1e3a8a',
-        paddingVertical: 14,
-        borderRadius: 12,
+        backgroundColor: PRO_COLORS.corporateBlue[0],
+        paddingVertical: 16,
+        borderRadius: 14,
+        flexDirection: 'row',
+        justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: '#1e3a8a',
+        shadowColor: PRO_COLORS.corporateBlue[0],
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
+        shadowOpacity: 0.25,
         shadowRadius: 8,
-        elevation: 3,
+        elevation: 4,
     },
     checkButtonText: {
         color: '#ffffff',
@@ -588,48 +832,62 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     statusResult: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 16,
-        padding: 12,
-        borderRadius: 12,
+        marginTop: 20,
+        padding: 16,
+        borderRadius: 16,
     },
     statusText: {
         marginLeft: 8,
-        fontWeight: '600',
-        fontSize: 15,
+        fontWeight: '700',
+        fontSize: 16,
     },
-    eventCard: {
+    statusDetailsContainer: {
+        marginTop: 8,
+        width: '100%',
+        paddingTop: 8,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(0,0,0,0.05)',
+    },
+    statusDetailText: {
+        color: '#334155',
+        fontSize: 13,
+        fontWeight: '500',
+        textAlign: 'center',
+        marginTop: 4
+    },
+
+    /* Event List */
+    eventRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#ffffff',
-        borderRadius: 16,
+        backgroundColor: '#fff',
         padding: 16,
         marginBottom: 12,
-        elevation: 2,
-        shadowColor: '#64748b',
+        borderRadius: 16,
+        shadowColor: '#64748B',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
-        shadowRadius: 4,
+        shadowRadius: 8,
+        elevation: 2,
     },
-    eventDateBox: {
-        backgroundColor: '#eff6ff',
-        paddingVertical: 8,
-        paddingHorizontal: 12,
+    eventDateBadge: {
+        backgroundColor: '#F1F5F9', // Light Slate
+        width: 50,
+        height: 50,
         borderRadius: 12,
         alignItems: 'center',
+        justifyContent: 'center',
         marginRight: 16,
     },
     eventDay: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: '800',
-        color: '#1e3a8a',
+        color: PRO_COLORS.textPrimary,
     },
     eventMonth: {
         fontSize: 10,
         fontWeight: '700',
-        color: '#3b82f6',
+        color: PRO_COLORS.textSecondary,
     },
     eventInfo: {
         flex: 1,
@@ -637,79 +895,93 @@ const styles = StyleSheet.create({
     eventTitle: {
         fontSize: 16,
         fontWeight: '700',
-        color: '#1e293b',
+        color: PRO_COLORS.textPrimary,
         marginBottom: 2,
     },
     eventSubtext: {
         fontSize: 13,
-        color: '#64748b',
+        color: PRO_COLORS.textSecondary,
     },
-    activityItem: {
-        flexDirection: 'row',
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#f1f5f9',
-    },
-    timelineDot: {
-        width: 10,
-        height: 10,
-        borderRadius: 5,
-        backgroundColor: '#3b82f6',
-        marginTop: 6,
-        marginRight: 16,
-        borderWidth: 2,
-        borderColor: '#dbeafe',
-    },
-    activityContent: {
-        flex: 1,
-    },
-    activityText: {
-        fontSize: 14,
-        color: '#334155',
-        fontWeight: '500',
-        lineHeight: 20,
-    },
-    activityTime: {
-        fontSize: 12,
-        color: '#94a3b8',
-        marginTop: 4,
+    emptyState: {
+        alignItems: 'center',
+        paddingVertical: 30,
     },
     emptyText: {
-        textAlign: 'center',
+        marginTop: 8,
         color: '#94a3b8',
-        fontStyle: 'italic',
-        marginTop: 10,
+        fontSize: 14,
+        fontWeight: '500',
     },
+
+    /* Feed Items */
+    feedCard: {
+        backgroundColor: '#fff',
+        borderRadius: 24,
+        padding: 20,
+        shadowColor: '#64748B',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        elevation: 2,
+    },
+    feedItem: {
+        flexDirection: 'row',
+        marginBottom: 20,
+    },
+    feedTimeBox: {
+        width: 60,
+        alignItems: 'flex-start',
+        paddingRight: 10,
+        borderRightWidth: 2,
+        borderRightColor: '#E2E8F0',
+    },
+    feedTimeText: {
+        fontSize: 12,
+        fontWeight: '700',
+        color: PRO_COLORS.textSecondary,
+        textAlign: 'right',
+    },
+    feedContent: {
+        flex: 1,
+        paddingLeft: 16,
+        justifyContent: 'center',
+    },
+    feedText: {
+        fontSize: 14,
+        color: PRO_COLORS.textPrimary,
+        lineHeight: 20,
+    },
+
+    /* Modals (No major visual changes needed, just matching colors) */
     modalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.4)',
+        backgroundColor: 'rgba(15, 23, 42, 0.6)', // Slate-900 with opacity
         justifyContent: 'center',
         alignItems: 'center',
     },
     modalContent: {
         backgroundColor: '#fff',
-        width: '80%',
         borderRadius: 20,
         padding: 24,
+        width: '80%',
         maxHeight: '60%',
         elevation: 5,
     },
     modalTitle: {
         fontSize: 20,
         fontWeight: '700',
-        marginBottom: 20,
-        color: '#0f172a',
+        color: PRO_COLORS.textPrimary,
+        marginBottom: 16,
         textAlign: 'center',
     },
     modalItem: {
-        paddingVertical: 16,
+        paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#f1f5f9',
+        borderBottomColor: '#F1F5F9',
     },
     modalItemText: {
         fontSize: 16,
-        color: '#334155',
+        color: PRO_COLORS.textSecondary,
         textAlign: 'center',
-        fontWeight: '500',
     },
 });

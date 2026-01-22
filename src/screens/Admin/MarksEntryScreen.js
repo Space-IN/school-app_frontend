@@ -19,8 +19,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
-import { readAsStringAsync, writeAsStringAsync, cacheDirectory } from 'expo-file-system/legacy';
-const FileSystem = { readAsStringAsync, writeAsStringAsync, cacheDirectory };
+import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { read, utils, write } from 'xlsx';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -301,39 +300,48 @@ export default function MarksEntryScreen({ navigation, route }) {
     }, []);
 
     const fetchFaculty = async () => {
-        try {
-            console.log("Fetching Faculty List (All + Deleted)...");
-            // Fetch both active and deleted faculty to ensure we can map old assignments
-            const [resAll, resDeleted] = await Promise.all([
-                api.get(`${BASE_URL}/api/admin/faculty/all`),
-                api.get(`${BASE_URL}/api/admin/faculty/deleted`)
-            ]);
+        console.log("Fetching Faculty List...");
+        let allFaculty = [];
 
-            const parseList = (res) => {
+        // Helper to safely fetch and parse
+        const fetchAndParse = async (url, label) => {
+            try {
+                console.log(`Fetching ${label}...`);
+                const res = await api.get(url);
                 if (Array.isArray(res.data)) return res.data;
                 if (res.data?.data && Array.isArray(res.data.data)) return res.data.data;
                 if (res.data?.faculty && Array.isArray(res.data.faculty)) return res.data.faculty;
                 return [];
-            };
+            } catch (err) {
+                console.warn(`Failed to fetch ${label}:`, err.message);
+                return [];
+            }
+        };
 
-            const allFaculty = [...parseList(resAll), ...parseList(resDeleted)];
-            console.log(`Parsed ${allFaculty.length} total faculty items.`);
+        const [activeList, deletedList] = await Promise.all([
+            fetchAndParse(`${BASE_URL}/api/admin/faculty/all`, "Active Faculty"),
+            fetchAndParse(`${BASE_URL}/api/admin/faculty/deleted`, "Deleted Faculty")
+        ]);
 
-            const map = {};
-            allFaculty.forEach(f => {
-                const uId = f.userId;
-                const mId = f._id;
-                if (uId && mId) {
-                    map[uId] = mId;
-                }
-            });
+        allFaculty = [...activeList, ...deletedList];
 
-            console.log(`Faculty Map Populated: ${Object.keys(map).length} mapping entries.`);
-            setFacultyMap(map);
-        } catch (err) {
-            console.error('Failed to fetch faculty list:', err);
-            Alert.alert("Network Error", "Failed to load faculty data.");
+        console.log(`Parsed ${allFaculty.length} total faculty items.`);
+
+        if (allFaculty.length === 0) {
+            Alert.alert("Warning", "Could not load any faculty data. Submissions may fail.");
         }
+
+        const map = {};
+        allFaculty.forEach(f => {
+            const uId = f.userId;
+            const mId = f._id;
+            if (uId && mId) {
+                map[uId] = mId;
+            }
+        });
+
+        console.log(`Faculty Map Populated: ${Object.keys(map).length} mapping entries.`);
+        setFacultyMap(map);
     };
 
     // Fetch Students & Subjects when Class/Section changes

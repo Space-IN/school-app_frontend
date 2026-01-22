@@ -68,7 +68,7 @@ export default function AdminNavigator() {
                 headerTitleStyle: { fontWeight: 'bold' },
             }}
         >
-            <Stack.Screen name="AdminDashboard" component={AdminTabNavigator} />
+            <Stack.Screen name="AdminDashboard" component={AdminTabNavigator} options={{ headerShown: false }} />
             <Stack.Screen name="AddStudentScreen" component={AddStudentScreen} />
             <Stack.Screen name="AddFacultyScreen" component={AddFacultyScreen} />
             <Stack.Screen name="AllStudentsScreen" component={AllStudentsScreen} />

@@ -3,17 +3,17 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ActivityIndicator,
   Alert,
   Modal,
   TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Calendar } from 'react-native-calendars';
 import * as Animatable from 'react-native-animatable';
 import { useStudent } from '../../../context/studentContext';
-import { useAuth } from '../../../context/authContext'
-import { BASE_URL } from '@env'
+import { useAuth } from '../../../context/authContext';
+import { BASE_URL } from '@env';
 
 import { api } from '../../../api/api';
 
