@@ -18,7 +18,6 @@ import {
     UIManager,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { api } from '../../api/api';
 import { BASE_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -91,11 +90,6 @@ export default function AdminInsightsScreen({ navigation }) {
                 api.get(`${BASE_URL}/api/admin/events`),
                 api.get(`${BASE_URL}/api/admin/announcement/active`),
                 api.get(`${BASE_URL}/api/admin/attendance/overall`),
-                api.get(`/api/admin/students/count`),
-                api.get(`/api/faculty/all`),
-                api.get(`/api/events`),
-                api.get(`/api/announcement/active`),
-                api.get(`/api/admin/attendance/overall`)
             ]);
 
             // 1. Total Students

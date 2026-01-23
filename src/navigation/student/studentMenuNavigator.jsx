@@ -1,5 +1,5 @@
 import { createStackNavigator } from '@react-navigation/stack'
-import MenuScreen from '../../screens/StudentParent/menuscreen/MenuScreen'
+import MenuScreen from '../../screens/StudentParent/menuscreen/menuScreen'
 import AttendanceScreen from '../../screens/StudentParent/menuscreen/attendanceScreen'
 import TimetableScreen from '../../screens/StudentParent/menuscreen/timetableScreen'
 import AssessmentScreen from '../../screens/StudentParent/menuscreen/assessmentScreen'

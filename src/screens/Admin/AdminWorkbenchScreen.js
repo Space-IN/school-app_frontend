@@ -196,6 +196,8 @@ export default function AdminWorkbenchScreen({ navigation }) {
         setExpandedSection(expandedSection === section ? null : section);
     };
 
+    const nav = (screen, params) => navigation.navigate(screen, params)
+
     // ✅ Navigation handlers
     const handleAddStudent = () => {
        navigation.navigate('StudentEntryHubScreen');
@@ -234,8 +236,8 @@ export default function AdminWorkbenchScreen({ navigation }) {
                 <Ionicons name={icon} size={24} color="#1e3a8a" />
                 <Text style={styles.sectionTitle}>{title}</Text>
             </View>
+        </TouchableOpacity>
         );
-    }
 
     return (
         <View style={styles.container}>
@@ -356,6 +358,18 @@ export default function AdminWorkbenchScreen({ navigation }) {
                         onPress={() => toggleSection('notices')}
                     >
                         <SubMenuItem label="Add Notice" icon="megaphone-outline" color={PRO_COLORS.iconTeal} onPress={() => nav('AddNoticeScreen')} />
+                    </MenuTile>
+
+                    {/* 9. Notices (Teal - Alternate) */}
+                    <MenuTile
+                        index={7}
+                        title="Fee Management"
+                        icon="card"
+                        gradientColors={PRO_COLORS.corporateTeal}
+                        expanded={expandedSection === 'fees'}
+                        onPress={() => toggleSection('fees')}
+                    >
+                        <SubMenuItem label="Fee Management" icon="card-outline" color={PRO_COLORS.iconTeal} onPress={() => nav('AdminFeesScreen')} />
                     </MenuTile>
 
                     <View style={{ height: 40 }} />
