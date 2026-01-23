@@ -1,4 +1,3 @@
-// src/screens/Admin/fees/ManageFeesTab.js
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -28,11 +27,11 @@ export default function ManageFeesTab() {
   const [selectedBoard, setSelectedBoard] = useState("CBSE");
   const [expandedCardId, setExpandedCardId] = useState(null);
 
-  /* 🔹 Result modal */
+
   const [resultModalVisible, setResultModalVisible] = useState(false);
   const [resultMessage, setResultMessage] = useState("");
+  const [isError, setIsError] = useState(false);
 
-  /* 🔹 Upload confirmation modal */
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [pickedFile, setPickedFile] = useState(null);
   const [uploadType, setUploadType] = useState(null);
@@ -46,15 +45,14 @@ export default function ManageFeesTab() {
       setLoading(true);
       const res = await api.get("/api/admin/student/fee-template");
       setFeeTemplates(res.data.data || []);
-    } catch (err) {
-      setResultMessage("Failed to fetch fee templates.");
-      setResultModalVisible(true);
+    } catch {
+      showResult("Failed to fetch fee templates.", true);
     } finally {
       setLoading(false);
     }
   };
 
-  /* ================= FILE PICK ================= */
+
   const pickFile = async (type) => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -66,99 +64,90 @@ export default function ManageFeesTab() {
       const file = result.assets?.[0];
       if (!file) return;
 
+      if (!file.name?.endsWith(".xlsx")) {
+        showResult("Invalid file type. Please upload a .xlsx file.", true);
+        return;
+      }
+
       setPickedFile(file);
       setUploadType(type);
       setConfirmVisible(true);
-    } catch (err) {
-      setResultMessage("File selection failed.");
-      setResultModalVisible(true);
+    } catch {
+      showResult("File selection failed.", true);
     }
   };
 
-  /* ================= CONFIRMED UPLOAD ================= */
+
+  const showResult = (msg, error = false) => {
+    setIsError(error);
+    setResultMessage(msg);
+    setResultModalVisible(true);
+  };
+
+
   const confirmUpload = async () => {
-  if (!pickedFile || !uploadType) return;
+    if (!pickedFile || !uploadType) return;
 
-  // ✅ Validate file type early
-  if (!pickedFile.name?.endsWith(".xlsx")) {
-    setConfirmVisible(false);
-    setResultMessage("Invalid file type. Please upload a .xlsx Excel file.");
-    setResultModalVisible(true);
-    return;
-  }
+    try {
+      setConfirmVisible(false);
+      setLoading(true);
 
-  try {
-    setConfirmVisible(false);
-    setLoading(true);
+      const formData = new FormData();
+      formData.append("file", {
+        uri: pickedFile.uri,
+        name: pickedFile.name,
+        type:
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
 
-    // ✅ VERY IMPORTANT: wait one tick for file to be readable
-    await new Promise((resolve) => setTimeout(resolve, 300));
+      const endpoint =
+        uploadType === "template"
+          ? "/api/admin/student/fee-template/upload"
+          : "/api/admin/student/student-fee/upload";
 
-    const formData = new FormData();
-    formData.append("file", {
-      uri: pickedFile.uri,
-      name: pickedFile.name,
-      type:
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
+      const res = await api.post(endpoint, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-    const endpoint =
-      uploadType === "template"
-        ? "/api/admin/student/fee-template/upload"
-        : "/api/admin/student/student-fee/upload";
+   
+      if (uploadType === "template") {
+        const {
+          templatesProcessed = 0,
+          studentFeesCreated = 0,
+          rowsSkipped = 0,
+        } = res.data || {};
 
-    const res = await api.post(endpoint, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+        showResult(
+          `Fee Template Upload Successful \n\n` +
+            `Templates Processed: ${templatesProcessed}\n` +
+            `Student Fees Created: ${studentFeesCreated}\n` +
+            `Rows Skipped: ${rowsSkipped}`,
+          false
+        );
 
-    const data = res.data || {};
+        fetchFeeTemplates();
+      } else {
+        const { updatedCount = 0, skippedCount = 0 } = res.data || {};
 
-if (uploadType === "template") {
-  const {
-    templatesProcessed = 0,
-    studentFeesCreated = 0,
-    rowsSkipped = 0,
-  } = data;
+        showResult(
+          `Bulk Installments Updated \n\n` +
+            `Updated Records: ${updatedCount}\n` +
+            `Skipped Records: ${skippedCount}`,
+          false
+        );
+      }
+    } catch (err) {
+      const backendMessage =
+        err?.response?.data?.message ||
+        "Upload failed. Please check Excel format.";
 
-  setResultMessage(
-    `Fee Template Upload Successful 🎉\n\n` +
-    `Templates Processed: ${templatesProcessed}\n` +
-    `Student Fees Created: ${studentFeesCreated}\n` +
-    `Rows Skipped: ${rowsSkipped}`
-  );
-
-  fetchFeeTemplates(); // refresh list
-} else {
-  const {
-    updatedCount = 0,
-    skippedCount = 0,
-  } = data;
-
-  setResultMessage(
-    `Bulk Installment Update Successful ✅\n\n` +
-    `Updated Records: ${updatedCount}\n` +
-    `Skipped Records: ${skippedCount}`
-  );
-}
-
-setResultModalVisible(true);
-
-    if (uploadType === "template") {
-      fetchFeeTemplates();
+      showResult(`Upload Failed \n\n${backendMessage}`, true);
+    } finally {
+      setLoading(false);
+      setPickedFile(null);
+      setUploadType(null);
     }
-  } catch (err) {
-    setResultMessage(
-      err?.response?.data?.message ||
-        "Upload failed. Please check Excel format."
-    );
-    setResultModalVisible(true);
-  } finally {
-    setLoading(false);
-    setPickedFile(null);
-    setUploadType(null);
-  }
-};
-
+  };
 
   const displayedTemplates = feeTemplates
     .filter((t) => t.board === selectedBoard)
@@ -170,7 +159,6 @@ setResultModalVisible(true);
 
   return (
     <View style={styles.container}>
-      {/* Board Selector */}
       <View style={styles.boardSelector}>
         {Object.keys(BOARD_COLORS).map((board) => (
           <TouchableOpacity
@@ -186,7 +174,10 @@ setResultModalVisible(true);
             <Text
               style={[
                 styles.boardButtonText,
-                selectedBoard === board && { color: "#fff", fontWeight: "700" },
+                selectedBoard === board && {
+                  color: "#fff",
+                  fontWeight: "700",
+                },
               ]}
             >
               {board}
@@ -195,7 +186,7 @@ setResultModalVisible(true);
         ))}
       </View>
 
-      {/* Templates */}
+
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         {displayedTemplates.length === 0 ? (
           <Text style={styles.text}>No templates for {selectedBoard}</Text>
@@ -232,7 +223,7 @@ setResultModalVisible(true);
         )}
       </ScrollView>
 
-      {/* Upload Buttons */}
+ 
       <View style={styles.uploadContainer}>
         <Button
           mode="contained"
@@ -258,13 +249,12 @@ setResultModalVisible(true);
         </Button>
       </View>
 
-      {/* 🔹 CONFIRM MODAL */}
+
       <Modal transparent visible={confirmVisible}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Confirm Upload</Text>
-            <Text>File: {pickedFile?.name}</Text>
-            <Text>Type: {uploadType}</Text>
+            <Text>{pickedFile?.name}</Text>
 
             <View style={{ flexDirection: "row", marginTop: 20 }}>
               <TouchableOpacity
@@ -285,11 +275,17 @@ setResultModalVisible(true);
         </View>
       </Modal>
 
-      {/* 🔹 RESULT MODAL */}
       <Modal transparent visible={resultModalVisible}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalText}>{resultMessage}</Text>
+            <Text
+              style={[
+                styles.modalText,
+                { color: isError ? "#dc3545" : "#16a34a" },
+              ]}
+            >
+              {resultMessage}
+            </Text>
             <TouchableOpacity
               style={styles.confirmBtn}
               onPress={() => setResultModalVisible(false)}
@@ -305,7 +301,7 @@ setResultModalVisible(true);
   );
 }
 
-/* ================= STYLES ================= */
+
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
   boardSelector: {

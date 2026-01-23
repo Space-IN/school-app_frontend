@@ -7,37 +7,38 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
- 
+import axios from "axios";
 import { useAuth } from "../../context/authContext"; 
 import { BASE_URL } from "@env"
 import { api } from "../../api/api";
 
 export default function FacultyTodaySchedule({ navigation }) {
   const { decodedToken } = useAuth();              
-  const facultyId = decodedToken?.userId;           
+  const facultyId = decodedToken?.preferred_username;         
   const [schedule, setSchedule] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSchedule = async () => {
-      try {
-        console.log("Fetching schedule for facultyId:", facultyId);
-        const res = await api.get(`${BASE_URL}/api/admin/schedule/faculty/${facultyId}`);
-        setSchedule(res.data?.schedule || []);
-      } catch (err) {
-        console.error("Error fetching schedule:", err?.message || err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  if (!facultyId) return; 
 
-    if (facultyId) {
-      fetchSchedule();
-    } else {
-      console.warn("No facultyId available yet in useAuth — will wait.");
-      setLoading(false); 
+  const fetchSchedule = async () => {
+    try {
+      setLoading(true);
+
+      const res = await api.get(
+        `/api/faculty/schedule/faculty/${facultyId}`
+      );
+
+      setSchedule(res.data?.schedule || []);
+    } catch (err) {
+      console.error("Error fetching schedule:", err?.response || err);
+    } finally {
+      setLoading(false);
     }
-  }, [facultyId]);
+  };
+
+  fetchSchedule();
+}, [facultyId]);
 
   const today = new Date().toLocaleDateString("en-US", { weekday: "long" });
 

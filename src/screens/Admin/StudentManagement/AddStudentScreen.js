@@ -25,6 +25,7 @@ const AddStudentScreen = ({ route }) => {
     className: '',
     section: '',
     rollNo: '',
+    academicYear: '',
     dob: '',
     gender: '',
     address: '',
@@ -75,7 +76,7 @@ const AddStudentScreen = ({ route }) => {
   };
 
   const handleSubmit = async () => {
-    const requiredFields = ['name', 'userId', 'password', 'className', 'section'];
+    const requiredFields = ['name', 'userId', 'password', 'className', 'section','academicYear'];
     for (let field of requiredFields) {
       if (!form[field]) {
         Alert.alert('Validation Error', `Please fill in the ${field} field.`);
@@ -91,6 +92,7 @@ const AddStudentScreen = ({ route }) => {
         className: form.className.trim(),
         section: form.section.trim().toUpperCase(),
         rollNo: form.rollNo.trim(),
+        academicYear: '',
         admissionNumber: form.admissionNumber?.trim() || '',
         studentEmail: form.studentEmail?.trim() || '',
         dob: form.dob?.trim() || '',
@@ -109,7 +111,7 @@ const AddStudentScreen = ({ route }) => {
         board: board || '',
       };
 
-      const res = await api.post(`${BASE_URL}/api/admin/add-student`, payload);
+      const res = await api.post(`${BASE_URL}/api/admin/student/add`, payload);
       Alert.alert('  Success', res.data.message);
 
       setForm({
@@ -119,6 +121,7 @@ const AddStudentScreen = ({ route }) => {
         className: '',
         section: '',
         rollNo: '',
+        academicYear: '',
         admissionNumber: '',
         studentEmail: '',
         dob: '',
@@ -148,6 +151,7 @@ const AddStudentScreen = ({ route }) => {
     ['className', 'Class (e.g. 6)', 'text'],
     ['section', 'Section (e.g. A)', 'text'],
     ['rollNo', 'Roll Number', 'text'],
+    ['academicYear', 'Academic Year (e.g. 2024-2025)', 'text'],
     ['studentEmail', 'Student Email (optional)', 'text'],
     ['admissionNumber', 'Admission Number', 'text'],
     ['address', 'Address', 'text'],

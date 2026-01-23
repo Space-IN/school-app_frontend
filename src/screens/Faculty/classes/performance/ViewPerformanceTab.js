@@ -51,7 +51,7 @@ const ViewPerformanceTab = ({ route }) => {
     try {
       setLoading(true);
       setError("");
-      console.log("📡 Fetching:", `${BASE_URL}/api/assessment/faculty/assessmentScore`, {
+      console.log("📡 Fetching:", `${BASE_URL}/api/faculty/assessment/faculty/assessmentScore`, {
         grade,
         section,
         test_name,

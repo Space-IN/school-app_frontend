@@ -196,12 +196,43 @@ export default function AdminWorkbenchScreen({ navigation }) {
         setExpandedSection(expandedSection === section ? null : section);
     };
 
-    const nav = (screen, params) => navigation.navigate(screen, params);
+    // ✅ Navigation handlers
+    const handleAddStudent = () => {
+       navigation.navigate('StudentEntryHubScreen');
+    };
 
-    if (loading) {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={PRO_COLORS.iconBlue} />
+    const handleAddFaculty = () => navigation.navigate('AddFacultyScreen');
+    const handleViewStudents = () => {
+        navigation.navigate('BoardSelectionScreen', {
+            nextScreen: 'AllStudentsScreen',
+            title: 'View Students - Select Board',
+        });
+    };
+    const handleViewFaculty = () => navigation.navigate('AllFacultyScreen');
+    const handleClassSchedule = () => navigation.navigate('ClassScheduleScreen');
+    const handleAddSubjectMaster = () => navigation.navigate('AddSubjectMasterScreen');
+    const handleAssignSubject = () => navigation.navigate('AssignSubjectScreen');
+    const handleAddEvent = () => navigation.navigate('AddEventScreen');
+    const handleViewClassSchedule = () => navigation.navigate('ClassScheduleViewScreen');
+    const handleAddNotice = () => navigation.navigate('AddNoticeScreen');
+    const handleFacultyPerformance = () => navigation.navigate('FacultyPerformance');
+    const handleManageFees = () => navigation.navigate('AdminFeesScreen');
+
+    const handleExamTemplates = () => {
+      navigation.navigate('BoardSelectionScreen', {
+      nextScreen: 'ExamTemplatesHomeScreen',
+      title: 'Exam Templates - Select Board',
+     });
+    };
+
+    const renderSectionHeader = (title, icon, sectionKey) => (
+        <TouchableOpacity
+            style={styles.sectionHeader}
+            onPress={() => toggleSection(sectionKey)}
+        >
+            <View style={styles.sectionHeaderLeft}>
+                <Ionicons name={icon} size={24} color="#1e3a8a" />
+                <Text style={styles.sectionTitle}>{title}</Text>
             </View>
         );
     }
