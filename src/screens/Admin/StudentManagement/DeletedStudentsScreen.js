@@ -21,7 +21,7 @@ export default function DeletedStudentsScreen({ navigation }) {
   const fetchDeletedStudents = async () => {
     setLoading(true);
     try {
-      const res = await api.get(`${BASE_URL}/api/admin/students-deleted`);
+      const res = await api.get(`${BASE_URL}/api/admin/students/students-deleted`);
       setStudents(res.data || []);
     } catch (err) {
       console.error('❌ Failed to fetch deleted students:', err);

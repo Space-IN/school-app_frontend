@@ -20,7 +20,7 @@ export default function FacultyProfileViewScreen({ route }) {
   useEffect(() => {
     const fetchFaculty = async () => {
       try {
-        const res = await api.get(`${BASE_URL}/api/admin/faculty/${userId}`);
+        const res = await api.get(`${BASE_URL}/api/admin/faculty?facultyId=${userId}`);
         setFaculty(res.data);
       } catch (err) {
         console.error('❌ Error fetching faculty profile:', err);

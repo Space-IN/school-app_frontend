@@ -111,7 +111,7 @@ const AddStudentScreen = ({ route }) => {
         board: board || '',
       };
 
-      const res = await api.post(`${BASE_URL}/api/admin/student/add`, payload);
+      const res = await api.post(`/api/admin/student/add`, payload);
       Alert.alert('  Success', res.data.message);
 
       setForm({

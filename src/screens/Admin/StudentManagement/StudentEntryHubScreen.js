@@ -13,18 +13,20 @@ import { BASE_URL } from '@env'
 import { useAdmin } from '../../../context/adminContext'
 
 const StudentEntryHubScreen = ({ navigation }) => {
-  const { adminId, adminLoading } = useAdmin()
+  const { adminUserId, adminLoading } = useAdmin()
 
   const [batches, setBatches] = useState([])
   const [loading, setLoading] = useState(true)
 
   const fetchBatches = async () => {
-    if (!adminId) return
+    if (!adminUserId) return
 
     try {
       setLoading(true)
+      console.log(" adminUserId used:", adminUserId)
+
       const res = await api.get(
-        `${BASE_URL}/api/admin/students/import-batch/admin/${adminId}`
+        `/api/admin/students/import-batch/admin/${adminUserId}`,
       )
 
       setBatches(res.data?.data || [])
@@ -36,10 +38,10 @@ const StudentEntryHubScreen = ({ navigation }) => {
   }
 
   useEffect(() => {
-    if (!adminLoading && adminId) {
+    if (!adminLoading && adminUserId) {
       fetchBatches()
     }
-  }, [adminLoading, adminId])
+  }, [adminLoading, adminUserId])
 
   const formatDate = (iso) => {
     const d = new Date(iso)

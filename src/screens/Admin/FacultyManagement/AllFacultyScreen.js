@@ -1,6 +1,5 @@
-
 // screens/Admin/AllFacultyScreen.js
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,290 +9,219 @@ import {
   ActivityIndicator,
   Alert,
   TouchableOpacity,
-  Platform,
-  StatusBar,
+  RefreshControl,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { BASE_URL } from '@env';
 import { api } from '../../../api/api';
+import { useAdmin } from '../../../context/adminContext';
 
 export default function AllFacultyScreen({ navigation }) {
+  const { adminObjectId, adminLoading } = useAdmin();
+
   const [activeTab, setActiveTab] = useState('active');
   const [facultyList, setFacultyList] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
 
-  const fetchFaculty = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const endpoint =
-        activeTab === 'deleted'
-          ? `${BASE_URL}/api/admin/faculty/deleted`
-          : `${BASE_URL}/api/admin/faculty/all`;
 
-      const res = await api.get(endpoint);
-      setFacultyList(res.data || []);
+  const fetchFaculty = async (isRefresh = false) => {
+    if (adminLoading) return;
+
+    isRefresh ? setRefreshing(true) : setLoading(true);
+    setError('');
+
+    try {
+      let endpoint = '';
+      let params = {};
+
+      if (activeTab === 'active') {
+        endpoint = '/api/admin/faculty';
+      }
+
+      if (activeTab === 'deleted') {
+        endpoint = '/api/admin/faculty/deleted';
+      }
+
+      if (activeTab === 'createdByMe') {
+        if (!adminObjectId) {
+          throw new Error('Admin ObjectId missing');
+        }
+        endpoint = '/api/admin/faculty';
+        params.adminId = adminObjectId;
+      }
+
+      const res = await api.get(endpoint, { params });
+      const data = res.data?.data || [];
+
+
+      const sorted = data.sort((a, b) => {
+        const order = { failed: 0, pending: 1, success: 2, active: 2 };
+        const s1 = a?.user?.accountProvisioning?.keycloakStatus || 'success';
+        const s2 = b?.user?.accountProvisioning?.keycloakStatus || 'success';
+        return (order[s1] ?? 3) - (order[s2] ?? 3);
+      });
+
+      setFacultyList(sorted);
     } catch (err) {
-      console.error(`❌ Error fetching ${activeTab} faculty:`, err);
+      console.error(' Error fetching faculty:', err.response?.data || err.message || err);
       setError('Failed to load faculty data.');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
   useFocusEffect(
     useCallback(() => {
       fetchFaculty();
-    }, [activeTab])
+    }, [activeTab, adminObjectId, adminLoading])
   );
 
-  const confirmAction = (title, message, onConfirm) => {
-    Alert.alert(title, message, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Yes', onPress: onConfirm, style: 'destructive' },
-    ]);
+
+  const retryAllFailed = async () => {
+    const failedUsers = facultyList.filter(
+      f => f?.user?.accountProvisioning?.keycloakStatus === 'failed'
+    );
+
+    if (failedUsers.length === 0) {
+      return Alert.alert('No Failed Users', 'There are no failed faculty to retry.');
+    }
+
+    try {
+      await Promise.all(
+        failedUsers.map(f =>
+          api.post(`/api/admin/users/retry/${f.user._id}`)
+        )
+      );
+
+      Alert.alert('Retry Started', 'Retry triggered for failed faculties.');
+      fetchFaculty();
+    } catch (err) {
+      console.error('❌ Retry error:', err.response?.data || err);
+      Alert.alert('Error', 'Failed to retry some users.');
+    }
   };
 
-  const handleSoftDelete = (userId) => {
-    confirmAction('Soft Delete', 'Soft delete this faculty?', async () => {
-      try {
-        await api.patch(`${BASE_URL}/api/admin/faculty/delete/${userId}`);
-        fetchFaculty();
-        Alert.alert('Deleted', 'Faculty soft deleted');
-      } catch {
-        Alert.alert('Error', 'Failed to soft delete faculty');
-      }
-    });
+
+  const getCardStyle = status => {
+    if (status === 'failed') return styles.failedCard;
+    if (status === 'pending') return styles.pendingCard;
+    return styles.successCard;
   };
 
-  const handleHardDelete = (userId) => {
-    confirmAction(
-      'Delete Permanently',
-      'This will permanently delete the faculty!',
-      async () => {
-        try {
-          await api.delete(`${BASE_URL}/api/admin/faculty/${userId}`);
-          fetchFaculty();
-          Alert.alert('Deleted', 'Faculty permanently deleted');
-        } catch {
-          Alert.alert('Error', 'Failed to delete faculty');
+  const renderFacultyCard = fac => {
+    const status = fac?.user?.accountProvisioning?.keycloakStatus || 'success';
+
+    return (
+      <TouchableOpacity
+        key={fac._id}
+        style={[styles.facultyCard, getCardStyle(status)]}
+        onPress={() =>
+          navigation.navigate('FacultyProfileViewScreen', {
+            userId: fac.userId,
+          })
         }
-      }
+      >
+        <Text style={styles.name}>
+          {fac.name} ({fac.userId})
+        </Text>
+
+        <Text style={styles.status}>
+          Status:{' '}
+          <Text style={styles.statusText}>
+            {status.toUpperCase()}
+          </Text>
+        </Text>
+      </TouchableOpacity>
     );
   };
 
-  const handleRestore = (userId) => {
-    confirmAction('Restore Faculty', 'Restore this faculty?', async () => {
-      try {
-        await api.patch(`${BASE_URL}/api/admin/faculty/restore/${userId}`);
-        fetchFaculty();
-        Alert.alert('Restored', 'Faculty restored successfully');
-      } catch {
-        Alert.alert('Error', 'Failed to restore faculty');
-      }
-    });
-  };
-
-  const renderFacultyCard = (fac) => (
-    <TouchableOpacity
-      key={fac._id}
-      style={styles.facultyCard}
-      onPress={() =>
-        navigation.navigate('FacultyProfileViewScreen', { userId: fac.userId })
-      }
-    >
-      <Text style={styles.name}>
-        {fac.name} ({fac.userId})
-      </Text>
-
-      {Array.isArray(fac.subjectAssignments) &&
-        fac.subjectAssignments.length > 0 && (
-          <>
-            {fac.subjectAssignments.map((subj, index) => (
-              <View key={index} style={{ marginTop: 4 }}>
-                <Text style={styles.meta}>
-                  📘 Subject:{' '}
-                  <Text style={{ fontWeight: 'bold' }}>{subj.subject}</Text>
-                </Text>
-                {subj.assignments.map((a, idx) => (
-                  <Text key={idx} style={styles.meta}>
-                    ➤ Class {a.class} - Section {a.section}
-                  </Text>
-                ))}
-              </View>
-            ))}
-          </>
-        )}
-
-      <View style={styles.actionRow}>
-        {activeTab === 'active' ? (
-          <>
-            <Text
-              style={styles.editBtn}
-              onPress={() =>
-                navigation.navigate('EditFacultyScreen', { faculty: fac })
-              }
-            >
-               Edit  Data
-             </Text>
-            <Text
-              style={styles.softDeleteBtn}
-              onPress={() => handleSoftDelete(fac.userId)}
-            >
-              Soft Delete
-            </Text>
-          </>
-        ) : (
-          <>
-            <Text
-              style={styles.restoreBtn}
-              onPress={() => handleRestore(fac.userId)}
-            >
-               Restore
-            </Text>
-            <Text
-              style={styles.deleteBtn}
-              onPress={() => handleHardDelete(fac.userId)}
-            >
-               Delete
-            </Text>
-          </>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
-
   return (
     <SafeAreaView style={styles.container}>
+
       <View style={styles.tabRow}>
-        <TouchableOpacity
-          style={[styles.tabBtn, activeTab === 'active' && styles.activeTab]}
-          onPress={() => setActiveTab('active')}
-        >
-          <Text style={styles.tabText}>Active Faculty</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabBtn, activeTab === 'deleted' && styles.activeTab]}
-          onPress={() => setActiveTab('deleted')}
-        >
-          <Text style={styles.tabText}>Deleted Faculty</Text>
-        </TouchableOpacity>
+        {['active', 'deleted', 'createdByMe'].map(tab => (
+          <TouchableOpacity
+            key={tab}
+            style={[styles.tabBtn, activeTab === tab && styles.activeTab]}
+            onPress={() => setActiveTab(tab)}
+          >
+            <Text style={styles.tabText}>
+              {tab === 'createdByMe' ? 'Created By Me' : tab.toUpperCase()}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
-      <Text style={styles.heading}>
-        {activeTab === 'active'
-          ? '👩‍🏫 All Active Faculty'
-          : '🗑️ Soft Deleted Faculty'}
-      </Text>
+
+      {activeTab === 'createdByMe' && (
+        <TouchableOpacity style={styles.retryAllBtn} onPress={retryAllFailed}>
+          <Text style={styles.retryAllText}>Retry Failed Faculties</Text>
+        </TouchableOpacity>
+      )}
+
 
       {loading ? (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#1e3a8a" />
-          <Text style={{ marginTop: 10, color: '#1e3a8a' }}>Loading...</Text>
-        </View>
+        <ActivityIndicator size="large" color="#1e3a8a" style={{ marginTop: 30 }} />
       ) : error ? (
-        <View style={styles.centered}>
-          <Text style={{ color: 'red', fontSize: 16 }}>{error}</Text>
-        </View>
-      ) : facultyList.length === 0 ? (
-        <View style={styles.centered}>
-          <Text style={{ fontSize: 16, color: '#666' }}>No data found.</Text>
-        </View>
+        <Text style={styles.error}>{error}</Text>
       ) : (
-        <ScrollView contentContainerStyle={styles.list}>
-          {facultyList.map(renderFacultyCard)}
+        <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={() => fetchFaculty(true)} />
+          }
+          contentContainerStyle={styles.list}
+        >
+          {facultyList.length === 0 ? (
+            <Text style={styles.empty}>No data found.</Text>
+          ) : (
+            facultyList.map(renderFacultyCard)
+          )}
         </ScrollView>
       )}
     </SafeAreaView>
   );
 }
 
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffffff',
-    // paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
+
   tabRow: {
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    backgroundColor: '#ec7f7fff',
+    justifyContent: 'space-around',
+    backgroundColor: '#ec7f7f',
     paddingVertical: 10,
   },
-  tabBtn: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
+  tabBtn: { padding: 8, borderRadius: 20 },
+  activeTab: { backgroundColor: '#bbdbfa' },
+  tabText: { fontWeight: 'bold' },
+
+  retryAllBtn: {
+    backgroundColor: '#007aff',
+    margin: 12,
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
   },
-  activeTab: {
-    backgroundColor: '#bbdbfaff',
-  },
-  tabText: {
-    color: '#000000ff',
-    fontWeight: 'bold',
-  },
-  heading: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1e3a8a',
-    padding: 16,
-  },
-  list: {
-    paddingHorizontal: 16,
-    paddingBottom: 30,
-  },
+  retryAllText: { color: '#fff', fontWeight: 'bold' },
+
+  list: { padding: 16 },
   facultyCard: {
-    backgroundColor: '#faebebff',
-    padding: 15,
+    padding: 14,
     borderRadius: 10,
     marginBottom: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#1e3a8a',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
   },
-  name: {
-    fontSize: 17,
-    fontWeight: 'bold',
-    color: '#1e3a8a',
-  },
-  meta: {
-    fontSize: 14,
-    color: '#333',
-    marginTop: 2,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: 10,
-  },
-  editBtn: {
-    color: '#0a7',
-    fontWeight: 'bold',
-    marginRight: 15,
-  },
-  softDeleteBtn: {
-    color: '#c96f00',
-    fontWeight: 'bold',
-    marginRight: 15,
-  },
-  restoreBtn: {
-    color: '#007aff',
-    fontWeight: 'bold',
-    marginRight: 15,
-  },
-  deleteBtn: {
-    color: '#d00',
-    fontWeight: 'bold',
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-  },
-});
 
+  failedCard: { backgroundColor: '#ffd6d6' },
+  pendingCard: { backgroundColor: '#fff3cd' },
+  successCard: { backgroundColor: '#d4edda' },
+
+  name: { fontSize: 16, fontWeight: 'bold' },
+  status: { marginTop: 6, fontWeight: 'bold' },
+  statusText: { textTransform: 'uppercase' },
+
+  empty: { textAlign: 'center', color: '#666', marginTop: 30 },
+  error: { color: 'red', textAlign: 'center', marginTop: 20 },
+});
