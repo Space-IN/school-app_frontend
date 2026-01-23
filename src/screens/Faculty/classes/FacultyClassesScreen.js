@@ -44,7 +44,7 @@ export default function FacultyClassesScreen({ navigation, route }) {
       console.log('Fetching classes for faculty:', facultyId);
       
       // Option 1: Try using subjects endpoint (more reliable)
-      const response = await api.get(`${BASE_URL}/api/faculty/subject/subjects/faculty/${facultyId}`);
+      const response = await api.get(`/api/faculty/subject/subjects/faculty/${facultyId}`);
       console.log('Subjects API response:', response.data);
       
       let classes = [];
@@ -102,7 +102,7 @@ export default function FacultyClassesScreen({ navigation, route }) {
   const fetchFromScheduleEndpoint = async (facultyId) => {
     try {
       console.log('Trying schedule endpoint for faculty:', facultyId);
-      const response = await api.get(`${BASE_URL}/api/faculty/schedule/faculty/${facultyId}`);
+      const response = await api.get(`/api/faculty/schedule/faculty/${facultyId}`);
       console.log('Schedule API response:', response.data);
       
       const scheduleData = response.data?.schedule || response.data || [];

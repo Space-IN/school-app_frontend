@@ -24,7 +24,7 @@ const StudentEntryHubScreen = ({ navigation }) => {
     try {
       setLoading(true)
       const res = await api.get(
-        `${BASE_URL}/api/admin/students/import-batch/admin/${adminId}`
+        `/api/admin/students/import-batch/admin/${adminId}`
       )
 
       setBatches(res.data?.data || [])

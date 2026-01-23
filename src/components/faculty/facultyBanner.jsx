@@ -27,7 +27,7 @@ export default function FacultyBanner({ navigation }) {
     const fetchFacultyName = async () => {
       if (!facultyId) return;
       try {
-        const res = await api.get(`${BASE_URL}/api/faculty/${facultyId}`);
+        const res = await api.get(`/api/faculty/${facultyId}`);
         console.log("res from faculty banner: ", res.data)
         setFacultyName(res.data?.name || "Faculty");
       } catch (err) {

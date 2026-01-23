@@ -138,7 +138,7 @@ export default function LectureRecordingScreen({ route }) {
   const fetchSchedule = async () => {
     try {
       setLoading(true);
-      const res = await api.get(`${BASE_URL}/api/faculty/schedule/faculty/${facultyId}`);
+      const res = await api.get(`/api/faculty/schedule/faculty/${facultyId}`);
       if (res.data && Array.isArray(res.data.schedule)) {
         setScheduleData(res.data.schedule);
 
@@ -476,7 +476,7 @@ export default function LectureRecordingScreen({ route }) {
         type: 'audio/m4a',
       });
 
-      const resp = await fetch(`${BASE_URL}/api/faculty/lecture-recordings`, {
+      const resp = await fetch(`/api/faculty/lecture-recordings`, {
         method: 'POST',
         body: form,
       });

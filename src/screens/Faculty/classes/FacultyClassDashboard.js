@@ -89,7 +89,7 @@ export default function FacultyClassDashboard({ route }) {
         // Option 1: If you need schedule data
         if (!scheduleItem) {
           const response = await fetch(
-            `${BASE_URL}/api/admin/schedule/class/${grade}/section/${section}`
+            `/api/admin/schedule/class/${grade}/section/${section}`
           );
           const data = await response.json();
           console.log('📦 Schedule Data:', data);

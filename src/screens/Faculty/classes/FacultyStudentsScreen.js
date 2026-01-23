@@ -75,7 +75,7 @@ export default function FacultyStudentsScreen() {
       console.log('📋 Fetching students for:', { grade, section });
       
       const response = await api.get(
-        `${BASE_URL}/api/faculty/students/grade/${grade}/section/${section}`
+        `/api/faculty/students/grade/${grade}/section/${section}`
       );
       setStudents(response.data);
       setFilteredStudents(response.data);

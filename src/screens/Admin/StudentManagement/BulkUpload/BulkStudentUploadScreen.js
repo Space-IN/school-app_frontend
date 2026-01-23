@@ -107,7 +107,7 @@ const BulkStudentUploadScreen = () => {
     });
 
     const res = await api.post(
-      `${BASE_URL}/api/admin/students/import-batch/preview`,
+      `/api/admin/students/import-batch/preview`,
       formData,
       { headers: { 'Content-Type': 'multipart/form-data' } }
     );
@@ -161,7 +161,7 @@ const BulkStudentUploadScreen = () => {
       });
 
       const res = await api.post(
-        `${BASE_URL}/api/admin/students/import-batch/preview`,
+        `/api/admin/students/import-batch/preview`,
         { rows }
       );
 
@@ -204,7 +204,7 @@ const BulkStudentUploadScreen = () => {
     });
 
     const res = await api.post(
-      `${BASE_URL}/api/admin/students/import-batch/commit`,
+      `/api/admin/students/import-batch/commit`,
       { students }
     );
 

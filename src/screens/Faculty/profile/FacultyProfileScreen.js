@@ -39,7 +39,7 @@ export default function FacultyProfileScreen() {
       let response;
       let data;
       try {
-        response = await api.get(`${BASE_URL}/api/faculty/${facultyId}`);
+        response = await api.get(`/api/faculty/${facultyId}`);
         console.log('Faculty API response:', response.data);
       } catch (firstErr) {
         console.log('First endpoint failed, trying alternative...');
