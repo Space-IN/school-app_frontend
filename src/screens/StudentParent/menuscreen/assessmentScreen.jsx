@@ -58,7 +58,7 @@ export default function AssessmentScreen() {
     setSelectedExam(exam)
     setModalVisible(false)
     try {
-      const response = await fetchAssessmentScore(studentId, grade, section, exam.test_name, year)
+      const response = await fetchAssessmentScore(studentId, grade, section, exam.assessment_name, year)
       if(response) setMarksData(response)
     } catch(err) {
       setErr(err.message || "an error occured while fetching assessment score.")
@@ -126,11 +126,11 @@ export default function AssessmentScreen() {
         >
           <View style={styles.dropdownTextContainer}>
             <Text style={styles.dropdownTextPrimary}>
-              {selectedExam ? selectedExam.test_name : "Select Assessment"}
+              {selectedExam ? selectedExam.assessment_name : "Select Assessment"}
             </Text>
             {selectedExam && (
               <Text style={styles.dropdownTextSecondary}>
-                {`${selectedExam.test_type} - ${new Date(selectedExam.date).toISOString().split('T')[0]}`}
+                {`${selectedExam.assessment_template.assessmentType} - ${new Date(selectedExam.date).toISOString().split('T')[0]}`}
               </Text>
             )}
           </View>
@@ -186,7 +186,7 @@ export default function AssessmentScreen() {
           <View style={styles.modalBox}>
             <FlatList
               data={exams}
-              keyExtractor={(item) => `${item.test_name}-${item.date}`}
+              keyExtractor={(item) => `${item.assessment_name}-${item.date}`}
               renderItem={({ item, index }) => (
                 <TouchableOpacity
                   style={styles.option}
@@ -194,8 +194,8 @@ export default function AssessmentScreen() {
                   key={index}
                 >
                   <Text style={styles.examDateText}>{new Date(item.date).toISOString().split('T')[0]}</Text>
-                  <Text style={styles.examText}>{item.test_name}</Text>
-                  <Text style={styles.examTypeText}>{item.test_type}</Text>
+                  <Text style={styles.examText}>{item.assessment_name}</Text>
+                  <Text style={styles.examTypeText}>{item.assessment_template.assessmentType}</Text>
                 </TouchableOpacity>
               )}
               ListEmptyComponent={

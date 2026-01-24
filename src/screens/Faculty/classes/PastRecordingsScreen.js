@@ -80,7 +80,7 @@ export default function PastRecordingsScreen({ route }) {
   const fetchSchedule = async () => {
     try {
       setLoading(true);
-      const res = await api.get(`${BASE_URL}/api/faculty/schedule/faculty/${facultyId}`);
+      const res = await api.get(`/api/faculty/schedule/faculty/${facultyId}`);
       if (res.data && Array.isArray(res.data.schedule)) {
         setScheduleData(res.data.schedule);
 
@@ -146,11 +146,11 @@ export default function PastRecordingsScreen({ route }) {
       let apiUrl;
       if (grade && section && subjectId) {
         // Use route params
-        apiUrl = `${BASE_URL}/api/faculty/lecture-recordings/faculty/${facultyId}/class/${grade}/section/${section}?subjectMasterId=${subjectId}`;
+        apiUrl = `/api/faculty/lecture-recordings/faculty/${facultyId}/class/${grade}/section/${section}?subjectMasterId=${subjectId}`;
       } else if (selectedClass && selectedSubject) {
         // Use picker selections
         const classInfo = classes.find((c) => c.id === selectedClass);
-        apiUrl = `${BASE_URL}/api/faculty/lecture-recordings/faculty/${facultyId}/class/${classInfo.classAssigned}/section/${classInfo.section}?subjectMasterId=${selectedSubject}`;
+        apiUrl = `/api/faculty/lecture-recordings/faculty/${facultyId}/class/${classInfo.classAssigned}/section/${classInfo.section}?subjectMasterId=${selectedSubject}`;
       } else {
         setFetchingRecordings(false);
         return;

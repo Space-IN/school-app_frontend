@@ -74,7 +74,7 @@ export default function FacultyMarkSession1Screen({ route }) {
       const currentFacultyId = decodedToken?.preferred_username|| facultyId;
       
       const response = await api.get(
-        `${BASE_URL}/api/faculty/subject/subjects/faculty/${currentFacultyId}`
+        `/api/faculty/subject/subjects/faculty/${currentFacultyId}`
       );
       
       const assignedSubjects = response.data || [];
@@ -109,7 +109,7 @@ export default function FacultyMarkSession1Screen({ route }) {
     try {
       console.log('[Session 1] Loading students...');
       const { data } = await api.get(
-        `${BASE_URL}/api/faculty/students/grade/${grade}/section/${section}`
+        `/api/faculty/students/grade/${grade}/section/${section}`
       );
       setStudents(data);
 
@@ -205,7 +205,7 @@ export default function FacultyMarkSession1Screen({ route }) {
 
       console.log(' [Session 1] Sending attendance payload:', JSON.stringify(payload, null, 2));
 
-      const response = await  api.post(`${BASE_URL}/api/faculty/attendance/mark`, payload);
+      const response = await  api.post(`/api/faculty/attendance/mark`, payload);
 
       console.log(' [Session 1] Attendance marked successfully');
       

@@ -5,7 +5,7 @@ import Foundation from "@expo/vector-icons/Foundation";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { LinearGradient } from "expo-linear-gradient";
  
-import { BASE_URL } from "@env";
+
 import { api } from "../../api/api";
 
 export default function FacultyAnnouncements() {
@@ -16,7 +16,7 @@ export default function FacultyAnnouncements() {
   useEffect(() => {
     const fetchNotices = async () => {
       try {
-        const res = await api.get(`${BASE_URL}/api/announcement/active/`);
+        const res = await api.get(`/api/announcement/active/`);
         // Filter for faculty or all
         const facultyNotices = res.data.filter(
           (notice) => notice.target === "all" || notice.target === "faculty"

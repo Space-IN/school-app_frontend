@@ -37,15 +37,21 @@ export default function FacultyProfileScreen() {
 
       // Try multiple possible endpoints
       let response;
+      let data;
       try {
-        response = await api.get(`${BASE_URL}/api/faculty/${facultyId}`);
+        response = await api.get(`/api/faculty/${facultyId}`);
         console.log('Faculty API response:', response.data);
       } catch (firstErr) {
         console.log('First endpoint failed, trying alternative...');
         // response = await api.get(`${BASE_URL}/api/admin/faculty/profile/${facultyId}`);
       }
 
-      setFaculty(response.data);
+      if (data) {
+        setFaculty(data);
+      } else {
+        throw new Error("No data received from faculty endpoints");
+      }
+
     } catch (error) {
       console.error(' Error fetching faculty details:', error);
       console.error('Error details:', error.response?.data);
@@ -131,6 +137,9 @@ export default function FacultyProfileScreen() {
           <Text style={styles.errorText}>Faculty profile not found</Text>
           <TouchableOpacity style={styles.retryButton} onPress={fetchFacultyDetails}>
             <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.retryButton, { marginTop: 15, backgroundColor: '#d9534f' }]} onPress={handleLogout}>
+            <Text style={styles.retryButtonText}>Sign Out</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>

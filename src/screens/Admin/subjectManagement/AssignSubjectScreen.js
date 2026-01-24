@@ -20,8 +20,8 @@ const AssignSubjectScreen = () => {
     const fetchData = async () => {
       try {
         const [subjectsRes, facultyRes] = await Promise.all([
-          api.get(`${BASE_URL}/api/admin/subject/subject-master`),
-          api.get(`${BASE_URL}/api/admin/faculty/all`),
+          api.get(`/api/admin/subject/subject-master`),
+          api.get(`/api/admin/faculty/all`),
         ]);
         setSubjectList(subjectsRes.data || []);
         setFacultyList(facultyRes.data || []);
@@ -74,7 +74,7 @@ const AssignSubjectScreen = () => {
         classSectionAssignments,
       };
 
-      const res = await api.post(`${BASE_URL}/api/admin/subject/assign-subject`, payload);
+      const res = await api.post(`/api/admin/subject/assign-subject`, payload);
       Alert.alert('✅ Success', res.data.message);
 
       setSubjectId('');

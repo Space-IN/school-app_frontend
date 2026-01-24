@@ -51,7 +51,7 @@ const StudentProfileScreen = ({ route }) => {
 
       console.log('Fetching student details for:', studentData.userId);
       
-      const response = await api.get(`${BASE_URL}/api/faculty/students/${studentData.userId}`);
+      const response = await api.get(`/api/faculty/students/${studentData.userId}`);
       console.log('Student API response:', response.data);
       
       setStudent(response.data);

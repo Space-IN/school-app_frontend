@@ -6,13 +6,6 @@ import { api } from "../api/api"
 
 
 export async function loginUser(username, password) {
-  console.log("🔐 loginUser called");
-  console.log("🌐 KEYCLOAK_SERVER_URL:", KEYCLOAK_SERVER_URL);
-  console.log(
-    "➡️ FULL URL:",
-    `${KEYCLOAK_SERVER_URL}/realms/vishwachetana-vidyaniketana/protocol/openid-connect/token`
-  );
-
   try {
     const response = await api.post(
       `${KEYCLOAK_SERVER_URL}/realms/vishwachetana-vidyaniketana/protocol/openid-connect/token`,
@@ -31,7 +24,7 @@ export async function loginUser(username, password) {
     );
     return response.data;
   } catch (err) {
-    console.error("❌ error logging in:", err.message);
+    console.error("error logging in:", err.message);
     throw err;
   }
 }

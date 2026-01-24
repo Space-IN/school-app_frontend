@@ -69,7 +69,7 @@ export default function AcademicCalendarScreen() {
 
   const fetchEvents = async () => {
     try {
-      const response = await api.get(`${BASE_URL}/api/student/events`);
+      const response = await api.get(`/api/student/events`);
       setEvents(response.data);
     } catch (err) {
       console.error('Failed to fetch events:', err.message);
