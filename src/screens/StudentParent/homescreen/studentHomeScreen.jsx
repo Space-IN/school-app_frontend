@@ -25,7 +25,7 @@ export default function StudentHome() {
   }
 
   useEffect(() => {
-    console.log("student's data: ", studentData?.grade)
+    console.log("student's data: ", studentData)
   }, [])
 
 

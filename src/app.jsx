@@ -5,8 +5,8 @@ import Toast from 'react-native-toast-message'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar'
 import { AuthProvider } from './context/authContext'
-import ProtectedRoute from './navigation/protectedRoute'
 import * as NavigationBar from "expo-navigation-bar"
+import RootNavigator from './navigation/rootNavigator'
 
 // Optional: Ignore specific warning logs
 LogBox.ignoreLogs(['ViewPropTypes'])
@@ -24,7 +24,7 @@ export default function App() {
         <StatusBar style="light" backgroundColor="#ac1d1dff" translucent={false} />
 
         <NavigationContainer>
-          <ProtectedRoute />
+          <RootNavigator />
         </NavigationContainer>
         
         <Toast />

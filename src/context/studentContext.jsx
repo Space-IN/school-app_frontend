@@ -19,13 +19,13 @@ export const StudentProvider = ({ children }) => {
 
         setStudentLoading(true)
         try {
-            const [studentRes, feeRes, cgpaRes] = await Promise.all([
+            const [ studentRes, feeRes, cgpaRes ] = await Promise.allSettled([
                 fetchStudentData(studentId), fetchFeeDetails(studentId), fetchOverallCPGA(studentId),
             ])
             const mergedData = {
-                ...(studentRes?.data ?? {}),
-                ...(feeRes ? { feeDetails: feeRes?.data, } : {}),
-                ...(cgpaRes ? { grade: cgpaRes, } : {}),
+                ...(studentRes.status==="fulfilled" && studentData.value?.data ? studentRes.value?.data : {}),
+                ...(feeRes.status==="fulfilled" && feeRes.value?.data ? { feeDetails: feeRes.value.data, } : {}),
+                ...(cgpaRes.status==="fulfilled" && cgpaRes.value?.data ? { grade: cgpaRes.value.data, } : {}),
             }
             setStudentData(prev => ({
                 ...(prev || {}), ...mergedData,
