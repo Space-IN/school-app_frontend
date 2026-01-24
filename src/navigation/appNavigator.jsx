@@ -5,7 +5,10 @@ import FacultyNavigator from './faculty/facultyNavigator'
 import StudentTab from './student/studentTab'
 import { StudentProvider } from '../context/studentContext'
 import { AdminProvider } from '../context/adminContext'
-// import LoginScreen from '../screens/auth/login'
+import LoginScreen from '../screens/auth/loginScreen'
+
+
+
 
 export default function AppNavigator() {
   const { decodedToken, loading } = useAuth()
@@ -29,13 +32,9 @@ export default function AppNavigator() {
         <StudentTab />
       </StudentProvider>
     )
-  }
-
-  if (roles.includes('faculty')) {
+  } else if (roles.includes('faculty')) {
     return <FacultyNavigator />
-  }
-
-  if (roles.includes('admin')) {
+  } else if (roles.includes('admin')) {
     return (
       <AdminProvider>
         <AdminNavigator />

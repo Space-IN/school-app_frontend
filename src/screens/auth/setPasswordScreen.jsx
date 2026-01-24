@@ -9,6 +9,8 @@ export default function SetPasswordScreen({ route, navigation }) {
     const { resetToken, uiFlow } = route.params || {}
 
     useEffect(() => {
+        if(route.params===undefined) return
+
         if(!resetToken) {
             if(uiFlow==="auth") navigation.replace("login")
             else navigation.pop(2)

@@ -24,22 +24,38 @@ export default function LoginScreen() {
   const [userId, setUserId] = useState('')
   const [userIdError, setUserIdError] = useState(false)
   const [password, setPassword] = useState('')
+  const [passwordError, setPasswordError] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [maskedPhoneLoading, setMaskedPhoneLoading] = useState(false)
 
   const handleLogin = async () => {
-    try {
-      await login(userId, password)
-      Toast.show({
-        type: "success",
-        text1: "Login Successful."
-      })
-    } catch(err) {
-      Toast.show({
-        type: "error",
-        text1: "Login Error",
-        text2: err.message || "Something went wrong. Try again."
-      })
+    let hasError = false
+    if(!userId.trim()) {
+      setUserIdError(true)
+      userIdRef.current?.focus()
+      hasError = true
+    }
+    if(!password.trim()) {
+      setPasswordError(true)
+      hasError = true
+    }
+
+    if(hasError) {
+      return
+    } else {
+      try {
+        await login(userId, password)
+        Toast.show({
+          type: "success",
+          text1: "Login Successful."
+        })
+      } catch(err) {
+        Toast.show({
+          type: "error",
+          text1: "Login Error",
+          text2: err.message || "Something went wrong. Try again."
+        })
+      }
     }
   }
 
@@ -61,13 +77,13 @@ export default function LoginScreen() {
       if(status===404) {
         Toast.show({
           type: "error",
-          text: "Invalid User ID. Please enter a valid User ID.",
+          text1: "Invalid User ID. Please enter a valid User ID.",
           text2: serverMessage
         })
       } else {
         Toast.show({
           type: "error",
-          text: "Failed to fetch phone number. Please try again later.",
+          text1: "Failed to fetch phone number. Please try again later.",
           text2: serverMessage
         })        
       }
@@ -115,13 +131,11 @@ export default function LoginScreen() {
                       style={[
                         styles.input,
                         userIdError && {
-                          borderColor: '#d32f2f',
-                          borderWidth: 2,
+                          borderColor: '#d32f2f', borderWidth: 2,
                         },
                       ]}
                       autoCapitalize="none"
                     />
-
                     {userIdError && (
                       <Text style={styles.userIdErrorText}>User ID is required.</Text>
                     )}
@@ -131,10 +145,21 @@ export default function LoginScreen() {
                     <TextInput
                       placeholder="Password"
                       value={password}
-                      onChangeText={setPassword}
+                      onChangeText={(text) => {
+                        setPassword(text)
+                        if(passwordError) setPasswordError(false)
+                      }}
                       secureTextEntry={!showPassword}
-                      style={styles.input}
+                      style={[
+                        styles.input,
+                        passwordError && {
+                          borderColor: '#d32f2f', borderWidth: 2,
+                        }
+                      ]}
                     />
+                    {passwordError && (
+                      <Text style={styles.userIdErrorText}>Password is required.</Text>
+                    )}
 
                     <TouchableOpacity
                       style={styles.eyeIcon}
