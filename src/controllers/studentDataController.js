@@ -59,9 +59,12 @@ export const fetchEvents = async (studentId) => {
 }
 
 
-export const fetchAssessments = async (grade, section, year) => {
+export const fetchAssessments = async (year, board, studentId) => {
     try {
-        const res = await api.get(`/api/student/assessment/assessmentNames?grade=${grade}&section=${section}&year=${year}`)
+        const res = await api.get(
+            `/api/student/assessment/`,
+            { params: { year, board, studentId } }
+        )
         return res.data
     } catch(err) {
         console.error(`failed to fetch student's assessment: `, err.response?.data)
@@ -70,10 +73,10 @@ export const fetchAssessments = async (grade, section, year) => {
 }
 
 
-export const fetchAssessmentScore = async (studentId, grade, section, testName, year) => {
+export const fetchAssessmentScore = async (studentId, assessmentId, year) => {
     try {
         const res = await api.get(
-            `/api/student/assessment/assessmentScore/${studentId}/${grade}/${section}/${testName}/${year}`
+            `/api/student/assessment/assessmentScore/${studentId}/${assessmentId}/${year}`
         )
         return res.data
     } catch(err) {
@@ -88,7 +91,7 @@ export const fetchFeeDetails = async (studentId) => {
         const res = await api.get(`/api/student/fee/${studentId}`)
         return res.data
     } catch(err) {
-        console.error(`failed to fetch student's assessment: `, err.response?.data)
+        console.error(`failed to fetch student's fee info: `, err.response?.data)
         throw err.response?.data || { message: `something went wrong while fetching student's assessments.` }
     }
 }

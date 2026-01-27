@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { ScrollView, StyleSheet, View, RefreshControl } from "react-native"
 import { useStudent } from "../../../context/studentContext"
 import UserBanner from "../../../components/student/userBanner"
@@ -23,10 +23,6 @@ export default function StudentHome() {
       setRefreshing(false)
     }
   }
-
-  useEffect(() => {
-    console.log("student's data: ", studentData)
-  }, [])
 
 
   return (

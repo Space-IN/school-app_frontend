@@ -17,16 +17,18 @@ export const StudentProvider = ({ children }) => {
         const studentId = decodedToken?.preferred_username
         if(!studentId) return
 
+        setStudentErr(null)
         setStudentLoading(true)
         try {
             const [ studentRes, feeRes, cgpaRes ] = await Promise.allSettled([
                 fetchStudentData(studentId), fetchFeeDetails(studentId), fetchOverallCPGA(studentId),
             ])
             const mergedData = {
-                ...(studentRes.status==="fulfilled" && studentData.value?.data ? studentRes.value?.data : {}),
+                ...(studentRes.status==="fulfilled" && studentRes.value?.data ? studentRes.value?.data : {}),
                 ...(feeRes.status==="fulfilled" && feeRes.value?.data ? { feeDetails: feeRes.value.data, } : {}),
                 ...(cgpaRes.status==="fulfilled" && cgpaRes.value?.data ? { grade: cgpaRes.value.data, } : {}),
             }
+
             setStudentData(prev => ({
                 ...(prev || {}), ...mergedData,
             }))
