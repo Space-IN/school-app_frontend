@@ -29,7 +29,8 @@ export default function FacultyMarkSession1Screen({ route }) {
     subjectMasterId, 
     facultyId, 
     subjectName, 
-    subjectId
+    subjectId,
+    board
   } = route.params || {};
 
   const [students, setStudents] = useState([]);
@@ -109,7 +110,8 @@ export default function FacultyMarkSession1Screen({ route }) {
     try {
       console.log('[Session 1] Loading students...');
       const { data } = await api.get(
-        `/api/faculty/students/grade/${grade}/section/${section}`
+        `/api/faculty/students/grade/${grade}/section/${section}`,
+        { params: { board, } }
       );
       setStudents(data);
 
@@ -196,6 +198,7 @@ export default function FacultyMarkSession1Screen({ route }) {
       const payload = {
         grade: Number(grade),
         section: section,
+        board: board,
         date: date,
         sessionNumber: SESSION_NUMBER, // HARDCODED - Always 1
         markedBy: currentFacultyId,
@@ -372,7 +375,7 @@ export default function FacultyMarkSession1Screen({ route }) {
               >
                 <View style={styles.studentInfo}>
                   <Text style={[styles.name, submitting && styles.disabledText]}>{item.name}</Text>
-                  <Text style={[styles.preferred_username, submitting && styles.disabledText]}>ID: {item.preferred_username}</Text>
+                  <Text style={[styles.preferred_username, submitting && styles.disabledText]}>ID: {item.userId}</Text>
                 </View>
                 <View style={styles.statusContainer}>
                   <Text style={[

@@ -61,7 +61,6 @@ const StudentProfileScreen = ({ route }) => {
       
       if (studentData) {
         setStudent(studentData);
-        Alert.alert('Info', 'Using limited student information');
       } else {
         Alert.alert('Error', 'Failed to load student profile');
       }

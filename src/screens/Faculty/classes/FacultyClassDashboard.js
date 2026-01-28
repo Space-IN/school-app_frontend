@@ -27,7 +27,8 @@ export default function FacultyClassDashboard({ route }) {
     subjectName, 
     subjectId,
     redirectedFromHome,
-    scheduleItem 
+    scheduleItem,
+    board,
   } = route.params || {};
   console.log("class dashboard route params: ", route.params)
 
@@ -131,13 +132,13 @@ export default function FacultyClassDashboard({ route }) {
       title: 'Students', 
       icon: 'people', 
       screen: 'FacultyStudentsScreen',
-      requiredParams: ['grade', 'section']
+      requiredParams: ['grade', 'section', 'board']
     },
     { 
       title: 'Attendance', 
       icon: 'clipboard', 
       screen: 'FacultyAttendanceMenuScreen',
-      requiredParams: ['grade', 'section', 'subjectId', 'subjectName']
+      requiredParams: ['grade', 'section', 'subjectId', 'subjectName', 'board']
     },
     { 
       title: 'Performance', 
@@ -199,6 +200,10 @@ export default function FacultyClassDashboard({ route }) {
 
     navigation.navigate(screen, navParams);
   };
+
+  useEffect(() => {
+    console.log("route PARAM: ", route)
+  })
 
   if (loading) {
     return (

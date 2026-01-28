@@ -21,7 +21,7 @@ import {api} from '../../../api/api';
 
 export default function FacultyStudentsScreen() {
   const route = useRoute();
-  const { grade, section = 'A' } = route.params || {};
+  const { grade, section = 'A', board } = route.params || {};
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -75,7 +75,8 @@ export default function FacultyStudentsScreen() {
       console.log('📋 Fetching students for:', { grade, section });
       
       const response = await api.get(
-        `/api/faculty/students/grade/${grade}/section/${section}`
+        `/api/faculty/students/grade/${grade}/section/${section}`,
+        { params: { board, } }
       );
       setStudents(response.data);
       setFilteredStudents(response.data);

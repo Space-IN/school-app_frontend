@@ -45,7 +45,7 @@ export default function FacultyClassesScreen({ navigation, route }) {
       
       // Option 1: Try using subjects endpoint (more reliable)
       const response = await api.get(`/api/faculty/subject/subjects/faculty/${facultyId}`);
-      console.log('Subjects API response:', response.data);
+      console.log('Subjects API response:', response.data[0].classSectionAssignments);
       
       let classes = [];
       
@@ -60,8 +60,8 @@ export default function FacultyClassesScreen({ navigation, route }) {
                 subjectName: subject.subjectName,
                 subjectId: subject._id ,
                 subjectMasterId: subject.subjectMasterId?._id,
-                subjectCode:subject.subjectMasterId?.code
-
+                subjectCode:subject.subjectMasterId?.code,
+                board: assignment.board,
               });
             });
           }
@@ -134,10 +134,12 @@ export default function FacultyClassesScreen({ navigation, route }) {
   };
 
   const handlePress = (item) => {
+    console.log("ITEM: ", item)
   // Since we're inside ClassesStack, we can navigate directly to FacultyClassDashboard
   navigation.navigate('FacultyClassDashboard', {
     grade: item.classAssigned,
     section: item.section,
+    board: item.board,
     scheduleItem: item,
     facultyId: decodedToken?.preferred_username, // Use from auth context
     subjectName: item.subjectName, // Add if available

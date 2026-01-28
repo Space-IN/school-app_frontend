@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { LinearGradient } from "expo-linear-gradient"
 import { View, StyleSheet, Text, TouchableOpacity, Modal, FlatList, Animated, ActivityIndicator, Platform, StatusBar as RNStatusBar, ScrollView } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
 import { useStudent } from "../../../context/studentContext"
 import { useNavigation } from "@react-navigation/native"
 import { Ionicons } from "@expo/vector-icons"
@@ -53,7 +52,7 @@ const TableRow = ({ subject, marks, max_marks, grade, status, components, isHead
           <Text style={styles.componentText}>{comp.status}</Text>
           <Text style={[styles.componentText, { fontWeight: "700", }]}>
             Assessed:{"\n"}
-            {comp.marked_by.name}
+            {comp.marked_by?.name || "Unavailable"}
           </Text>
         </View>
       ))}

@@ -18,7 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import {api} from '../../../../api/api';
 
 export default function FacultyAttendanceMenuScreen({ route }) {
-  const { grade, section, subjectMasterId, facultyId, subjectName, subjectId } = route.params || {};
+  const { grade, section, subjectMasterId, facultyId, subjectName, subjectId, board } = route.params || {};
   const [loading, setLoading] = useState(true);
   const [sessionStatus, setSessionStatus] = useState({
     session1: { marked: false, presentCount: 0, totalCount: 0 },
@@ -146,6 +146,7 @@ const screenName = sessionNumber === 1
   navigation.navigate(screenName, {
     grade,
     section,
+    board,
     subjectMasterId,
     facultyId,
     subjectName,
