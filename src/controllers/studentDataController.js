@@ -3,9 +3,9 @@ import { api } from "../api/api"
 
 
 
-export const fetchStudentSchedule = async (classAssigned, section) => {
+export const fetchStudentSchedule = async (classAssigned, section, board) => {
     try {
-        const res = await api.get(`${BASE_URL}/api/student/schedule/class/${classAssigned}/section/${section}`)
+        const res = await api.get(`/api/student/schedule/class/${classAssigned}/section/${section}/board/${board}`)
         const scheduleData = res.data
         return scheduleData
     } catch(err) {

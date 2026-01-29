@@ -60,6 +60,7 @@ export default function StudentHome() {
         <TodaySchedule
           classAssigned={studentData?.className}
           section={studentData?.section}
+          board={studentData?.board}
           loading={studentLoading}
         />
       </View>

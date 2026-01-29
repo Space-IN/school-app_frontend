@@ -3,20 +3,20 @@ import { View, Text, StyleSheet, ActivityIndicator, FlatList } from "react-nativ
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5"
 import { fetchStudentSchedule } from "../../controllers/studentDataController"
 
-export default function TodaySchedule({ classAssigned, section, studentLoading }) {
+export default function TodaySchedule({ classAssigned, section, board, studentLoading }) {
   const [todaySchedule, setTodaySchedule] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   const today = useMemo(() => {
-    const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+    const days = ["SUNDAY","MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"]
     return days[new Date().getDay()]
   }, [])
 
   useEffect(() => {
     const loadSchedule = async () => {
         try {
-            const scheduleData = await fetchStudentSchedule(classAssigned, section)
+            const scheduleData = await fetchStudentSchedule(classAssigned, section, board)
             const todayData = scheduleData.weeklySchedule?.find(day => day.day === today)
             setTodaySchedule(todayData)
         } catch (err) {
@@ -45,11 +45,11 @@ export default function TodaySchedule({ classAssigned, section, studentLoading }
                 <Text style={styles.timeText}>{item.timeSlot}</Text>
             </View>
 
-            <Text style={styles.subjectText}>{item.subjectMasterId.name}</Text>
+            <Text style={styles.subjectText}>{item.subjectName}</Text>
 
             <View style={styles.facultyRow}>
                 <FontAwesome5 name="chalkboard-teacher" size={13} color="#9c1006" />
-                <Text style={styles.facultyText}>{item.facultyId}</Text>
+                <Text style={styles.facultyText}>{item.facultyNames.join(", ")}</Text>
             </View>
         </View>
     </View>

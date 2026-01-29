@@ -11,16 +11,16 @@ import {
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { api } from '../../../../api/api';
 
 
 import ManagePerformanceTab from './ManagePerformanceTab';
 import ViewPerformanceTab from './ViewPerformanceTab';
-import { fetchAssessments } from '../../../../controllers/studentDataController';
 
 const Tab = createMaterialTopTabNavigator();
 
 export default function ManagePerformanceTabs({ route, navigation }) {
-  const { grade, section, subjectName, year } = route.params || {};
+  const { grade, section, board, subjectName, year } = route.params || {};
   console.log("ManagePerformanceTabs route params: ", route.params)
   const insets = useSafeAreaInsets();
 
@@ -38,38 +38,53 @@ export default function ManagePerformanceTabs({ route, navigation }) {
   const [allAssessmentsData, setAllAssessmentsData] = useState([]);
 
 
+  const fetchAssessments = async (year, board, grade, section) => {
+      try {
+          const res = await api.get(
+              `/api/student/assessment/`,
+              { params: { year, board, grade, section } }
+          )
+          console.log("response data: ", res.data)
+          return res.data
+      } catch(err) {
+          console.error(`failed to fetch assessment: `, err.response?.data)
+          throw err.response?.data || { message: `something went wrong while fetching assessments.` }
+      }
+  }
+
+
   // Effect to fetch all assessments initially
   useEffect(() => {
     const fetchAllAssessments = async () => {
-      if (!grade || !section) {
-        setErrorAssessments('Missing grade or section.');
+      if (!grade || !section || !board) {
+        setErrorAssessments('Missing grade, section or board.');
         setLoadingAssessments(false);
         return;
       }
       try {
-        const response = await fetchAssessments(grade, section, year); // Fetch all years
+        const response = await fetchAssessments(year, board, grade, section); // Fetch all years
         const data = response.data || [];
         console.log("response from manageperformance tabs: ", response)
         setAllAssessmentsData(response);
 
-        const years = [...new Set(data.map(item => String(new Date(item.date).getFullYear())))].sort((a, b) => b - a);
-        setAvailableYears(years);
-        if (years.length > 0) {
-          setSelectedYear(years[0]);
-        } else {
-          setSelectedYear('');
-        }
+        // const years = [...new Set(data.map(item => String(new Date(item.date).getFullYear())))].sort((a, b) => b - a);
+        // setAvailableYears(years);
+        // if (years.length > 0) {
+        //   setSelectedYear(years[0]);
+        // } else {
+        //   setSelectedYear('');
+        // }
 
       } catch (err) {
         setErrorAssessments('Failed to fetch assessments.');
-        console.error(err);
+        console.error("failed to fetch assessment: ", err);
       } finally {
         setLoadingAssessments(false);
       }
     };
 
     fetchAllAssessments();
-  }, [grade, section]);
+  }, [grade, section, board]);
 
   // Effect to update subjects and test names based on selected year
   useEffect(() => {
@@ -194,7 +209,7 @@ export default function ManagePerformanceTabs({ route, navigation }) {
           <Tab.Screen
             name="ManagePerformanceTab"
             component={ManagePerformanceTab}
-            initialParams={{ grade, section, navigation }}
+            initialParams={{ grade, section, board, subjectName, navigation, year }}
             options={{ title: 'Manage Performance' }}
           />
 
@@ -204,7 +219,7 @@ export default function ManagePerformanceTabs({ route, navigation }) {
             initialParams={{
               grade,
               section,
-              // test_name: "Midterm",
+              board,
               year: year,
               subjectName: subjectName,
             }}

@@ -144,7 +144,7 @@ export default function FacultyClassDashboard({ route }) {
       title: 'Performance', 
       icon: 'bar-chart', 
       screen: 'FacultyPerformanceScreen',
-      requiredParams: ['grade', 'section', 'subjectId', 'subjectName']
+      requiredParams: ['grade', 'section', 'board', 'subjectId', 'subjectName']
     },
     { 
       title: 'This Class Schedule', 

@@ -16,7 +16,7 @@ import { BASE_URL } from '@env';
 import { api } from '../../../../api/api';
 
 const ManagePerformanceTab = ({ route, navigation }) => {
-  const { grade, section } = route.params || {};
+  const { grade, section, board, subjectName, year } = route.params || {};
   const { user } = useAuth();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +43,8 @@ const ManagePerformanceTab = ({ route, navigation }) => {
       // console.log('Fetching students for:', { grade, section });
       
       const response = await api.get(
-        `${BASE_URL}/api/faculty/students/grade/${grade}/section/${section}`
+        `/api/faculty/students/grade/${grade}/section/${section}`,
+        { params: { board, }}
       );
       
       // console.log('Students API response:', response.data);
@@ -76,6 +77,9 @@ const ManagePerformanceTab = ({ route, navigation }) => {
       grade,
       section,
       students,
+      subjectName,
+      board,
+      year
     });
   };
 

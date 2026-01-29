@@ -25,7 +25,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import {api} from '../../../../api/api';
 
 export default function FacultyEditAttendanceScreen({ route }) {
-  const { grade, section, subjectName, facultyId } = route.params || {};
+  const { grade, section, subjectName, facultyId, board } = route.params || {};
   const [attendanceData, setAttendanceData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -66,7 +66,8 @@ export default function FacultyEditAttendanceScreen({ route }) {
   const loadStudents = async () => {
     try {
       const { data } = await api.get(
-        `/api/faculty/students/grade/${grade}/section/${section}`
+        `/api/faculty/students/grade/${grade}/section/${section}`,
+        { params: { board, } }
       );
       setStudents(data);
     } catch (err) {
@@ -109,6 +110,7 @@ const loadAttendanceData = async (date) => {
       params: {
         grade: grade,        // ✅ FIXED: Changed from classAssigned
         section: section,
+        board: board,
         date: dateStr
       }
     });
@@ -276,6 +278,7 @@ const openEditModal = (sessionNumber) => {
       const payload = {
         grade: grade,
         section: section,
+        board: board,
         date: date,
         sessionNumber: editingSession,
         markedBy: currentFacultyId,

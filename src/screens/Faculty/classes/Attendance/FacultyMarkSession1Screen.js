@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View,
   FlatList,
@@ -10,9 +10,6 @@ import {
   TextInput,
   StatusBar,
 } from 'react-native';
-
-import { BASE_URL } from '@env';
-import * as SecureStore from 'expo-secure-store';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView, SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../../../context/authContext';
@@ -194,6 +191,7 @@ export default function FacultyMarkSession1Screen({ route }) {
 
       const records = validateAndPrepareRecords();
       console.log(' [Session 1] Validated records:', records);
+      console.log("board: ", board)
 
       const payload = {
         grade: Number(grade),
