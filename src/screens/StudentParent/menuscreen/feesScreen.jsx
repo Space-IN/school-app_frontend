@@ -85,11 +85,11 @@ export default function FeesScreen() {
       {feeDetails && (
         <View style={styles.feeSummaryContainer}>
           <View style={styles.feeCurrentStateContainer}>
-            <View style={[styles.feeValueContainer, { width: "48%", backgroundColor: "#e0e7ff" }]}>
+            <View style={[styles.feeValueContainer, { width: "48%", backgroundColor: "#e4e6e9ff" }]}>
               <Text style={{ fontSize: 12, fontWeight: "600", }}>PAID</Text>
               <Text style={{ fontSize: 20, fontWeight: "900" }}>{feeDetails.totalPaid}</Text>
             </View>
-            <View style={[styles.feeValueContainer, { width: "48%", backgroundColor: "#e0e7ff" }]}>
+            <View style={[styles.feeValueContainer, { width: "48%", backgroundColor: "#e4e6e9ff" }]}>
               <Text style={{ fontSize: 12, fontWeight: "600", }}>PENDING</Text>
               <Text style={{ fontSize: 20, fontWeight: "900" }}>{feeDetails.totalPending}</Text>
             </View>

@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#d9534f', // Distinctive red color for destructive action
+    backgroundColor: '#f12a2aff', // Distinctive red color for destructive action
     paddingVertical: 15,
     borderRadius: 12,
     marginTop: 10,

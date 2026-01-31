@@ -26,7 +26,7 @@ export const StudentProvider = ({ children }) => {
             const mergedData = {
                 ...(studentRes.status==="fulfilled" && studentRes.value?.data ? studentRes.value?.data : {}),
                 ...(feeRes.status==="fulfilled" && feeRes.value?.data ? { feeDetails: feeRes.value.data, } : {}),
-                ...(cgpaRes.status==="fulfilled" && cgpaRes.value?.data ? { grade: cgpaRes.value.data, } : {}),
+                ...(cgpaRes.status==="fulfilled" && cgpaRes.value?.cgpa ? { grade: cgpaRes.value, } : {}),
             }
 
             setStudentData(prev => ({
