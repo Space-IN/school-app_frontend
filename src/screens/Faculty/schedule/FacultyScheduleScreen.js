@@ -9,12 +9,28 @@ import {
   Platform,
   StatusBar,
   RefreshControl,
+  TouchableOpacity,
 } from 'react-native';
- 
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Animatable from 'react-native-animatable';
+import { Ionicons } from '@expo/vector-icons';
 import { BASE_URL } from '@env';
 import { useAuth } from "../../../context/authContext";
 import { useScrollToTop } from '@react-navigation/native';
 import { api } from '../../../api/api';
+
+const DAYS = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+
+const SUBJECT_COLORS = [
+  ['#667eea', '#764ba2'],
+  ['#f093fb', '#f5576c'],
+  ['#4facfe', '#00f2fe'],
+  ['#43e97b', '#38f9d7'],
+  ['#fa709a', '#fee140'],
+  ['#30cfd0', '#330867'],
+  ['#a8edea', '#fed6e3'],
+  ['#ff9a9e', '#fecfef'],
+];
 
 export default function FacultySchedulesScreen() {
   const { decodedToken } = useAuth();
@@ -22,6 +38,7 @@ export default function FacultySchedulesScreen() {
   const [facultyName, setFacultyName] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedDay, setSelectedDay] = useState(DAYS[new Date().getDay()]);
 
   const scrollRef = useRef(null);
   useScrollToTop(scrollRef);
@@ -78,57 +95,173 @@ export default function FacultySchedulesScreen() {
     return grouped;
   };
 
-  const groupedSchedule = groupScheduleByDay(schedule);
+  const getColorForPeriod = (index) => {
+    return SUBJECT_COLORS[index % SUBJECT_COLORS.length];
+  };
+
+  const getDaySchedule = () => {
+    const groupedSchedule = groupScheduleByDay(schedule);
+    return groupedSchedule[selectedDay] || [];
+  };
+
+  const daySchedule = getDaySchedule();
+  const totalPeriods = daySchedule.length;
+
+  const renderPeriodCard = (period, index) => {
+    const colors = getColorForPeriod(index);
+
+    return (
+      <Animatable.View
+        animation="fadeInUp"
+        delay={index * 100}
+        duration={600}
+        style={styles.periodCard}
+        key={index}
+      >
+        <LinearGradient
+          colors={colors}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientBorder}
+        >
+          <View style={styles.periodInner}>
+            <View style={styles.periodTop}>
+              <View style={styles.periodBadge}>
+                <Text style={styles.periodBadgeText}>P{period.periodNumber}</Text>
+              </View>
+              <View style={styles.timeChip}>
+                <Ionicons name="time-outline" size={14} color="#64748b" />
+                <Text style={styles.timeText}>{period.timeSlot}</Text>
+              </View>
+            </View>
+
+            <View style={styles.periodMain}>
+              <Text style={styles.subjectName}>
+                {period.subjectMasterId?.name || 'N/A'}
+              </Text>
+
+              <View style={styles.classInfoRow}>
+                <View style={styles.classChip}>
+                  <Ionicons name="school-outline" size={16} color="#c01e12" />
+                  <Text style={styles.classText}>
+                    Class {period.classAssigned} - {period.section}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.periodFooter}>
+              <View style={styles.durationBadge}>
+                <Ionicons name="hourglass-outline" size={12} color="#8f1b1b" />
+                <Text style={styles.durationText}>45 min</Text>
+              </View>
+            </View>
+          </View>
+        </LinearGradient>
+      </Animatable.View>
+    );
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.centerContainer}>
+        <Animatable.View animation="pulse" iterationCount="infinite">
+          <View style={styles.loaderCircle}>
+            <ActivityIndicator size="large" color="#c01e12" />
+          </View>
+        </Animatable.View>
+        <Text style={styles.loadingText}>Loading your schedule...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      {/* 🟦 Header */}
+      {/* Flat Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>📘 {facultyName}'s Full Week Schedule</Text>
+        <Text style={styles.headerTitle}>My Schedule</Text>
+        <Text style={styles.headerSubtitle}>{facultyName}</Text>
       </View>
 
-      {/* Body */}
+      {/* Day Selector */}
+      <View style={styles.daySelectorWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.daySelector}
+        >
+          {DAYS.map((day) => {
+            const isSelected = selectedDay === day;
+            return (
+              <TouchableOpacity
+                key={day}
+                style={[styles.dayButton, isSelected && styles.selectedDayButton]}
+                onPress={() => setSelectedDay(day)}
+                activeOpacity={0.7}
+              >
+                {isSelected && (
+                  <LinearGradient
+                    colors={['#c01e12', '#8b1313']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.dayButtonGradient}
+                  />
+                )}
+                <Text style={[styles.dayButtonText, isSelected && styles.selectedDayText]}>
+                  {day.substring(0, 3)}
+                </Text>
+                {isSelected && <View style={styles.dayDot} />}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {/* Stats Cards */}
+      {totalPeriods > 0 && (
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{totalPeriods}</Text>
+            <Text style={styles.statLabel}>Classes</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{totalPeriods * 45}</Text>
+            <Text style={styles.statLabel}>Minutes</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{selectedDay.substring(0, 3)}</Text>
+            <Text style={styles.statLabel}>Day</Text>
+          </View>
+        </View>
+      )}
+
+      {/* Schedule List */}
       <ScrollView
         ref={scrollRef}
         style={styles.body}
+        contentContainerStyle={styles.scheduleContainer}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#c01e12']}
+            tintColor="#c01e12"
+          />
         }
       >
-        {loading ? (
-          <ActivityIndicator size="large" color="#4b4bfa" style={{ marginTop: 30 }} />
-        ) : Object.keys(groupedSchedule).length === 0 ? (
-          <Text style={styles.noSchedule}>📭 No schedule found.</Text>
-        ) : (
-          Object.entries(groupedSchedule).map(([day, periods], index) => (
-            <View key={index} style={styles.dayCard}>
-              <Text style={styles.dayTitle}>{day}</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View style={styles.table}>
-                  <View style={styles.tableRow}>
-                    <Text style={[styles.cell, styles.headerCell, styles.col1]}>P.NO</Text>
-                    <Text style={[styles.cell, styles.headerCell, styles.col2]}>Time</Text>
-                    <Text style={[styles.cell, styles.headerCell, styles.col3]}>Subject </Text>
-                    <Text style={[styles.cell, styles.headerCell, styles.col4]}>Class</Text>
-                    <Text style={[styles.cell, styles.headerCell, styles.col5]}>Section</Text>
-                  </View>
-
-                  {periods.map((p, i) => (
-                    <View key={i} style={styles.tableRow}>
-                      <Text style={[styles.cell, styles.col1]}>{p.periodNumber}</Text>
-                      <Text style={[styles.cell, styles.col2]}>{p.timeSlot}</Text>
-                      <Text style={[styles.cell, styles.col3]}>
-                        {p.subjectMasterId?.name || 'N/A'}
-                      </Text>
-                      <Text style={[styles.cell, styles.col4]}>{p.classAssigned}</Text>
-                      <Text style={[styles.cell, styles.col5]}>{p.section}</Text>
-                    </View>
-                  ))}
-                </View>
-              </ScrollView>
+        {daySchedule.length === 0 ? (
+          <Animatable.View animation="fadeIn" style={styles.emptyContainer}>
+            <View style={styles.emptyIconCircle}>
+              <Ionicons name="calendar-outline" size={64} color="#cbd5e1" />
             </View>
-          ))
+            <Text style={styles.emptyTitle}>No Classes Today</Text>
+            <Text style={styles.emptyText}>
+              Enjoy your free day! Check other days for your schedule.
+            </Text>
+          </Animatable.View>
+        ) : (
+          daySchedule.map((period, index) => renderPeriodCard(period, index))
         )}
       </ScrollView>
     </View>
@@ -138,77 +271,281 @@ export default function FacultySchedulesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffffff',
+    backgroundColor: '#F9FAFB',
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    padding: 20,
+  },
+  loaderCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#c01e12',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  loadingText: {
+    marginTop: 20,
+    fontSize: 16,
+    color: '#64748b',
+    fontWeight: '500',
   },
   header: {
-    padding: 16,
-    backgroundColor: '#c01e12ff',
+    // paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 20 : 60,
+    width: "95%",
+    alignSelf: "center",
+    borderRadius: 10,
+    margin: 10,
+    padding: 10,
+    backgroundColor: '#c01e12',
     alignItems: 'center',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    elevation: 3,
   },
   headerTitle: {
     color: '#fff',
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '700',
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    color: '#ffffff',
+    fontSize: 15,
+    fontWeight: '500',
+    opacity: 0.9,
+  },
+  daySelectorWrapper: {
+    backgroundColor: '#ffffff',
+    marginTop: 16,
+    marginHorizontal: 16,
+    borderRadius: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  daySelector: {
+    paddingHorizontal: 12,
+    paddingVertical: 16,
+    gap: 8,
+  },
+  dayButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#f1f5f9',
+    marginRight: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 70,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  selectedDayButton: {
+    backgroundColor: 'transparent',
+  },
+  dayButtonGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  dayButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#64748b',
+  },
+  selectedDayText: {
+    color: '#ffffff',
+    fontWeight: '700',
+  },
+  dayDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#ffffff',
+    marginTop: 4,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  statNumber: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    marginTop: 4,
+  },
+  statLabel: {
+    fontSize: 11,
+    color: '#94a3b8',
+    marginTop: 2,
+    fontWeight: '500',
   },
   body: {
     flex: 1,
+  },
+  scheduleContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 24,
+  },
+  periodCard: {
+    marginBottom: 16,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  gradientBorder: {
+    padding: 2,
+    borderRadius: 16,
+  },
+  periodInner: {
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
     padding: 16,
   },
-  noSchedule: {
-    textAlign: 'center',
-    marginTop: 30,
-    fontSize: 16,
-    color: '#888',
-  },
-  dayCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    marginBottom: 20,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#9c1006',
-  },
-  dayTitle: {
-    backgroundColor: '#faebebff',
-    fontWeight: 'bold',
-    fontSize: 18,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    color: '#000000ff',
-    borderBottomWidth: 1,
-    borderColor: '#9c1006',
-  },
-  table: {
-    borderLeftWidth: 1,
-    borderTopWidth: 1,
-    borderColor: '#9c1006',
-  },
-  tableRow: {
+  periodTop: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
   },
-  cell: {
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRightWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#9c1006',
-    fontSize: 14,
-    color: '#111827',
-    textAlign: 'center',
-    backgroundColor: '#ffffff',
+  periodBadge: {
+    backgroundColor: '#ede9fe',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
   },
-  headerCell: {
-    backgroundColor: '#f3f4f6',
+  periodBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#c01e12',
+  },
+  timeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    gap: 4,
+  },
+  timeText: {
+    fontSize: 12,
+    color: '#64748b',
+    fontWeight: '600',
+  },
+  periodMain: {
+    marginBottom: 12,
+  },
+  subjectName: {
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#000000ff',
+    color: '#1e293b',
+    marginBottom: 8,
   },
-  col1: { width: 50 },
-  col2: { width: 100 },
-  col3: { width: 160 },
-  col4: { width: 100 },
-  col5: { width: 100 },
+  classInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  classChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fee2e2',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    gap: 6,
+  },
+  classText: {
+    fontSize: 13,
+    color: '#991b1b',
+    fontWeight: '600',
+  },
+  periodFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  durationBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#f5f3ff',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  durationText: {
+    fontSize: 11,
+    color: '#8f1b1b',
+    fontWeight: '600',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 80,
+  },
+  emptyIconCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#f1f5f9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  emptyTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontSize: 15,
+    color: '#94a3b8',
+    textAlign: 'center',
+    paddingHorizontal: 40,
+    lineHeight: 22,
+  },
 });
-

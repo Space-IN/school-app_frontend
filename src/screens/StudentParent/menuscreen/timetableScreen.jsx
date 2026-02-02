@@ -235,17 +235,14 @@ export default function TimetableScreen() {
       {totalPeriods > 0 && (
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Ionicons name="book-outline" size={20} color='#d72b2b' />
             <Text style={styles.statNumber}>{totalPeriods}</Text>
-            <Text style={styles.statLabel}>Periods</Text>
+            <Text style={styles.statLabel}>Sessions</Text>
           </View>
           <View style={styles.statCard}>
-            <Ionicons name="time-outline" size={20} color='#d72b2b' />
             <Text style={styles.statNumber}>{totalPeriods * 45}</Text>
             <Text style={styles.statLabel}>Minutes</Text>
           </View>
           <View style={styles.statCard}>
-            <Ionicons name="calendar-outline" size={20} color='#d72b2b' />
             <Text style={styles.statNumber}>{selectedDay.substring(0, 3)}</Text>
             <Text style={styles.statLabel}>Today</Text>
           </View>

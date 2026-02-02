@@ -24,16 +24,16 @@ export default function FacultyHomeScreen({ navigation }) {
         <FacultyBanner key={refreshKey} navigation={navigation} />
       </View>
     )},
+    { id: 'schedule', component: () => (
+      <View style={styles.scheduleContainer}>
+        <FacultyTodaySchedule key={refreshKey} navigation={navigation} />
+      </View>
+    )},
     { id: 'announcements', component: () => (
       <View style={styles.announcementsContainer}>
         <FacultyAnnouncements key={refreshKey} />
       </View>
     )},
-    { id: 'schedule', component: () => (
-      <View style={styles.scheduleContainer}>
-        <FacultyTodaySchedule key={refreshKey} navigation={navigation} />
-      </View>
-    )}
   ];
 
   const renderItem = ({ item }) => item.component();
@@ -66,6 +66,7 @@ const styles = StyleSheet.create({
   bannerContainer: {
     width: "100%",
     height: 120,
+    marginBottom: 30,
   },
   announcementsContainer: {
     width: "100%",

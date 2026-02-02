@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { ScrollView, StyleSheet, View, RefreshControl } from "react-native"
 import { useStudent } from "../../../context/studentContext"
 import UserBanner from "../../../components/student/userBanner"
@@ -24,9 +24,6 @@ export default function StudentHome() {
     }
   }
 
-  useEffect(() => {
-    console.log("student data: ", studentData)
-  })
 
   return (
     <ScrollView
