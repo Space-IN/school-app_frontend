@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#1e3a8a',
+    color: '#ac1d1dff',
   },
 
   subtitle: {
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
   },
 
   createButton: {
-    backgroundColor: '#1e3a8a',
+    backgroundColor: '#ac1d1dff',
     padding: 12,
     borderRadius: 12,
   },
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   },
 
   templateCard: {
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#fecaca',
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
@@ -249,18 +249,18 @@ const styles = StyleSheet.create({
   templateName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: '#ac1d1dff',
   },
 
   templateMeta: {
     fontSize: 13,
-    color: '#666',
+    color: '#ac1d1dff',
     marginTop: 4,
   },
 
   templateMetaSmall: {
     fontSize: 12,
-    color: '#888',
+    color: '#ac1d1dff',
     marginTop: 2,
   },
 
@@ -273,6 +273,6 @@ const styles = StyleSheet.create({
   viewText: {
     marginLeft: 6,
     fontSize: 13,
-    color: '#555',
+    color: '#ac1d1dff',
   },
 });

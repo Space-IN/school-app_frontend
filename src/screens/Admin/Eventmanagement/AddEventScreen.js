@@ -4,19 +4,17 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   Alert,
   StyleSheet,
   Platform,
   FlatList,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
- 
-import { BASE_URL } from '@env';
-import {api} from '../../../api/api';
+import { api } from '../../../api/api';
 
-export default function AddEventScreen({ navigation }) {
+export default function AddEventScreen() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date());
@@ -25,15 +23,14 @@ export default function AddEventScreen({ navigation }) {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
 
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr',
-    'May', 'Jun', 'Jul', 'Aug',
-    'Sep', 'Oct', 'Nov', 'Dec'
+    'Jan','Feb','Mar','Apr','May','Jun',
+    'Jul','Aug','Sep','Oct','Nov','Dec',
   ];
 
   const fetchEvents = async () => {
     try {
-      const res = await api.get(`${BASE_URL}/api/admin/events`);
-      setEvents(res.data);
+      const res = await api.get(`/api/admin/events`);
+      setEvents(res.data || []);
     } catch (err) {
       console.error('Error fetching events:', err);
     }
@@ -44,47 +41,61 @@ export default function AddEventScreen({ navigation }) {
   }, []);
 
   const handleAddEvent = async () => {
+    if (!title.trim()) {
+      return Alert.alert('Validation', 'Event title is required');
+    }
+
     try {
-
-      await api.post(`${BASE_URL}/api/admin/events/add`, {
-
+      await api.post(`/api/admin/events/add`, {
         title,
         description,
         date,
       });
-      Alert.alert('Success', 'Event added successfully!');
+
+      Alert.alert('Success', 'Event added successfully');
       setTitle('');
       setDescription('');
       setDate(new Date());
-      fetchEvents(); // Refresh events list
-    } catch (err) {
-      console.error(err);
+      fetchEvents();
+    } catch {
       Alert.alert('Error', 'Failed to add event');
     }
   };
 
-  const handleDelete = async (eventId) => {
-    try {
-      await api.delete(`${BASE_URL}/api/admin/events/delete/${eventId}`);
-      Alert.alert('Deleted', 'Event deleted successfully');
-      fetchEvents();
-    } catch (err) {
-      console.error(err);
-      Alert.alert('Error', 'Failed to delete event');
-    }
+  const handleDelete = async (id) => {
+    Alert.alert('Delete Event', 'Are you sure?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await api.delete(`/api/admin/events/delete/${id}`);
+            fetchEvents();
+          } catch {
+            Alert.alert('Error', 'Failed to delete event');
+          }
+        },
+      },
+    ]);
   };
 
-  const filteredEvents = events.filter((event) => {
-    const eventMonth = new Date(event.date).getMonth();
-    return eventMonth === selectedMonth;
-  });
+  const filteredEvents = events.filter(
+    e => new Date(e.date).getMonth() === selectedMonth
+  );
 
-  const renderEventItem = ({ item }) => (
+  const renderEvent = ({ item }) => (
     <View style={styles.eventCard}>
-      <View>
+      <View style={{ flex: 1 }}>
         <Text style={styles.eventTitle}>{item.title}</Text>
-        <Text style={styles.eventDate}>📅 {new Date(item.date).toDateString()}</Text>
+        <Text style={styles.eventDate}>
+          {new Date(item.date).toDateString()}
+        </Text>
+        {item.description ? (
+          <Text style={styles.eventDesc}>{item.description}</Text>
+        ) : null}
       </View>
+
       <TouchableOpacity onPress={() => handleDelete(item._id)}>
         <Text style={styles.deleteText}>Delete</Text>
       </TouchableOpacity>
@@ -92,156 +103,211 @@ export default function AddEventScreen({ navigation }) {
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Event Title</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter event title"
-        value={title}
-        onChangeText={setTitle}
-      />
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
+      
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Add New Event</Text>
 
-      <Text style={styles.label}>Description</Text>
-      <TextInput
-        style={[styles.input, { height: 80 }]}
-        placeholder="Enter event description"
-        value={description}
-        onChangeText={setDescription}
-        multiline
-      />
-
-      <Text style={styles.label}>Select Date</Text>
-      <Button title={date.toDateString()} onPress={() => setShowPicker(true)} />
-
-      {showPicker && (
-        <DateTimePicker
-          value={date}
-          mode="date"
-          display="default"
-          onChange={(event, selectedDate) => {
-            setShowPicker(Platform.OS === 'ios');
-            if (selectedDate) setDate(selectedDate);
-          }}
+        <TextInput
+          style={styles.input}
+          placeholder="Event title"
+          value={title}
+          onChangeText={setTitle}
         />
-      )}
 
-      <View style={{ marginTop: 20, marginBottom: 30 }}>
-        <Button title="Add Event" onPress={handleAddEvent} />
+        <TextInput
+          style={[styles.input, { height: 80 }]}
+          placeholder="Description (optional)"
+          value={description}
+          onChangeText={setDescription}
+          multiline
+        />
+
+        <TouchableOpacity
+          style={styles.dateBtn}
+          onPress={() => setShowPicker(true)}
+        >
+          <Text style={styles.dateText}>
+            {date.toDateString()}
+          </Text>
+        </TouchableOpacity>
+
+        {showPicker && (
+          <DateTimePicker
+            value={date}
+            mode="date"
+            display={Platform.OS === 'android' ? 'default' : 'spinner'}
+            onChange={(e, selected) => {
+              setShowPicker(false);
+              if (selected) setDate(selected);
+            }}
+          />
+        )}
+
+        <TouchableOpacity style={styles.primaryBtn} onPress={handleAddEvent}>
+          <Text style={styles.primaryBtnText}>Add Event</Text>
+        </TouchableOpacity>
       </View>
 
-      <Text style={styles.sectionTitle}>Current Events - Select Month</Text>
+      <Text style={styles.sectionTitle}>Events</Text>
 
-      {/* Month Grid */}
-      <View style={styles.monthGrid}>
-        {months.map((month, index) => (
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {months.map((m, i) => (
           <TouchableOpacity
-            key={index}
+            key={i}
             style={[
-              styles.monthButton,
-              selectedMonth === index && styles.selectedMonthButton,
+              styles.monthChip,
+              selectedMonth === i && styles.activeMonth,
             ]}
-            onPress={() => setSelectedMonth(index)}
+            onPress={() => setSelectedMonth(i)}
           >
             <Text
               style={[
                 styles.monthText,
-                selectedMonth === index && styles.selectedMonthText,
+                selectedMonth === i && styles.activeMonthText,
               ]}
             >
-              {month}
+              {m}
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
-      {/* Event List */}
-      {filteredEvents.length > 0 ? (
+      {filteredEvents.length === 0 ? (
+        <Text style={styles.emptyText}>
+          No events in {months[selectedMonth]}
+        </Text>
+      ) : (
         <FlatList
           data={filteredEvents}
           keyExtractor={(item) => item._id}
-          renderItem={renderEventItem}
-          contentContainerStyle={{ paddingBottom: 100 }}
+          renderItem={renderEvent}
+          scrollEnabled={false}
         />
-      ) : (
-        <Text style={{ textAlign: 'center', marginTop: 20, color: '#777' }}>
-          No events in {months[selectedMonth]}
-        </Text>
       )}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 5,
-    backgroundColor: '#ffffffff',
+    backgroundColor: '#f5f7fb',
+    padding: 12,
     flex: 1,
   },
-  label: {
-    fontWeight: '600',
-    fontSize: 16,
-    marginTop: 10,
+
+  card: {
+    backgroundColor: '#fecaca',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    elevation: 3,
   },
+
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 12,
+    color: '#ac1d1dff',
+  },
+
   input: {
-    borderColor: '#ccc',
     borderWidth: 1,
+    borderColor: '#ddd',
     borderRadius: 8,
     padding: 10,
-    marginTop: 6,
+    marginBottom: 12,
     backgroundColor: '#fff',
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginVertical: 10,
+
+  dateBtn: {
+    borderWidth: 1,
+    borderColor: '#ac1d1dff',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 14,
+  },
+
+  dateText: {
     color: '#333',
   },
-  monthGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  monthButton: {
-    backgroundColor: '#e0e0e0',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+
+  primaryBtn: {
+    backgroundColor: '#ac1d1dff',
+    padding: 14,
     borderRadius: 8,
-    marginVertical: 5,
-    width: '30%',
     alignItems: 'center',
   },
-  selectedMonthButton: {
-    backgroundColor: '#4e73df',
-  },
-  monthText: {
-    fontSize: 14,
-    color: '#333',
-  },
-  selectedMonthText: {
+
+  primaryBtnText: {
     color: '#fff',
     fontWeight: 'bold',
-  },
-  eventCard: {
-    backgroundColor: '#fff',
-    padding: 12,
-    marginTop: 10,
-    borderRadius: 8,
-    elevation: 2,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  eventTitle: {
     fontSize: 16,
+  },
+
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 10,
+    color: '#333',
+  },
+
+  monthChip: {
+    backgroundColor: '#e5e7eb',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    marginRight: 8,
+  },
+
+  activeMonth: {
+    backgroundColor: '#ac1d1dff',
+  },
+
+  monthText: {
+    color: '#333',
     fontWeight: '600',
   },
+
+  activeMonthText: {
+    color: '#fff',
+  },
+
+  eventCard: {
+    backgroundColor: '#fecaca',
+    borderRadius: 10,
+    padding: 14,
+    marginTop: 12,
+    flexDirection: 'row',
+    gap: 10,
+    elevation: 2,
+  },
+
+  eventTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+
   eventDate: {
-    fontSize: 14,
+    fontSize: 13,
+    color: '#555',
+    marginTop: 2,
+  },
+
+  eventDesc: {
+    fontSize: 13,
     color: '#666',
     marginTop: 4,
   },
+
   deleteText: {
-    color: 'red',
+    color: '#dc2626',
     fontWeight: 'bold',
+  },
+
+  emptyText: {
+    textAlign: 'center',
+    color: '#777',
+    marginTop: 30,
   },
 });

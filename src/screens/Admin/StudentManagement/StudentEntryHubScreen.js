@@ -13,18 +13,20 @@ import { BASE_URL } from '@env'
 import { useAdmin } from '../../../context/adminContext'
 
 const StudentEntryHubScreen = ({ navigation }) => {
-  const { adminId, adminLoading } = useAdmin()
+  const { adminUserId, adminLoading } = useAdmin()
 
   const [batches, setBatches] = useState([])
   const [loading, setLoading] = useState(true)
 
   const fetchBatches = async () => {
-    if (!adminId) return
+    if (!adminUserId) return
 
     try {
       setLoading(true)
+      console.log(" adminUserId used:", adminUserId)
+
       const res = await api.get(
-        `/api/admin/students/import-batch/admin/${adminId}`
+        `/api/admin/students/import-batch/admin/${adminUserId}`,
       )
 
       setBatches(res.data?.data || [])
@@ -36,10 +38,10 @@ const StudentEntryHubScreen = ({ navigation }) => {
   }
 
   useEffect(() => {
-    if (!adminLoading && adminId) {
+    if (!adminLoading && adminUserId) {
       fetchBatches()
     }
-  }, [adminLoading, adminId])
+  }, [adminLoading, adminUserId])
 
   const formatDate = (iso) => {
     const d = new Date(iso)
@@ -153,27 +155,27 @@ const styles = StyleSheet.create({
   },
 
   primaryCard: {
-    backgroundColor: '#a5150b',
+    backgroundColor: '#9c1006',
     padding: 16,
     borderRadius: 12,
     marginBottom: 14,
   },
 
   secondaryCard: {
-    backgroundColor: '#ac1d1d',
+    backgroundColor: '#9c1006',
     padding: 16,
     borderRadius: 12,
     marginBottom: 24,
   },
 
   primaryText: {
-    color: '#fff',
+    color: '#ffffff',
     fontSize: 18,
     fontWeight: '600',
   },
 
   subText: {
-    color: '#e5e7eb',
+    color: '#ffffff',
     marginTop: 6,
     fontSize: 14,
   },
@@ -181,12 +183,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1e3a8a',
+    color: '#000000',
     marginBottom: 12,
   },
 
   batchCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#fecaca',
     padding: 14,
     borderRadius: 10,
     marginBottom: 10,
@@ -204,7 +206,7 @@ const styles = StyleSheet.create({
   batchDate: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: '#030303',
   },
 
   statusBadge: {

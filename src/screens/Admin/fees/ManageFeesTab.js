@@ -16,8 +16,8 @@ import { api } from "../../../api/api";
 const CLASS_ORDER = ["LKG", "UKG", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 
 const BOARD_COLORS = {
-  CBSE: "#49a85e",
-  STATE: "#4a90e2",
+  CBSE: "#ac1d1dff",
+  STATE: "#f59d9d",
 };
 
 export default function ManageFeesTab() {
@@ -43,7 +43,7 @@ export default function ManageFeesTab() {
   const fetchFeeTemplates = async () => {
     try {
       setLoading(true);
-      const res = await api.get("/api/admin/student/fee-template");
+      const res = await api.get("/api/admin/students/fee/fee-template");
       setFeeTemplates(res.data.data || []);
     } catch {
       showResult("Failed to fetch fee templates.", true);
@@ -102,8 +102,8 @@ export default function ManageFeesTab() {
 
       const endpoint =
         uploadType === "template"
-          ? "/api/admin/student/fee-template/upload"
-          : "/api/admin/student/student-fee/upload";
+          ? "/api/admin/students/fee/fee-template/upload"
+          : "/api/admin/students/fee/upload";
 
       const res = await api.post(endpoint, formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -227,7 +227,7 @@ export default function ManageFeesTab() {
       <View style={styles.uploadContainer}>
         <Button
           mode="contained"
-          buttonColor="#49a85e"
+          buttonColor="#ac1d1dff"
           icon={() => (
             <Ionicons name="cloud-upload-outline" size={18} color="#fff" />
           )}
@@ -238,7 +238,7 @@ export default function ManageFeesTab() {
 
         <Button
           mode="contained"
-          buttonColor="#4a90e2"
+          buttonColor="#ac1d1dff"
           icon={() => (
             <Ionicons name="cloud-upload-outline" size={18} color="#fff" />
           )}

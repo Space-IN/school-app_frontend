@@ -1,46 +1,52 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import { useAuth } from "./authContext"
+import { api } from "../api/api"
 
 export const AdminContext = createContext()
 
 export const AdminProvider = ({ children }) => {
-  const { decodedToken, loading: authLoading } = useAuth()
+  const { isAuthenticated } = useAuth()
 
-  const [adminId, setAdminId] = useState(null)
+  const [adminObjectId, setAdminObjectId] = useState(null) 
+  const [adminUserId, setAdminUserId] = useState(null)     
   const [adminData, setAdminData] = useState(null)
   const [adminLoading, setAdminLoading] = useState(true)
   const [adminErr, setAdminErr] = useState(null)
 
   useEffect(() => {
-    if (authLoading) return
-
-    if (!decodedToken) {
+    if (!isAuthenticated) {
       setAdminLoading(false)
       return
     }
 
-    try {
-      const id =
-        decodedToken?.preferred_username ||
-        decodedToken?.userId ||
-        decodedToken?.sub
+    const loadAdminProfile = async () => {
+      try {
+        const res = await api.get("/api/admin/adminprofile")
 
-      if (!id) throw new Error("Admin ID missing in token")
+        const admin = res.data?.data
+        if (!admin?._id) {
+          throw new Error("Admin ObjectId missing in response")
+        }
 
-      setAdminId(id)
-      setAdminData({ adminId: id })
-    } catch (err) {
-      console.error("❌ Admin context error:", err)
-      setAdminErr(err)
-    } finally {
-      setAdminLoading(false)
+        setAdminObjectId(admin._id)
+        setAdminUserId(admin.adminId)
+        setAdminData(admin)
+      } catch (err) {
+        console.error(" Failed to load admin profile:", err)
+        setAdminErr(err)
+      } finally {
+        setAdminLoading(false)
+      }
     }
-  }, [decodedToken, authLoading])
+
+    loadAdminProfile()
+  }, [isAuthenticated])
 
   return (
     <AdminContext.Provider
       value={{
-        adminId,
+        adminObjectId, 
+        adminUserId,   
         adminData,
         adminLoading,
         adminErr,

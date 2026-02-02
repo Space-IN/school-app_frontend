@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,32 +9,20 @@ import {
   TouchableOpacity,
   RefreshControl,
   Alert,
-  Modal,
 } from 'react-native';
 import { api } from '../../../../api/api';
-import { BASE_URL } from '@env';
 
 const getStudentStatus = (student) => {
-  const ap = student.accountProvisioning;
+  const ap = student.accountProvisioning || {};
+  const keycloakStatus =
+    ap.keycloakStatus ||
+    ap.status ||
+    student.provisioningStatus ||
+    'pending';
 
-  if (ap?.keycloakStatus === 'failed') return 'FAILED';
-  if (ap?.keycloakStatus === 'success' && ap?.messageDeliveryStatus === 'failed')
-    return 'FAILED';
-  if (ap?.keycloakStatus === 'success') return 'SUCCESS';
-
+  if (keycloakStatus === 'failed') return 'FAILED';
+  if (keycloakStatus === 'success') return 'SUCCESS';
   return 'PENDING';
-};
-
-const getFailureReason = (student) => {
-  const ap = student.accountProvisioning;
-
-  if (ap?.keycloakStatus === 'failed')
-    return ap?.keycloakLastError || 'Account provisioning failed';
-
-  if (ap?.keycloakStatus === 'success' && ap?.messageDeliveryStatus === 'failed')
-    return 'Onboarding message delivery failed';
-
-  return null;
 };
 
 const BatchDetailsScreen = ({ route }) => {
@@ -47,20 +35,13 @@ const BatchDetailsScreen = ({ route }) => {
   const [batch, setBatch] = useState(null);
   const [students, setStudents] = useState([]);
 
-  const [classFilter, setClassFilter] = useState('ALL');
-  const [sectionFilter, setSectionFilter] = useState('ALL');
-  const [boardFilter, setBoardFilter] = useState('ALL');
-  const [statusFilter, setStatusFilter] = useState('ALL');
-
-  const [openFilter, setOpenFilter] = useState(null);
-
   const fetchBatchDetails = async () => {
     try {
       const res = await api.get(
-        `${BASE_URL}/api/admin/students/import-batch/${batchId}`
+        `/api/admin/students/import-batch/${batchId}`
       );
       setBatch(res.data.batch);
-      setStudents(res.data.students || []);
+      setStudents(res.data.users || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -85,7 +66,7 @@ const BatchDetailsScreen = ({ route }) => {
     try {
       setRetrying(true);
       await api.post(
-        `${BASE_URL}/api/admin/students/import-batch/retry/${batchId}`
+        `/api/admin/students/import-batch/retry/${batchId}`
       );
       fetchBatchDetails();
     } catch {
@@ -95,28 +76,8 @@ const BatchDetailsScreen = ({ route }) => {
     }
   };
 
-  const filteredStudents = useMemo(() => {
-    return students
-      .filter((s) => {
-        const status = getStudentStatus(s);
-
-        if (classFilter !== 'ALL' && s.className !== classFilter) return false;
-        if (sectionFilter !== 'ALL' && s.section !== sectionFilter) return false;
-        if (boardFilter !== 'ALL' && s.board !== boardFilter) return false;
-        if (statusFilter !== 'ALL' && status !== statusFilter) return false;
-
-        return true;
-      })
-      .sort((a, b) => {
-        const order = { FAILED: 1, PENDING: 2, SUCCESS: 3 };
-        return order[getStudentStatus(a)] - order[getStudentStatus(b)];
-      });
-  }, [students, classFilter, sectionFilter, boardFilter, statusFilter]);
-
   const renderStudent = ({ item }) => {
     const status = getStudentStatus(item);
-    const reason = getFailureReason(item);
-
     return (
       <View
         style={[
@@ -129,12 +90,22 @@ const BatchDetailsScreen = ({ route }) => {
         ]}
       >
         <Text style={styles.studentName}>{item.name}</Text>
-        <Text>ID: {item.userId}</Text>
-        <Text>
-          Class {item.className} | {item.section} | {item.board}
+        <Text style={styles.metaText}>ID: {item.userId}</Text>
+        <Text style={styles.metaText}>
+          Email: {item.email || 'N/A'}
         </Text>
-        <Text>Status: {status}</Text>
-        {reason && <Text style={styles.errorText}>Reason: {reason}</Text>}
+        <Text
+          style={[
+            styles.statusText,
+            status === 'SUCCESS'
+              ? styles.successText
+              : status === 'FAILED'
+              ? styles.failedText
+              : styles.pendingText,
+          ]}
+        >
+          {status}
+        </Text>
       </View>
     );
   };
@@ -186,29 +157,11 @@ const BatchDetailsScreen = ({ route }) => {
         </TouchableOpacity>
       )}
 
-      <View style={styles.filterRow}>
-        {[
-          ['Class', classFilter],
-          ['Section', sectionFilter],
-          ['Board', boardFilter],
-          ['Status', statusFilter],
-        ].map(([label, value]) => (
-          <TouchableOpacity
-            key={label}
-            style={styles.dropdown}
-            onPress={() => setOpenFilter(label)}
-          >
-            <Text style={styles.dropdownText}>
-              {label}: {value}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
       <FlatList
-        data={filteredStudents}
+        data={students}
         keyExtractor={(item) => item._id}
         renderItem={renderStudent}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -221,45 +174,8 @@ const BatchDetailsScreen = ({ route }) => {
         ListEmptyComponent={
           <Text style={styles.emptyText}>No students found</Text>
         }
+        contentContainerStyle={{ paddingBottom: 30 }}
       />
-
-      <Modal visible={!!openFilter} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <TouchableOpacity
-            style={StyleSheet.absoluteFill}
-            onPress={() => setOpenFilter(null)}
-          />
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>Select {openFilter}</Text>
-            <FlatList
-              data={
-                openFilter === 'Class'
-                  ? ['ALL', ...Array.from({ length: 12 }, (_, i) => String(i + 1))]
-                  : openFilter === 'Section'
-                  ? ['ALL', 'A', 'B', 'C']
-                  : openFilter === 'Board'
-                  ? ['ALL', 'CBSE', 'STATE']
-                  : ['ALL', 'SUCCESS', 'PENDING', 'FAILED']
-              }
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.modalItem}
-                  onPress={() => {
-                    if (openFilter === 'Class') setClassFilter(item);
-                    if (openFilter === 'Section') setSectionFilter(item);
-                    if (openFilter === 'Board') setBoardFilter(item);
-                    if (openFilter === 'Status') setStatusFilter(item);
-                    setOpenFilter(null);
-                  }}
-                >
-                  <Text style={styles.modalText}>{item}</Text>
-                </TouchableOpacity>
-              )}
-            />
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 };
@@ -273,17 +189,17 @@ const styles = StyleSheet.create({
   batchCardCompact: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: '#fff',
+    backgroundColor: '#fecaca',
     paddingVertical: 12,
     paddingHorizontal: 10,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    marginBottom: 10,
+    marginBottom: 12,
   },
 
   statItem: { flex: 1, alignItems: 'center' },
-  statLabel: { fontSize: 12, color: '#6b7280', fontWeight: '500' },
+  statLabel: { fontSize: 12, color: '#000000', fontWeight: '500' },
   statValue: { fontSize: 18, fontWeight: '700', marginTop: 2 },
   successText: { color: '#16a34a' },
   failedText: { color: '#dc2626' },
@@ -291,7 +207,7 @@ const styles = StyleSheet.create({
 
   retryInlineBtn: {
     alignSelf: 'center',
-    marginBottom: 12,
+    marginBottom: 14,
     backgroundColor: '#dc2626',
     paddingHorizontal: 18,
     paddingVertical: 8,
@@ -299,16 +215,6 @@ const styles = StyleSheet.create({
   },
   retryBtnDisabled: { backgroundColor: '#fca5a5' },
   retryText: { color: '#fff', fontWeight: '600', fontSize: 13 },
-
-  filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
-  dropdown: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: '#fff',
-    elevation: 3,
-  },
-  dropdownText: { fontSize: 13, fontWeight: '700', color: '#111827' },
 
   studentCard: {
     backgroundColor: '#fff',
@@ -321,36 +227,9 @@ const styles = StyleSheet.create({
   failedBorder: { borderColor: '#dc2626' },
   pendingBorder: { borderColor: '#f59e0b' },
 
-  studentName: { fontSize: 15, fontWeight: '600', marginBottom: 4 },
-  errorText: { marginTop: 6, color: '#b91c1c', fontSize: 13 },
+  studentName: { fontSize: 15, fontWeight: '700', marginBottom: 4 },
+  metaText: { fontSize: 13, color: '#4b5563' },
+  statusText: { marginTop: 6, fontSize: 13, fontWeight: '700' },
 
   emptyText: { textAlign: 'center', marginTop: 30, color: '#6b7280' },
-
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalBox: {
-    backgroundColor: '#fff',
-    width: '80%',
-    maxHeight: '65%',
-    borderRadius: 12,
-    paddingVertical: 10,
-  },
-  modalTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1e3a8a',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  modalItem: {
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  modalText: { fontSize: 14, fontWeight: '600', color: '#1f2937' },
 });

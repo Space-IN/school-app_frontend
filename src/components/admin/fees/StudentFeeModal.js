@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   FlatList,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import RNPickerSelect from "react-native-picker-select";
 import PaymentHistoryPanel from "./PaymentHistoryPanel";
@@ -19,63 +20,6 @@ const PAYMENT_MODES = [
   { label: "Cheque", value: "CHEQUE" },
 ];
 
-/* ---------------- Installment Row ---------------- */
-const InstallmentRow = memo(({ item, index, editMode, onLocalChange }) => (
-  <View style={styles.card}>
-    <Text style={styles.instTitle}>{item.title}</Text>
-
-    <Row label="Amount">
-      <TextInput
-        style={[styles.smallInput, !editMode && styles.disabled]}
-        editable={editMode}
-        keyboardType="numeric"
-        blurOnSubmit={false}
-        returnKeyType="done"
-        value={item.amount}
-        onChangeText={(v) => onLocalChange(index, "amount", v)}
-      />
-    </Row>
-
-    <Row label="Paid">
-      <TextInput
-        style={[styles.smallInput, !editMode && styles.disabled]}
-        editable={editMode}
-        keyboardType="numeric"
-        blurOnSubmit={false}
-        returnKeyType="done"
-        value={item.paid}
-        onChangeText={(v) => onLocalChange(index, "paid", v)}
-      />
-    </Row>
-
-    {editMode && (
-      <>
-        <Text style={styles.subLabel}>Payment Mode</Text>
-        <RNPickerSelect
-          value={item.paymentMode}
-          onValueChange={(v) =>
-            onLocalChange(index, "paymentMode", v)
-          }
-          items={PAYMENT_MODES}
-          style={pickerStyles}
-          useNativeAndroidPickerStyle={false}
-          fixAndroidTouchableBug
-        />
-
-        <Text style={styles.subLabel}>Remarks</Text>
-        <TextInput
-          style={styles.remarkInput}
-          value={item.remarks}
-          onChangeText={(v) =>
-            onLocalChange(index, "remarks", v)
-          }
-        />
-      </>
-    )}
-  </View>
-));
-
-/* ---------------- MAIN MODAL ---------------- */
 export default function StudentFeeModal({
   visible,
   student,
@@ -88,51 +32,78 @@ export default function StudentFeeModal({
   onClose,
 }) {
   const [localInstallments, setLocalInstallments] = useState([]);
-  const [localTotalFee, setLocalTotalFee] = useState("");
-  const [initialSnapshot, setInitialSnapshot] = useState("");
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentMode, setPaymentMode] = useState("CASH");
+  const [remarks, setRemarks] = useState("");
   const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     if (visible && student) {
-      const prepared = installments.map((i) => ({
-        ...i,
-        amount: String(i.amount ?? ""),
-        paid: String(i.paid ?? ""),
-        remarks: i.remarks ?? "",
-        paymentMode: i.paymentMode || "CASH",
-      }));
-
-      setLocalInstallments(prepared);
-      setLocalTotalFee(String(totalFee ?? ""));
-      setInitialSnapshot(
-        JSON.stringify(prepared) + String(totalFee ?? "")
+      setLocalInstallments(
+        installments.map(i => ({
+          ...i,
+          amount: Number(i.amount),
+          paid: Number(i.paid || 0),
+        }))
       );
-      setShowHistory(false); // reset history on open
+      setPaymentAmount("");
+      setPaymentMode("CASH");
+      setRemarks("");
+      setShowHistory(false);
     }
   }, [visible, student]);
 
-  const hasChanges = useMemo(() => {
-    return (
-      JSON.stringify(localInstallments) + localTotalFee !==
-      initialSnapshot
+  const totalPending = useMemo(() => {
+    return localInstallments.reduce(
+      (sum, i) => sum + Math.max(0, i.amount - i.paid),
+      0
     );
-  }, [localInstallments, localTotalFee, initialSnapshot]);
+  }, [localInstallments]);
 
-  const onLocalChange = (index, field, value) => {
-    setLocalInstallments((prev) => {
-      const copy = [...prev];
-      copy[index] = { ...copy[index], [field]: value ?? "" };
-      return copy;
+  const applyPayment = () => {
+    const pay = Number(paymentAmount);
+
+    if (!pay || pay <= 0) {
+      Alert.alert("Validation Error", "Enter payment amount");
+      return;
+    }
+
+    if (pay > totalPending) {
+      Alert.alert(
+        "Invalid Amount",
+        "Entered amount exceeds total pending fee"
+      );
+      return;
+    }
+
+    let remaining = pay;
+
+    const updatedInstallments = localInstallments.map(inst => {
+      if (remaining <= 0) return inst;
+
+      const pending = inst.amount - inst.paid;
+      if (pending <= 0) return inst;
+
+      const applied = Math.min(pending, remaining);
+      remaining -= applied;
+
+      return {
+        ...inst,
+        paid: inst.paid + applied,
+      };
     });
-  };
-
-  const handleSave = () => {
-    if (!hasChanges) return;
 
     onSave({
-      totalFee: localTotalFee,
-      installments: localInstallments,
+      installments: updatedInstallments,
+      payment: {
+        amount: pay,
+        mode: paymentMode,
+        remarks,
+        date: new Date(),
+      },
     });
+
+    setEditMode(false);
   };
 
   if (!visible || !student) return null;
@@ -142,15 +113,9 @@ export default function StudentFeeModal({
       <View style={styles.overlay}>
         <FlatList
           data={localInstallments}
-          keyExtractor={(i) => i.order.toString()}
-          renderItem={({ item, index }) => (
-            <InstallmentRow
-              item={item}
-              index={index}
-              editMode={editMode}
-              onLocalChange={onLocalChange}
-            />
-          )}
+          keyExtractor={i => i.order.toString()}
+          contentContainerStyle={styles.box}
+          showsVerticalScrollIndicator={false}
           ListHeaderComponent={
             <>
               <View style={styles.header}>
@@ -159,10 +124,9 @@ export default function StudentFeeModal({
                 </Text>
 
                 <View style={styles.headerActions}>
-                  {/* 🕘 History (ONLY in view mode) */}
                   {!editMode && (
                     <TouchableOpacity
-                      onPress={() => setShowHistory((p) => !p)}
+                      onPress={() => setShowHistory(p => !p)}
                     >
                       <Text style={styles.icon}>🕘</Text>
                     </TouchableOpacity>
@@ -170,7 +134,7 @@ export default function StudentFeeModal({
 
                   {!editMode && (
                     <TouchableOpacity
-                      style={styles.editBtnSmall}
+                      style={styles.editBtn}
                       onPress={() => setEditMode(true)}
                     >
                       <Text style={styles.btnText}>Edit</Text>
@@ -184,20 +148,38 @@ export default function StudentFeeModal({
               </View>
 
               <Text style={styles.label}>Total Fee</Text>
-              <TextInput
-                value={localTotalFee}
-                editable={editMode}
-                keyboardType="numeric"
-                onChangeText={setLocalTotalFee}
-                style={[styles.input, !editMode && styles.disabled]}
-              />
+              <Text style={styles.readonly}>
+                ₹ {totalFee}
+              </Text>
 
               <Text style={styles.label}>Installments</Text>
             </>
           }
+          renderItem={({ item }) => {
+            const pending = item.amount - item.paid;
+
+            return (
+              <View style={styles.card}>
+                <Text style={styles.instTitle}>{item.title}</Text>
+
+                <Row label="Amount">
+                  <Text>₹ {item.amount}</Text>
+                </Row>
+
+                <Row label="Paid">
+                  <Text>₹ {item.paid}</Text>
+                </Row>
+
+                <Row label="Pending">
+                  <Text style={{ color: pending > 0 ? "#dc2626" : "#16a34a" }}>
+                    ₹ {pending}
+                  </Text>
+                </Row>
+              </View>
+            );
+          }}
           ListFooterComponent={
             <>
-              {/* 🧾 Payment History */}
               {!editMode && showHistory && (
                 <>
                   <Text style={styles.label}>Payment History</Text>
@@ -205,41 +187,59 @@ export default function StudentFeeModal({
                 </>
               )}
 
-              {/* Actions */}
               {editMode && (
-                <View style={styles.actions}>
-                  <TouchableOpacity
-                    style={[
-                      styles.saveBtn,
-                      !hasChanges && styles.saveDisabled,
-                    ]}
-                    onPress={handleSave}
-                    disabled={!hasChanges}
-                  >
-                    <Text style={styles.btnText}>
-                      {hasChanges ? "Save" : "No Changes"}
-                    </Text>
-                  </TouchableOpacity>
+                <>
+                  <Text style={styles.label}>Add Payment</Text>
 
-                  <TouchableOpacity
-                    style={styles.cancelBtn}
-                    onPress={() => setEditMode(false)}
-                  >
-                    <Text style={styles.btnText}>Cancel</Text>
-                  </TouchableOpacity>
-                </View>
+                  <TextInput
+                    style={styles.input}
+                    keyboardType="numeric"
+                    placeholder="Amount Paid"
+                    value={paymentAmount}
+                    onChangeText={setPaymentAmount}
+                  />
+
+                  <Text style={styles.subLabel}>Payment Mode</Text>
+                  <RNPickerSelect
+                    value={paymentMode}
+                    onValueChange={setPaymentMode}
+                    items={PAYMENT_MODES}
+                    style={pickerStyles}
+                    useNativeAndroidPickerStyle={false}
+                  />
+
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Remarks (optional)"
+                    value={remarks}
+                    onChangeText={setRemarks}
+                  />
+
+                  <View style={styles.actions}>
+                    <TouchableOpacity
+                      style={styles.saveBtn}
+                      onPress={applyPayment}
+                    >
+                      <Text style={styles.btnText}>Save Payment</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.cancelBtn}
+                      onPress={() => setEditMode(false)}
+                    >
+                      <Text style={styles.btnText}>Cancel</Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
               )}
             </>
           }
-          contentContainerStyle={styles.box}
-          showsVerticalScrollIndicator={false}
         />
       </View>
     </Modal>
   );
 }
 
-/* ---------- Helpers ---------- */
 const Row = ({ label, children }) => (
   <View style={styles.row}>
     <Text>{label}</Text>
@@ -247,7 +247,6 @@ const Row = ({ label, children }) => (
   </View>
 );
 
-/* ---------- Styles ---------- */
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
@@ -273,16 +272,20 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 18, fontWeight: "700" },
   icon: { fontSize: 20 },
-  label: { marginTop: 12, fontWeight: "600" },
-  subLabel: { marginTop: 8, fontSize: 12, fontWeight: "600" },
+  label: { marginTop: 14, fontWeight: "600" },
+  subLabel: { marginTop: 10, fontSize: 12, fontWeight: "600" },
+  readonly: {
+    marginTop: 4,
+    fontSize: 16,
+    fontWeight: "600",
+  },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
     padding: 8,
-    marginTop: 4,
+    marginTop: 6,
   },
-  disabled: { backgroundColor: "#f1f1f1" },
   card: {
     backgroundColor: "#f9fafb",
     padding: 12,
@@ -293,45 +296,27 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginVertical: 4,
-  },
-  smallInput: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    width: 90,
-    padding: 6,
-    borderRadius: 6,
-    textAlign: "center",
-  },
-  remarkInput: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 6,
-    marginTop: 4,
+    marginVertical: 3,
   },
   actions: {
     flexDirection: "row",
     justifyContent: "flex-end",
     marginTop: 20,
   },
-  editBtnSmall: {
-    backgroundColor: "#007bff",
+  editBtn: {
+    backgroundColor: "#2563eb",
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 6,
   },
   saveBtn: {
-    backgroundColor: "#28a745",
+    backgroundColor: "#16a34a",
     padding: 10,
     borderRadius: 8,
     marginRight: 10,
   },
-  saveDisabled: {
-    backgroundColor: "#9ca3af",
-  },
   cancelBtn: {
-    backgroundColor: "#dc3545",
+    backgroundColor: "#dc2626",
     padding: 10,
     borderRadius: 8,
   },
@@ -344,13 +329,13 @@ const pickerStyles = {
     borderColor: "#ccc",
     borderRadius: 8,
     padding: 8,
-    marginTop: 4,
+    marginTop: 6,
   },
   inputAndroid: {
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
     padding: 8,
-    marginTop: 4,
+    marginTop: 6,
   },
 };
