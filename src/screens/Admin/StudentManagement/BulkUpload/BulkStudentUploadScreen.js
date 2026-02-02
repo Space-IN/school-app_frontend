@@ -116,7 +116,7 @@ const BulkStudentUploadScreen = () => {
       ...r,
       originalData: normalizeRowKeys(r.data),
     }));
-
+    console.log("fixedData: ", fixedData)
     setPreviewResult({ ...res.data, data: fixedData });
   } catch (err) {
     console.error('Preview upload failed:', err);
@@ -159,11 +159,14 @@ const BulkStudentUploadScreen = () => {
           ...normalizeRowKeys({ ...base, ...edits }),
         };
       });
+      console.log("rows: ", rows)
 
       const res = await api.post(
         `/api/admin/students/import-batch/preview`,
         { rows }
       );
+
+
 
       const fixedData = res.data.data.map((r, i) => ({
         ...r,
@@ -203,12 +206,11 @@ const BulkStudentUploadScreen = () => {
       };
     });
 
-    const res = await api.post(
+    const res = await api.post( 
       `/api/admin/students/import-batch/commit`,
       { students }
     );
 
-    console.log('COMMIT RESPONSE:', res.data);
 
     const batchId =
       res.data.importBatchId ||

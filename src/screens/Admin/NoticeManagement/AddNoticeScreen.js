@@ -12,9 +12,24 @@ import {
   Modal,
   Pressable
 } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as DocumentPicker from 'expo-document-picker';
-import { BASE_URL } from '@env';
 import { api } from "../../../api/api";
+
+const PRO_COLORS = {
+    background: '#F5F7FA',
+    backgroundLight: '#fecaca',
+    textPrimary: '#1A202C',
+    textSecondary: '#718096',
+    border: '#E2E8F0',
+    primaryGradient: ['#ac1d1d', '#8b1515'],
+    secondaryGradient: ['#475569', '#1e293b'],
+    accent: '#ac1d1d',
+    accentLight: '#fecaca',
+    error: '#dc2626',
+};
 
 const AddNoticeScreen = () => {
   const [title, setTitle] = useState("");
@@ -22,15 +37,13 @@ const AddNoticeScreen = () => {
   const [target, setTarget] = useState("all");
   const [specificIds, setSpecificIds] = useState("");
   const [notices, setNotices] = useState([]);
-
   const [selectedFile, setSelectedFile] = useState(null);
-
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewUrl, setPreviewUrl] = useState('');
 
   const fetchNotices = async () => {
     try {
-      const res = await api.get(`${BASE_URL}/api/admin/announcement/`);
+      const res = await api.get(`/api/admin/announcement/`);
       setNotices(res.data || []);
     } catch (error) {
       console.error("Error fetching notices:", error);
@@ -38,46 +51,33 @@ const AddNoticeScreen = () => {
     }
   };
 
-
-  useEffect(() => {
-    fetchNotices();
-  }, []);
-
-
+  useEffect(() => { fetchNotices() }, []);
 
   const handleAddNotice = async () => {
+    if (!title || !message) {
+        Alert.alert('Validation Error', 'Title and Message are required.');
+        return;
+    }
     const formData = new FormData();
-
     formData.append('title', title);
     formData.append('message', message);
     formData.append('target', target);
-
-    if (target === 'specific') {
+    if (target === 'specific' && specificIds) {
       formData.append('specificIds', JSON.stringify(specificIds.split(',')));
     }
-
     if (selectedFile) {
-      const response = await fetch(selectedFile.uri);
-      const blob = await response.blob();
-
       formData.append('file', {
         uri: selectedFile.uri,
         name: selectedFile.name,
         type: selectedFile.mimeType || 'application/octet-stream',
-
       });
     }
 
     try {
-      console.log("Selected file:", selectedFile);
-
-      await api.post(`${BASE_URL}/api/admin/announcement/add`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },
+      await api.post(`/api/admin/announcement/add`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-
-      Alert.alert('Success', 'Notice added');
+      Alert.alert('Success', 'Notice added successfully');
       setTitle('');
       setMessage('');
       setTarget('all');
@@ -86,24 +86,24 @@ const AddNoticeScreen = () => {
       fetchNotices();
     } catch (err) {
       console.error('Upload failed:', err);
-      Alert.alert('Upload Error', 'Failed to upload notice');
+      Alert.alert('Upload Error', 'Failed to upload notice. Please try again.');
     }
   };
 
-  const handleDeleteNotice = async (id) => {
-    Alert.alert("Delete", "Are you sure you want to delete this notice?", [
+  const handleDeleteNotice = (id) => {
+    Alert.alert("Delete Notice", "Are you sure you want to delete this notice? This action cannot be undone.", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Delete",
         style: "destructive",
         onPress: async () => {
           try {
-            await api.delete(`${BASE_URL}/api/admin/announcement/delete/${id}`);
+            await api.delete(`/api/admin/announcement/delete/${id}`);
             fetchNotices();
-            Alert.alert("Deleted", "Notice deleted successfully");
+            Alert.alert("Deleted", "Notice has been deleted.");
           } catch (error) {
             console.error("Error deleting notice:", error);
-            Alert.alert("Error", "Failed to delete notice");
+            Alert.alert("Error", "Failed to delete notice.");
           }
         },
       },
@@ -115,260 +115,154 @@ const AddNoticeScreen = () => {
       const result = await DocumentPicker.getDocumentAsync({
         type: '*/*',
         copyToCacheDirectory: true,
-        multiple: false,
       });
-
-      console.log("DocumentPicker result:", result);
-
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const file = result.assets[0];
-        setSelectedFile({
-          uri: file.uri,
-          name: file.name,
-          mimeType: file.mimeType,
-        });
-      } else {
-        setSelectedFile(null);
+        setSelectedFile(result.assets[0]);
       }
     } catch (err) {
-      console.error("Error picking file:", err);
       Alert.alert("Error", "Could not pick file.");
     }
   };
 
-
-
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.heading}>Add Notice</Text>
+    <View style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.card}>
+            <Text style={styles.heading}>Create a New Notice</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Title"
-        value={title}
-        onChangeText={setTitle}
-      />
+            <TextInput style={styles.input} placeholder="Notice Title" value={title} onChangeText={setTitle} />
+            <TextInput style={[styles.input, styles.textArea]} placeholder="Notice Message" multiline value={message} onChangeText={setMessage} />
 
-      <TextInput
-        style={[styles.input, { height: 100 }]}
-        placeholder="Message"
-        multiline
-        value={message}
-        onChangeText={setMessage}
-      />
+            <Text style={styles.label}>Target Audience</Text>
+            <View style={styles.radioContainer}>
+                {["all", "students", "faculty", "specific"].map((option) => (
+                    <TouchableOpacity key={option} style={[styles.radio, target === option && styles.selectedRadio]} onPress={() => setTarget(option)}>
+                        <Text style={[styles.radioText, target === option && styles.selectedRadioText]}>{option.charAt(0).toUpperCase() + option.slice(1)}</Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
 
-      <Text style={styles.label}>Send To:</Text>
+            {target === "specific" && (
+                <TextInput style={styles.input} placeholder="Enter User IDs (comma-separated)" value={specificIds} onChangeText={setSpecificIds} />
+            )}
 
-      {["all", "students", "faculty"].map((option) => (
-        <TouchableOpacity
-          key={option}
-          style={[styles.radio, target === option && styles.selectedRadio]}
-          onPress={() => setTarget(option)}
-        >
-          <Text>{option.toUpperCase()}</Text>
-        </TouchableOpacity>
-      ))}
+            <TouchableOpacity onPress={pickFile}>
+                <LinearGradient colors={PRO_COLORS.secondaryGradient} style={[styles.button, { marginBottom: 16 }]}>
+                    <Ionicons name={selectedFile ? "checkmark-circle" : "attach"} size={20} color="#fff" />
+                    <Text style={styles.buttonText}>{selectedFile ? `File: ${selectedFile.name}`.substring(0,30) + '...' : 'Attach File (Optional)'}</Text>
+                </LinearGradient>
+            </TouchableOpacity>
 
-      {target === "specific" && (
-        <TextInput
-          style={styles.input}
-          placeholder="Enter User IDs (comma-separated)"
-          value={specificIds}
-          onChangeText={setSpecificIds}
-        />
-      )}
-      {/* <TouchableOpacity
-  style={[styles.button, { backgroundColor: '#6c757d', marginBottom: 10 }]}
-  onPress={pickFile}
->
-  <Text style={styles.buttonText}>
-    {selectedFile ? `📎 ${selectedFile.name}` : 'Attach File (optional)'}
-  </Text>
-
-  
-</TouchableOpacity> */}
-
-      <TouchableOpacity
-        style={[styles.button, { backgroundColor: '#6c757d', marginBottom: 10 }]}
-        onPress={pickFile}
-      >
-        <Text style={styles.buttonText}>
-          {selectedFile ? `📎 ${selectedFile.name}` : 'Attach File (optional)'}
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.button} onPress={handleAddNotice}>
-        <Text style={styles.buttonText}>Add Notice</Text>
-      </TouchableOpacity>
-
-      <Text style={[styles.heading, { marginTop: 30 }]}>Existing Notices</Text>
-
-      {notices.map((notice) => (
-        <View key={notice._id} style={styles.noticeCard}>
-
-          <Text style={styles.noticeDate}>
-            {new Date(notice.date).toLocaleString()}
-          </Text>
-
-          <Text style={styles.noticeTitle}>{notice.title}</Text>
-          <Text style={styles.noticeMessage}>{notice.message}</Text>
-          <Text style={styles.noticeTarget}>Target: {notice.target}</Text>
-
-
-          {notice.fileUrl && (
-            <>
-              {notice.fileUrl.endsWith('.pdf') ? (
-                <TouchableOpacity
-                  onPress={() => {
-                    const filename = notice.fileUrl.split('/').pop();
-                    setPreviewUrl(`${BASE_URL}/api/announcement/preview/${filename}`);
-
-                    setPreviewVisible(true);
-                  }}
-                  style={{
-                    backgroundColor: '#007bff',
-                    padding: 10,
-                    borderRadius: 5,
-                    marginTop: 10,
-                  }}
-                >
-                  <Text style={{ color: '#fff', textAlign: 'center' }}>📄 Preview PDF</Text>
-                </TouchableOpacity>
-              ) : (
-                <Text
-                  style={{
-                    color: '#007bff',
-                    textDecorationLine: 'underline',
-                    marginTop: 5,
-                  }}
-                  onPress={() => Linking.openURL(`${BASE_URL}/${notice.fileUrl}`)}
-                >
-                  📎 Open Attachment
-                </Text>
-              )}
-            </>
-          )}
-
-          <TouchableOpacity
-            onPress={() => handleDeleteNotice(notice._id)}
-            style={styles.deleteButton}
-          >
-            <Text style={styles.deleteText}>🗑️ Delete</Text>
-          </TouchableOpacity>
+            <TouchableOpacity onPress={handleAddNotice}>
+                <LinearGradient colors={PRO_COLORS.primaryGradient} style={styles.button}>
+                    <Ionicons name="megaphone-outline" size={20} color="#fff" />
+                    <Text style={styles.buttonText}>Publish Notice</Text>
+                </LinearGradient>
+            </TouchableOpacity>
         </View>
-      ))}
 
-      <Modal
-        visible={previewVisible}
-        animationType="slide"
-        onRequestClose={() => setPreviewVisible(false)}
-      >
-        <View style={{ flex: 1 }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              backgroundColor: '#f0f0f0',
-              padding: 10,
-            }}
-          >
-            <Pressable
-              onPress={() => setPreviewVisible(false)}
-              style={{
-                backgroundColor: '#dc3545',
-                paddingVertical: 8,
-                paddingHorizontal: 12,
-                borderRadius: 5,
-              }}
-            >
-              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Close</Text>
-            </Pressable>
-
-            <Pressable
-              onPress={() => {
-                Linking.openURL(previewUrl);
-              }}
-              style={{
-                backgroundColor: '#28a745',
-                paddingVertical: 8,
-                paddingHorizontal: 12,
-                borderRadius: 5,
-              }}
-            >
-              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Download</Text>
-            </Pressable>
-          </View>
-
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={{ fontSize: 16, marginBottom: 20, textAlign: 'center' }}>
-              {previewUrl.split('/').pop()}
-            </Text>
-          </View>
+        <View style={styles.card}>
+            <Text style={styles.heading}>Published Notices</Text>
+            {notices.length === 0 ? <Text style={styles.emptyText}>No notices found.</Text> : notices.map((notice) => (
+                <View key={notice._id} style={styles.noticeCard}>
+                    <View>
+                        <Text style={styles.noticeTitle}>{notice.title}</Text>
+                        <Text style={styles.noticeDate}>{new Date(notice.date).toLocaleString()}</Text>
+                        <Text style={styles.noticeMessage}>{notice.message}</Text>
+                        <Text style={styles.noticeTarget}>Target: {notice.target}</Text>
+                    </View>
+                    <View style={styles.noticeActions}>
+                        {notice.fileUrl && (
+                            <TouchableOpacity onPress={() => Linking.openURL(`${BASE_URL}/${notice.fileUrl}`)} style={[styles.actionButton, {backgroundColor: '#dbeafe'}]}>
+                                <Ionicons name="cloud-download-outline" size={20} color="#1e40af" />
+                            </TouchableOpacity>
+                        )}
+                        <TouchableOpacity onPress={() => handleDeleteNotice(notice._id)} style={[styles.actionButton, {backgroundColor: PRO_COLORS.accentLight}]}>
+                            <Ionicons name="trash-outline" size={20} color={PRO_COLORS.error} />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            ))}
         </View>
-      </Modal>
-
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
-export default AddNoticeScreen;
-
 const styles = StyleSheet.create({
-  container: {
-    padding: 30,
-    backgroundColor: "#ffffffff",
-    flexGrow: 1,
-  },
-  heading: { fontSize: 24, marginBottom: 15, fontWeight: "bold" },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 15,
-    backgroundColor: "#faebebff",
-  },
-  label: { fontWeight: "bold", marginBottom: 5 },
-  radio: {
-    padding: 10,
-    marginBottom: 5,
-    backgroundColor: "#eee",
-    borderRadius: 5,
-  },
-  selectedRadio: { backgroundColor: "#cce5ff" },
-  button: {
-    backgroundColor: "#007bff",
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  buttonText: { color: "#fff", fontWeight: "bold" },
-
-  noticeCard: {
-    backgroundColor: "#faebebff",
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 15,
-    borderLeftWidth: 4,
-    borderLeftColor: "#c01e12ff",
-  },
-  noticeTitle: { fontWeight: "bold", fontSize: 16 },
-  noticeMessage: { marginVertical: 5 },
-  noticeTarget: { fontStyle: "italic", color: "#333" },
-  deleteButton: {
-    marginTop: 10,
-    backgroundColor: "#ffdddd",
-    padding: 8,
-    borderRadius: 5,
-    alignItems: "center",
-  },
-  deleteText: { color: "#d00", fontWeight: "bold" },
-
-  noticeDate: {
-    fontSize: 16,
-    color: "#666",
-    marginBottom: 5,
-    fontStyle: "italic",
-  },
+    safeArea: { flex: 1, backgroundColor: PRO_COLORS.background },
+    container: { padding: 16 },
+    card: {
+        backgroundColor: PRO_COLORS.backgroundLight,
+        borderRadius: 12,
+        padding: 20,
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: PRO_COLORS.border,
+    },
+    heading: { fontSize: 20, fontWeight: "700", color: PRO_COLORS.accent, marginBottom: 16 },
+    input: {
+        borderWidth: 1,
+        borderColor: PRO_COLORS.border,
+        borderRadius: 8,
+        padding: 12,
+        marginBottom: 16,
+        backgroundColor: PRO_COLORS.background,
+        fontSize: 16,
+        color: PRO_COLORS.textPrimary,
+    },
+    textArea: { height: 100, textAlignVertical: 'top' },
+    label: { fontWeight: "600", color: PRO_COLORS.textSecondary, marginBottom: 8 },
+    radioContainer: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 16, },
+    radio: {
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        marginRight: 8,
+        marginBottom: 8,
+        backgroundColor: PRO_COLORS.background,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: PRO_COLORS.border,
+    },
+    selectedRadio: { backgroundColor: PRO_COLORS.accentLight, borderColor: PRO_COLORS.accent, },
+    radioText: { color: PRO_COLORS.textPrimary, fontWeight: '600' },
+    selectedRadioText: { color: PRO_COLORS.accent, fontWeight: '700' },
+    button: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 10,
+        paddingVertical: 14,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+    },
+    buttonText: { color: "#fff", fontWeight: "700", fontSize: 16, marginLeft: 8 },
+    emptyText: { color: PRO_COLORS.textSecondary, textAlign: 'center', marginVertical: 20 },
+    
+    noticeCard: {
+        backgroundColor: PRO_COLORS.background,
+        padding: 15,
+        borderRadius: 10,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: PRO_COLORS.border,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    noticeTitle: { fontWeight: "bold", fontSize: 16, color: PRO_COLORS.textPrimary, marginBottom: 4 },
+    noticeMessage: { marginVertical: 4, color: PRO_COLORS.textSecondary },
+    noticeTarget: { fontStyle: "italic", color: '#64748b', marginTop: 4, },
+    noticeDate: { fontSize: 12, color: PRO_COLORS.textSecondary, marginBottom: 5 },
+    noticeActions: { flexDirection: 'column', },
+    actionButton: {
+        padding: 8,
+        borderRadius: 8,
+        marginLeft: 8,
+        marginBottom: 5,
+    }
 });
 
+export default AddNoticeScreen;

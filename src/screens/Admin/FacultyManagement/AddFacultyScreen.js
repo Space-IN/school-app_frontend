@@ -232,7 +232,7 @@ const AddFacultyScreen = () => {
         )}
 
         <View style={styles.buttonWrapper}>
-          <Button title="Add Faculty" onPress={handleSubmit} color="#1e3a8a" />
+          <Button title="Add Faculty" onPress={handleSubmit} color="#ac1d1dff" />
         </View>
       </View>
     </ScrollView>
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   formContainer: {
     width: width > 400 ? 350 : '90%',
     alignSelf: 'center',
-    backgroundColor: '#faebeb',
+    backgroundColor: '#fecaca',
     padding: 20,
     borderRadius: 10,
     elevation: 3,
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 22,
     fontWeight: '600',
-    color: '#1e3a8a',
+    color: '#020202',
     marginBottom: 20,
     textAlign: 'center',
   },

@@ -1,4 +1,3 @@
-//school-app_frontend\screens\Admin\AllStudentsScreen.js
 import React, { useState } from 'react';
 import {
   View,
@@ -17,7 +16,7 @@ export default function AllStudentsScreen({ navigation, route }) {
   const { board } = route.params || {};
 
   const grades = Array.from({ length: 10 }, (_, i) => `Grade ${i + 1}`);
-  const sections = ['A', 'B', 'C', 'D'];
+  const sections = ['A', 'B', 'C'];
 
   const [selectedGrade, setSelectedGrade] = useState('');
   const [showSectionModal, setShowSectionModal] = useState(false);
@@ -38,7 +37,7 @@ export default function AllStudentsScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.heading}>📚 Select Grade {board ? `(${board})` : ''}</Text>
+      <Text style={styles.heading}>Select Grade {board ? `(${board})` : ''}</Text>
 
 
       <FlatList
@@ -56,7 +55,7 @@ export default function AllStudentsScreen({ navigation, route }) {
 
       <View style={styles.tabToggle}>
         <TouchableOpacity onPress={() => navigation.navigate('DeletedStudentsScreen')}>
-          <Text style={styles.tabToggleText}>🗑️ View Soft Deleted Students</Text>
+          <Text style={styles.tabToggleText}> View Soft Deleted Students</Text>
         </TouchableOpacity>
       </View>
 
@@ -88,14 +87,14 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#1e3a8a',
+    color: '#000000',
     padding: 16,
   },
   grid: {
     paddingHorizontal: 16,
   },
   gradeTile: {
-    backgroundColor: '#faebebff',
+    backgroundColor: '#fecaca',
     padding: 20,
     borderRadius: 10,
     marginBottom: 12,
@@ -105,7 +104,7 @@ const styles = StyleSheet.create({
   gradeText: {
     fontWeight: 'bold',
     fontSize: 16,
-    color: '#1e3a8a',
+    color: '#000000',
   },
   tabToggle: {
     alignItems: 'center',
@@ -132,7 +131,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 16,
-    color: '#1e3a8a',
+    color: '#17171a',
   },
   sectionOption: {
     padding: 10,
@@ -141,7 +140,7 @@ const styles = StyleSheet.create({
   },
   sectionText: {
     fontSize: 16,
-    color: '#1e3a8a',
+    color: '#111111',
   },
   cancelBtn: {
     marginTop: 10,

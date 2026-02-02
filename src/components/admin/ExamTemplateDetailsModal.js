@@ -239,25 +239,25 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1e3a8a',
+    color: '#ac1d1dff',
   },
 
   content: { padding: 16, paddingBottom: 40 },
 
   card: {
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#fecaca',
     borderRadius: 12,
     padding: 14,
     marginBottom: 16,
   },
 
-  label: { fontSize: 13, color: '#555', marginBottom: 4 },
+  label: { fontSize: 13, color: '#ac1d1dff', marginBottom: 4 },
 
-  meta: { fontSize: 13, color: '#666', marginTop: 6 },
-  metaSmall: { fontSize: 12, color: '#888', marginTop: 2 },
+  meta: { fontSize: 13, color: '#ac1d1dff', marginTop: 6 },
+  metaSmall: { fontSize: 12, color: '#ac1d1dff', marginTop: 2 },
 
   subjectCard: {
-    backgroundColor: '#f5f7fb',
+    backgroundColor: '#fecaca',
     borderRadius: 12,
     padding: 14,
     marginBottom: 16,
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
 
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#ac1d1dff',
     borderRadius: 8,
     padding: 8,
     marginBottom: 6,

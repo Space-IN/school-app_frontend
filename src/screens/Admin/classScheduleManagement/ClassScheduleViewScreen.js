@@ -4,17 +4,16 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Platform,
-  StatusBar,
   Alert,
+  SafeAreaView,
+  ActivityIndicator,
 } from "react-native";
-
-import { BASE_URL } from '@env';
 import { Picker } from "@react-native-picker/picker";
 import { api } from "../../../api/api";
 
 export default function ClassScheduleViewScreen() {
   const [classList, setClassList] = useState([]);
+  const [selectedBoard, setSelectedBoard] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedSection, setSelectedSection] = useState("");
   const [schedule, setSchedule] = useState([]);
@@ -25,38 +24,29 @@ export default function ClassScheduleViewScreen() {
   }, []);
 
   useEffect(() => {
-    if (selectedClass && selectedSection) {
-      fetchSchedule(selectedClass, selectedSection);
+    if (selectedBoard && selectedClass && selectedSection) {
+      fetchSchedule(selectedClass, selectedSection, selectedBoard);
     } else {
       setSchedule([]);
     }
-  }, [selectedClass, selectedSection]);
+  }, [selectedBoard, selectedClass, selectedSection]);
 
   const fetchAssignedClasses = async () => {
     try {
-      const res = await api.get(`${BASE_URL}/api/admin/subject/assigned-classes`);
-      console.log("  Class list fetched:", res.data);
+      const res = await api.get(`/api/admin/subject/assigned-classes`);
       setClassList(res.data || []);
     } catch (err) {
-      console.error("  Error loading class list:", err);
+      console.error("Error loading class list:", err);
     }
   };
 
-  const fetchSchedule = async (classAssigned, section) => {
+  const fetchSchedule = async (cls, section, board) => {
     try {
       setLoading(true);
-      const encodedClass = encodeURIComponent(classAssigned.trim());
-      const encodedSection = encodeURIComponent(section.trim());
-      const url = `${BASE_URL}/api/admin/schedule/class/${encodedClass}/section/${encodedSection}`;
+      const url = `/api/student/schedule/class/${cls}/section/${section}/board/${board}`;
       const res = await api.get(url);
-      console.log("  Schedule data:", res.data);
       setSchedule(res.data.weeklySchedule || []);
     } catch (err) {
-      console.error(
-        "  Error fetching schedule:",
-        err.message,
-        err.response?.data
-      );
       Alert.alert(
         "Error",
         err.response?.data?.message || "Could not fetch schedule"
@@ -66,117 +56,101 @@ export default function ClassScheduleViewScreen() {
     }
   };
 
-  const uniqueClasses = [...new Set(classList.map((i) => i.classAssigned))];
-  const sectionsForClass = classList
-    .filter((i) => i.classAssigned === selectedClass)
-    .map((i) => i.section);
-  const uniqueSections = [...new Set(sectionsForClass)];
+  const uniqueClasses = [...new Set(classList.map(i => i.classAssigned))];
+  const uniqueSections = [
+    ...new Set(
+      classList
+        .filter(i => i.classAssigned === selectedClass)
+        .map(i => i.section)
+    ),
+  ];
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>📘 View Class Schedule</Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.filterCard}>
+        <Text style={styles.title}>Class Schedule</Text>
 
-        <Text style={styles.label}>Select Class:</Text>
-        <View style={styles.pickerWrapper}>
-          <Picker
-            selectedValue={selectedClass}
-            style={styles.picker}
-            onValueChange={(val) => {
-              setSelectedClass(val);
-              setSelectedSection("");
-              setSchedule([]);
-            }}
-          >
-            <Picker.Item label="Select Class" value="" />
-            {uniqueClasses.map((cls, idx) => (
-              <Picker.Item key={idx} label={cls} value={cls} />
-            ))}
-          </Picker>
-        </View>
+        <View style={styles.row}>
+          <View style={styles.pickerBox}>
+            <Picker
+              selectedValue={selectedBoard}
+              onValueChange={(val) => {
+                setSelectedBoard(val);
+                setSelectedClass("");
+                setSelectedSection("");
+              }}
+            >
+              <Picker.Item label="Board" value="" />
+              <Picker.Item label="STATE" value="STATE" />
+              <Picker.Item label="CBSE" value="CBSE" />
+            </Picker>
+          </View>
 
-        <Text style={styles.label}>Select Section:</Text>
-        <View style={styles.pickerWrapper}>
-          <Picker
-            selectedValue={selectedSection}
-            style={styles.picker}
-            onValueChange={(val) => setSelectedSection(val)}
-          >
-            <Picker.Item label="Select Section" value="" />
-            {uniqueSections.map((sec, idx) => (
-              <Picker.Item key={idx} label={sec} value={sec} />
-            ))}
-          </Picker>
+          <View style={styles.pickerBox}>
+            <Picker
+              selectedValue={selectedClass}
+              onValueChange={(val) => {
+                setSelectedClass(val);
+                setSelectedSection("");
+              }}
+            >
+              <Picker.Item label="Class" value="" />
+              {uniqueClasses.map((cls, idx) => (
+                <Picker.Item key={idx} label={cls} value={cls} />
+              ))}
+            </Picker>
+          </View>
+
+          <View style={styles.pickerBox}>
+            <Picker
+              selectedValue={selectedSection}
+              onValueChange={setSelectedSection}
+            >
+              <Picker.Item label="Section" value="" />
+              {uniqueSections.map((sec, idx) => (
+                <Picker.Item key={idx} label={sec} value={sec} />
+              ))}
+            </Picker>
+          </View>
         </View>
       </View>
-
-      <ScrollView style={styles.scrollSection}>
+      <ScrollView style={styles.scheduleArea}>
         {loading ? (
-          <Text style={styles.infoText}>⏳ Loading schedule...</Text>
+          <ActivityIndicator size="large" color="#ac1d1dff" />
         ) : schedule.length === 0 ? (
-          selectedClass && selectedSection ? (
-            <Text style={styles.infoText}>📭 No schedule available.</Text>
-          ) : (
-            <Text style={styles.infoText}>
-              ℹ️ Please select class and section.
-            </Text>
-          )
+          <Text style={styles.infoText}>
+            {selectedBoard && selectedClass && selectedSection
+              ? "No schedule available"
+              : "Select board, class and section"}
+          </Text>
         ) : (
           schedule.map((dayObj, index) => (
-            <View key={index} style={styles.dayBlock}>
+            <View key={index} style={styles.dayCard}>
               <Text style={styles.dayTitle}>{dayObj.day}</Text>
+
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View style={styles.table}>
-
-                 <View style={styles.tableRow}>
-  <View style={[styles.cell, styles.headerCell, styles.col1]}>
-    <Text style={styles.headerText}>Period NO</Text>
-  </View>
-  <View style={[styles.cell, styles.headerCell, styles.col2]}>
-    <Text style={styles.headerText}>Time</Text>
-  </View>
-  <View style={[styles.cell, styles.headerCell, styles.col3]}>
-    <Text style={styles.headerText}>Subject</Text>
-  </View>
-  <View style={[styles.cell, styles.headerCell, styles.col4]}>
-    <Text style={styles.headerText}>Faculty</Text>
-  </View>
-</View>
-
+                <View>
+                  <View style={[styles.tableRow, styles.tableHeader]}>
+                    <Text style={[styles.cell, styles.colPeriod]}>Period</Text>
+                    <Text style={[styles.cell, styles.colTime]}>Time</Text>
+                    <Text style={[styles.cell, styles.colSubject]}>Subject</Text>
+                    <Text style={[styles.cell, styles.colFaculty]}>Faculty</Text>
+                  </View>
 
                   {dayObj.periods.map((period, idx) => (
                     <View key={idx} style={styles.tableRow}>
-                      <View style={[styles.cell, styles.col1]}>
-                        <Text style={styles.cellText}>{period.periodNumber}</Text>
-                      </View>
-                      <View style={[styles.cell, styles.col2]}>
-                        <Text style={styles.cellText}>{period.timeSlot}</Text>
-                      </View>
-                      <View style={[styles.cell, styles.col3]}>
-                        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.cellText}>
-                          {period.subjectName || 'N/A'}
-                            {/* period.subjectMasterId}
-                        </Text>
-                      </View>
-                      <View style={[styles.cell, styles.col3]}>
-  <Text numberOfLines={1} ellipsizeMode="tail" style={styles.cellText}>
-    {period.subjectName || 'N/A'} */}
-  </Text>
-</View>
-
-<View style={[styles.cell, styles.col4]}>
-  {period.facultyNames?.length ? (
-    period.facultyNames.map((name, i) => (
-      <Text key={i} style={styles.cellText}>
-        {name}
-      </Text>
-    ))
-  ) : (
-    <Text style={styles.cellText}>N/A</Text>
-  )}
-</View>
-
-
+                      <Text style={[styles.cell, styles.colPeriod]}>
+                        {period.periodNumber}
+                      </Text>
+                      <Text style={[styles.cell, styles.colTime]}>
+                        {period.timeSlot}
+                      </Text>
+                      <Text style={[styles.cell, styles.colSubject]}>
+                        {period.subjectName || "N/A"}
+                      </Text>
+                      <Text style={[styles.cell, styles.colFaculty]}>
+                        {period.facultyNames?.join(", ") || "N/A"}
+                      </Text>
                     </View>
                   ))}
                 </View>
@@ -185,129 +159,102 @@ export default function ClassScheduleViewScreen() {
           ))
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffffff",
-    // paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+    backgroundColor: "#f8fafc",
   },
-  header: {
-    padding: 16,
-    backgroundColor: "#f9fafb",
+
+  filterCard: {
+    backgroundColor: "#ffffff",
+    padding: 12,
     borderBottomWidth: 1,
-    borderColor: "#e5e7eb",
-    zIndex: 10,
+    borderColor: "#ac1d1dff",
   },
-  scrollSection: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingBottom: 24,
-  },
+
   title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#1d4ed8",
-    marginBottom: 20,
-  },
-  label: {
-    fontWeight: "600",
-    fontSize: 16,
-    marginBottom: 4,
-    color: "#111827",
-  },
-  pickerWrapper: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    marginBottom: 12,
-  },
-  picker: {
-    height: 50,
-    width: "100%",
-  },
-  infoText: {
-    marginTop: 20,
-    color: "#6b7280",
-    textAlign: "center",
-  },
-  dayBlock: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "#cbd5e1",
-    overflow: "hidden",
-    elevation: 2,
-  },
-  dayTitle: {
-    backgroundColor: "#e0f2fe",
-    fontWeight: "bold",
     fontSize: 18,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    color: "#1e40af",
-    borderBottomWidth: 1,
-    borderColor: "#cbd5e1",
+    fontWeight: "700",
+    color: "#ac1d1dff",
+    marginBottom: 8,
   },
-  table: {
-    borderLeftWidth: 1,
-    borderTopWidth: 1,
-    borderColor: "#d1d5db",
+
+  row: {
+    flexDirection: "row",
+    gap: 8,
+  },
+
+  pickerBox: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#ac1d1dff",
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+
+  scheduleArea: {
+    flex: 1,
+    padding: 12,
+  },
+
+  infoText: {
+    textAlign: "center",
+    marginTop: 40,
+    color: "#000000",
+  },
+
+  dayCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+  },
+
+  dayTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#ac1d1dff",
+    marginBottom: 8,
+  },
+
+  tableHeader: {
+    backgroundColor: "#fecaca",
   },
 
   tableRow: {
     flexDirection: "row",
-    flexWrap: "nowrap", // prevents line breaks
-    minWidth: 500, // force horizontal scroll container width
+    borderBottomWidth: 1,
+    borderColor: "#fecaca",
   },
 
   cell: {
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRightWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: "#d1d5db",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     fontSize: 14,
     color: "#111827",
-    textAlign: "center",
-    backgroundColor: "#ffffff",
-    flexShrink: 0,
-    minHeight: 50, // ✅ Ensures consistent height
-    overflow: "hidden", // ✅ Avoids extra wrapping
-    justifyContent: "center",
-    alignItems: "center",
   },
- cellText: {
-  fontSize: 14,
-  color: '#111827',
-  textAlign: 'center',
-},
 
-  headerCell: {
-  backgroundColor: "#f3f4f6",
-  borderRightWidth: 1,
-  borderBottomWidth: 1,
-  borderColor: "#d1d5db",
-  justifyContent: "center",
-  alignItems: "center",
-},
+  colPeriod: {
+    width: 70,
+    textAlign: "center",
+    fontWeight: "600",
+  },
 
-headerText: { 
-fontSize:15,
-fontWeight: 'bold',
-  textAlign: 'center',
-  color:'#173ca2ff',
+  colTime: {
+    width: 120,
+  },
 
-},
+  colSubject: {
+    width: 180,
+  },
 
-
-  col1: { width: 70 },
-  col2: { width: 110 },
-  col3: { width: 180 },
-  col4: { width: 160 },
+  colFaculty: {
+    width: 220,
+  },
 });

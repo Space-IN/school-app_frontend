@@ -17,6 +17,7 @@ import { io } from "socket.io-client";
 import * as DocumentPicker from 'expo-document-picker';
 import { BASE_URL } from '@env';
 
+
 const AddNoticeScreen = () => {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
@@ -34,7 +35,7 @@ const AddNoticeScreen = () => {
 
   const fetchNotices = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/admin/announcement/`);
+      const res = await axios.get(`/api/admin/announcement/`);
       setNotices(res.data || []);
     } catch (error) {
       console.error("Error fetching notices:", error);
@@ -106,7 +107,7 @@ const AddNoticeScreen = () => {
   try {
     console.log("Selected file:", selectedFile);
 
-    await axios.post(`${BASE_URL}/api/admin/announcement/add`, formData, {
+    await axios.post(`/api/admin/announcement/add`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       },
@@ -133,7 +134,7 @@ const AddNoticeScreen = () => {
         style: "destructive",
         onPress: async () => {
           try {
-            await axios.delete(`${BASE_URL}/api/admin/announcement/delete/${id}`);
+            await axios.delete(`/api/admin/announcement/delete/${id}`);
             fetchNotices(); 
             Alert.alert("Deleted", "Notice deleted successfully");
           } catch (error) {
@@ -256,7 +257,7 @@ const pickFile = async () => {
       <TouchableOpacity
         onPress={() => {
           const filename = notice.fileUrl.split('/').pop();
-          setPreviewUrl(`${BASE_URL}/api/announcement/preview/${filename}`);
+          setPreviewUrl(`/api/announcement/preview/${filename}`);
 
           setPreviewVisible(true);
         }}
@@ -288,7 +289,7 @@ const pickFile = async () => {
             onPress={() => handleDeleteNotice(notice._id)}
             style={styles.deleteButton}
           >
-            <Text style={styles.deleteText}>🗑️ Delete</Text>
+            <Text style={styles.deleteText}>Delete</Text>
           </TouchableOpacity>
         </View>
       ))}

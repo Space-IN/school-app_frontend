@@ -6,16 +6,14 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
-  Platform,
-  StatusBar,
   SafeAreaView,
+  ActivityIndicator,
 } from 'react-native';
+
 import { Picker } from '@react-native-picker/picker';
 import * as DocumentPicker from 'expo-document-picker';
-import * as FileSystem from 'expo-file-system';
- 
-import { BASE_URL } from '@env';
-import {api} from '../../../api/api';
+import { Ionicons } from '@expo/vector-icons';
+import { api } from '../../../api/api';
 
 export default function ClassScheduleXLSXUpload() {
   const [selectedClass, setSelectedClass] = useState('');
@@ -23,149 +21,79 @@ export default function ClassScheduleXLSXUpload() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [allSchedules, setAllSchedules] = useState([]);
-  const [expandedSchedules, setExpandedSchedules] = useState({});
-  const [showFormat, setShowFormat] = useState(false);
 
   const CLASS_OPTIONS = Array.from({ length: 10 }, (_, i) => `${i + 1}`);
-  const SECTION_OPTIONS = ['A', 'B', 'C', 'D'];
-
-  const toggleExpand = (key) => {
-    setExpandedSchedules((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
-
-  const fetchAll = async () => {
-    try {
-      const res = await api.get(`${BASE_URL}/api/admin/schedule/all`);
-      setAllSchedules(res.data);
-    } catch (err) {
-      console.error("Error fetching schedules:", err.message);
-    }
-  };
+  const SECTION_OPTIONS = ['A', 'B', 'C'];
 
   useEffect(() => {
     fetchAll();
   }, []);
 
-  const validateClassSection = async (cls, section) => {
+  const fetchAll = async () => {
     try {
-      const res = await api.post(`${BASE_URL}/api/admin/subject/check-class-section`, {
-        classAssigned: cls,
-        section,
-      });
-
-      if (res.data.exists) {
-        return true;
-      } else {
-        Alert.alert('Invalid', 'This Class-Section is not assigned to any faculty.');
-        return false;
-      }
+      const res = await api.get(`/api/admin/schedule/all`);
+      setAllSchedules(res.data || []);
     } catch (err) {
-      const message =
-        err.response?.data?.message || 'Could not validate Class-Section combination.';
-      Alert.alert('Error', message);
-      return false;
+      console.error(err);
     }
   };
 
   const handlePickExcel = async () => {
-    const isValid = await validateClassSection(selectedClass, selectedSection);
-    if (!isValid) return;
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+    });
 
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
-        copyToCacheDirectory: true,
-      });
-
-      if (result?.assets?.[0]?.uri) {
-        const fileUri = result.assets[0].uri;
-        const fileName = result.assets[0].name;
-        
-        // Store file info for upload
-        setSelectedFile({
-          uri: fileUri,
-          name: fileName,
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        });
-
-        Alert.alert('Success', `File "${fileName}" selected successfully!`);
-      }
-    } catch (err) {
-      console.error('❌ Error selecting Excel file:', err);
-      Alert.alert('Error', 'Failed to select Excel file');
+    if (result?.assets?.[0]) {
+      setSelectedFile(result.assets[0]);
     }
   };
 
-  const handleUploadToServer = async () => {
-    if (!selectedClass || !selectedSection) {
-      return Alert.alert('Validation', 'Please select class and section');
-    }
-
-    if (!selectedFile) {
-      return Alert.alert('No File', 'Please select an Excel file first');
+  const handleUpload = async () => {
+    if (!selectedClass || !selectedSection || !selectedFile) {
+      return Alert.alert('Missing', 'Select class, section and file');
     }
 
     try {
       setUploading(true);
 
-      // Create FormData
       const formData = new FormData();
       formData.append('classAssigned', selectedClass);
       formData.append('section', selectedSection);
-      
-      // Append file - React Native FormData handles this automatically
       formData.append('file', {
         uri: selectedFile.uri,
         name: selectedFile.name,
-        type: selectedFile.type,
+        type:
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       });
 
-      // Upload with multipart/form-data
-      const res = await api.post(
-        `${BASE_URL}/api/admin/schedule/admin/set`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
+      await api.post(`/api/admin/schedule/admin/set`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
 
-      Alert.alert('Success', 'Schedule uploaded and saved successfully!');
       setSelectedFile(null);
-      fetchAll(); // Refresh list after upload
+      fetchAll();
+      Alert.alert('Success', 'Schedule uploaded');
     } catch (err) {
-      console.error('❌ Upload error:', err.response?.data || err.message);
-      const errorMessage = err.response?.data?.message || 'Upload failed';
-      Alert.alert('Error', errorMessage);
+      Alert.alert('Error', 'Upload failed');
     } finally {
       setUploading(false);
     }
   };
 
-  const handleDelete = async (cls, section) => {
+  const handleDelete = (cls, section) => {
     Alert.alert(
-      'Confirm Deletion',
-      `Are you sure you want to delete schedule for Class ${cls} - Section ${section}?`,
+      'Delete Schedule',
+      `Delete schedule for Class ${cls} - ${section}?`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Cancel' },
         {
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
-            try {
-              await api.delete(`${BASE_URL}/api/admin/schedule/delete`, {
-                data: { classAssigned: cls, section },
-              });
-              Alert.alert('Deleted', 'Schedule deleted successfully.');
-              fetchAll(); // Refresh list after delete
-            } catch (err) {
-              console.error('Error deleting schedule:', err.message);
-              Alert.alert('Error', 'Could not delete schedule.');
-            }
+            await api.delete(`/api/admin/schedule/delete`, {
+              data: { classAssigned: cls, section },
+            });
+            fetchAll();
           },
         },
       ]
@@ -175,265 +103,206 @@ export default function ClassScheduleXLSXUpload() {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView style={styles.container}>
-        <View style={styles.contentWrapper}>
-          <Text style={styles.title}>📂 Upload Class Schedule via Excel (.xlsx)</Text>
 
-          <Text style={styles.label}>Class:</Text>
-          <Picker
-            selectedValue={selectedClass}
-            style={styles.picker}
-            onValueChange={(value) => setSelectedClass(value)}
-          >
-            <Picker.Item label="Select Class" value="" />
-            {CLASS_OPTIONS.map((cls, idx) => (
-              <Picker.Item key={idx} label={cls} value={cls} />
-            ))}
-          </Picker>
+        <View style={styles.card}>
+          <Text style={styles.title}>Upload Class Schedule</Text>
 
-          <Text style={styles.label}>Section:</Text>
-          <Picker
-            selectedValue={selectedSection}
-            style={styles.picker}
-            onValueChange={(value) => setSelectedSection(value)}
-          >
-            <Picker.Item label="Select Section" value="" />
-            {SECTION_OPTIONS.map((sec, idx) => (
-              <Picker.Item key={idx} label={sec} value={sec} />
-            ))}
-          </Picker>
+          <View style={styles.selectorRow}>
+            <View style={styles.selectorCard}>
+              <Text style={styles.selectorLabel}>Class</Text>
+              <Picker selectedValue={selectedClass} onValueChange={setSelectedClass}>
+                <Picker.Item label="Select" value="" />
+                {CLASS_OPTIONS.map(c => (
+                  <Picker.Item key={c} label={c} value={c} />
+                ))}
+              </Picker>
+            </View>
 
-          <TouchableOpacity style={styles.button} onPress={handlePickExcel}>
-            <Text style={styles.buttonText}>📁 Choose Excel File</Text>
-          </TouchableOpacity>
+            <View style={styles.selectorCard}>
+              <Text style={styles.selectorLabel}>Section</Text>
+              <Picker selectedValue={selectedSection} onValueChange={setSelectedSection}>
+                <Picker.Item label="Select" value="" />
+                {SECTION_OPTIONS.map(s => (
+                  <Picker.Item key={s} label={s} value={s} />
+                ))}
+              </Picker>
+            </View>
+          </View>
+
+          <View style={styles.actionRow}>
+            <TouchableOpacity style={styles.outlineBtn} onPress={handlePickExcel}>
+              <Ionicons name="document-text-outline" size={18} />
+              <Text>Choose File</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.primaryBtn} onPress={handleUpload}>
+              {uploading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <>
+                  <Ionicons name="cloud-upload-outline" size={18} color="#fff" />
+                  <Text style={{ color: '#fff' }}>Upload</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
 
           {selectedFile && (
-            <Text style={{ marginVertical: 10, color: '#10b981' }}>
-              ✅ Selected: {selectedFile.name}
-            </Text>
-          )}
-
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: '#10b981' }]}
-            onPress={handleUploadToServer}
-            disabled={uploading}
-          >
-            <Text style={styles.buttonText}>
-              {uploading ? 'Uploading...' : '📤 Upload to Server'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: '#f59e0b' }]}
-            onPress={() => setShowFormat((prev) => !prev)}
-          >
-            <Text style={styles.buttonText}>
-              {showFormat ? "❌ Hide Format" : "👀 View Format"}
-            </Text>
-          </TouchableOpacity>
-
-          {showFormat && (
-            <View style={styles.formatBox}>
-              <Text style={{ fontWeight: 'bold', marginBottom: 8 }}>
-                📑 Required Excel Format: 
-              </Text>
-
-              <Text style={{ fontWeight: 'bold', marginBottom: 8, color: '#dc2626' }}>
-                📑 NOTE:
-              </Text>
-
-              <Text style={{ marginBottom: 12 }}>
-                The following format should be followed while creating the schedule. 
-                The backend will validate faculty IDs and subject assignments automatically.
-              </Text>
-
-              {/* Table Header */}
-              <View style={styles.tableRow}>
-                <Text style={[styles.tableCell, styles.tableHeader]}>day</Text>
-                <Text style={[styles.tableCell, styles.tableHeader]}>periodNumber</Text>
-                <Text style={[styles.tableCell, styles.tableHeader]}>timeSlot</Text>
-                <Text style={[styles.tableCell, styles.tableHeader]}>subjectName</Text>
-                <Text style={[styles.tableCell, styles.tableHeader]}>facultyId</Text>
-              </View>
-
-              {/* Sample Rows */}
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCell}>Monday</Text>
-                <Text style={styles.tableCell}>1</Text>
-                <Text style={styles.tableCell}>09:00–09:45</Text>
-                <Text style={styles.tableCell}>Mathematics</Text>
-                <Text style={styles.tableCell}>FAC123</Text>
-              </View>
-
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCell}>Monday</Text>
-                <Text style={styles.tableCell}>2</Text>
-                <Text style={styles.tableCell}>09:45–10:30</Text>
-                <Text style={styles.tableCell}>English</Text>
-                <Text style={styles.tableCell}>FAC456</Text>
-              </View>
-
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCell}>Tuesday</Text>
-                <Text style={styles.tableCell}>1</Text>
-                <Text style={styles.tableCell}>09:00–09:45</Text>
-                <Text style={styles.tableCell}>Science</Text>
-                <Text style={styles.tableCell}>FAC789</Text>
-              </View>
-
-              <Text style={{ marginTop: 12, fontSize: 12, color: '#6b7280' }}>
-                ⚠️ Server validates: Faculty existence, Subject existence, and Faculty-Subject-Class assignments
-              </Text>
-            </View>
-          )}
-
-          <Text style={styles.title}>📚 Existing Class Schedules</Text>
-
-          {allSchedules.length === 0 ? (
-            <Text>No schedules found</Text>
-          ) : (
-            allSchedules.map((schedule, idx) => {
-              const key = `${schedule.classAssigned}-${schedule.section}`;
-              const isExpanded = expandedSchedules[key];
-
-              return (
-                <View key={idx} style={styles.scheduleCard}>
-                  <Text style={styles.cardTitle}>
-                    Class {schedule.classAssigned} - Section {schedule.section}
-                  </Text>
-
-                  {isExpanded && (
-                    <View style={{ marginTop: 10 }}>
-                      {schedule.weeklySchedule.map((dayObj, i) => (
-                        <View key={i} style={{ marginBottom: 4 }}>
-                          <Text style={styles.dayText}>{dayObj.day}</Text>
-
-                          {dayObj.periods.map((p, j) => {
-                           const facultyDisplay = p.facultyIds && p.facultyIds.length > 0
-                            ? p.facultyIds.join(", ")
-                            : p.facultyId || "N/A";
-
-                            return (
-                            <Text key={j}>
-                               Period {p.periodNumber}: {p.timeSlot} — {p.subjectName || 'N/A'} ({facultyDisplay})
-                            </Text>
-                             );
-                          })}
-                        </View>
-                      ))}
-                    </View>
-                  )}
-
-                  <TouchableOpacity
-                    style={[styles.button, { backgroundColor: '#dc2626' }]}
-                    onPress={() => handleDelete(schedule.classAssigned, schedule.section)}
-                  >
-                    <Text style={styles.buttonText}>🗑 Delete Schedule</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.button, { backgroundColor: '#6b7280' }]}
-                    onPress={() => toggleExpand(key)}
-                  >
-                    <Text style={styles.buttonText}>
-                      {isExpanded ? '🔼 Less' : '🔽 More'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              );
-            })
+            <Text style={styles.fileChip}>✅ {selectedFile.name}</Text>
           )}
         </View>
+
+        <Text style={styles.sectionTitle}>Existing Schedules</Text>
+
+        {allSchedules.map((s, idx) => (
+          <View key={idx} style={styles.scheduleCard}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>
+                Class {s.classAssigned} – {s.section}
+              </Text>
+              <TouchableOpacity onPress={() => handleDelete(s.classAssigned, s.section)}>
+                <Ionicons name="trash-outline" size={20} color="#dc2626" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View>
+
+                <View style={styles.tableHeader}>
+                  <Text style={[styles.cell, styles.colDay]}>Day</Text>
+                  <Text style={[styles.cell, styles.colPeriod]}>Period</Text>
+                  <Text style={[styles.cell, styles.colTime]}>Time</Text>
+                  <Text style={[styles.cell, styles.colSubject]}>Subject</Text>
+                  <Text style={[styles.cell, styles.colFaculty]}>Faculty</Text>
+                </View>
+
+                {s.weeklySchedule?.map(day =>
+                  day.periods.map((p, i) => (
+                    <View key={`${day.day}-${i}`} style={styles.tableRow}>
+                      <Text style={[styles.cell, styles.colDay]} numberOfLines={1}>
+                        {day.day}
+                      </Text>
+                      <Text style={[styles.cell, styles.colPeriod]} numberOfLines={1}>
+                        {p.periodNumber}
+                      </Text>
+                      <Text style={[styles.cell, styles.colTime]} numberOfLines={1}>
+                        {p.timeSlot}
+                      </Text>
+                      <Text style={[styles.cell, styles.colSubject]} numberOfLines={1}>
+                        {p.subjectName}
+                      </Text>
+                      <Text style={[styles.cell, styles.colFaculty]} numberOfLines={1}>
+                        {p.facultyNames?.length
+                          ? p.facultyNames.join(', ')
+                          : 'N/A'}
+                      </Text>
+                    </View>
+                  ))
+                )}
+              </View>
+            </ScrollView>
+          </View>
+        ))}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  container: { padding: 14, backgroundColor: '#f8fafc' },
+
+  card: {
     backgroundColor: '#fff',
-    padding: 16,
-  },
-  contentWrapper: {
-    flex: 1,
-    paddingBottom: 60,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#1e3a8a',
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginTop: 10,
-    color: '#374151',
-  },
-  picker: {
-    height: 50,
-    width: '100%',
-    marginBottom: 10,
-  },
-  button: {
-    backgroundColor: '#2563eb',
-    padding: 12,
-    marginTop: 10,
-    borderRadius: 6,
-    alignItems: 'center',
-    width: '100%',
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  scheduleCard: {
+    borderRadius: 12,
+    padding: 14,
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: '#e5e7eb',
+    marginBottom: 16,
+  },
+
+  title: { fontSize: 18, color: '#ac1d1dff', fontWeight: '700', marginBottom: 12 },
+
+  selectorRow: { flexDirection: 'row', gap: 12 },
+
+  selectorCard: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ac1d1dff',
+    borderRadius: 10,
+    padding: 6,
+  },
+
+  selectorLabel: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginLeft: 4,
+    marginBottom: -6,
+  },
+
+  actionRow: { flexDirection: 'row', gap: 10, marginTop: 12 },
+
+  outlineBtn: {
+    flexDirection: 'row',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: '#fd9082',
     padding: 10,
     borderRadius: 8,
-    marginVertical: 8,
-    backgroundColor: '#f9fafb',
-    flexGrow: 1,
-    width: '100%',
+    alignItems: 'center',
   },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 6,
-    color: '#111827',
+
+  primaryBtn: {
+    flexDirection: 'row',
+    gap: 6,
+    backgroundColor: '#fecaca',
+    padding: 10,
+    borderRadius: 8,
+    alignItems: 'center',
   },
-  dayText: {
-    fontWeight: '600',
-    marginTop: 5,
-    color: '#374151',
-  },
-  periodText: {
-    marginLeft: 10,
-    color: '#4b5563',
-  },
-  formatBox: {
-    marginTop: 12,
+
+  fileChip: { marginTop: 8, color: '#065f46', fontSize: 12 },
+
+  sectionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 10 },
+
+  scheduleCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
     padding: 12,
     borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    backgroundColor: '#fefce8',
+    borderColor: '#e5e7eb',
+    marginBottom: 12,
   },
-  tableRow: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderColor: "#e5e7eb",
+
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 6,
   },
-  tableCell: {
-    flex: 1,
-    padding: 6,
-    fontSize: 13,
-    color: "#374151",
-  },
+
+  cardTitle: { fontWeight: '700' },
+
   tableHeader: {
-    fontWeight: "bold",
-    backgroundColor: "#f3f4f6",
-    color: "#111827",
+    flexDirection: 'row',
+    backgroundColor: '#fecaca',
+    borderRadius: 6,
   },
+
+  tableRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderColor: '#fecaca',
+  },
+
+  cell: {
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    fontSize: 13,
+    color: '#ac1d1dff',
+  },
+
+  colDay: { width: 90, fontWeight: '600' },
+  colPeriod: { width: 70, textAlign: 'center' },
+  colTime: { width: 120 },
+  colSubject: { width: 220 },
+  colFaculty: { width: 200 },
 });

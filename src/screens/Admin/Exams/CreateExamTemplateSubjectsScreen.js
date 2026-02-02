@@ -97,55 +97,74 @@ export default function CreateExamTemplateSubjectsScreen({ route, navigation }) 
 
 
   const handleSubmit = async () => {
-    if (subjects.length === 0) {
-      Alert.alert('No Subjects', 'Please add subjects before creating template.');
-      return;
-    }
+  if (subjects.length === 0) {
+    Alert.alert('No Subjects', 'Please add subject details.');
+    return;
+  }
 
-    for (const sub of subjects) {
-      for (const comp of sub.components) {
-        if (!comp.name || !comp.maxMarks) {
-          Alert.alert(
-            'Validation Error',
-            `Each component in ${sub.subjectName} must have name and max marks`
-          );
-          return;
-        }
+  const filledSubjects = subjects.filter(sub =>
+    sub.components.some(
+      c => c.name.trim() !== '' || c.maxMarks !== ''
+    )
+  );
+
+  if (filledSubjects.length === 0) {
+    Alert.alert(
+      'Validation Error',
+      'Please add subject details before submitting.'
+    );
+    return;
+  }
+
+  for (const sub of filledSubjects) {
+    for (const comp of sub.components) {
+      if (!comp.name || !comp.maxMarks) {
+        Alert.alert(
+          'Validation Error',
+          `Each filled component in ${sub.subjectName} must have name and max marks`
+        );
+        return;
       }
     }
+  }
 
-    const payload = {
-      academicYear: step1Data.academicYear,
-      grade: step1Data.grade,
-      board,
-      assessmentName: step1Data.assessmentName,
-      assessmentType: step1Data.assessmentType,
-      subjects: subjects.map(sub => ({
-        subjectCode: sub.subjectCode,
-        components: sub.components.map(c => ({
-          name: c.name.trim(),
-          maxMarks: Number(c.maxMarks),
-          ...(c.passMarks ? { passMarks: Number(c.passMarks) } : {}),
-        })),
+  const payload = {
+    academicYear: step1Data.academicYear,
+    grade: step1Data.grade,
+    board,
+    assessmentName: step1Data.assessmentName,
+    assessmentType: step1Data.assessmentType,
+    subjects: filledSubjects.map(sub => ({
+      subjectCode: sub.subjectCode,
+      components: sub.components.map(c => ({
+        name: c.name.trim(),
+        maxMarks: Number(c.maxMarks),
+        ...(c.passMarks ? { passMarks: Number(c.passMarks) } : {}),
       })),
-    };
-
-    try {
-      const res = await api.post(
-        '/api/admin/assessment/assessment-template',
-        payload
-      );
-
-      if (res.data?.success) {
-        Alert.alert('Success', 'Assessment template created successfully.', [
-          { text: 'OK', onPress: () => navigation.popToTop() },
-        ]);
-      }
-    } catch (err) {
-      console.error(' Create template failed:', err);
-      Alert.alert('Error', err.response?.data?.message || 'Request failed');
-    }
+    })),
   };
+
+  try {
+    const res = await api.post(
+      '/api/admin/assessment/assessment-template',
+      payload
+    );
+
+    if (res.data?.success) {
+      Alert.alert(
+        'Success',
+        'Assessment template created successfully.',
+        [{ text: 'OK', onPress: () => navigation.popToTop() }]
+      );
+    }
+  } catch (err) {
+    console.error('Create template failed:', err);
+    Alert.alert(
+      'Error',
+      err.response?.data?.message || 'Request failed'
+    );
+  }
+};
 
 
 
@@ -268,7 +287,7 @@ const styles = StyleSheet.create({
   },
 
   header: { marginBottom: 20 },
-  title: { fontSize: 22, fontWeight: '700', color: '#1e3a8a' },
+  title: { fontSize: 22, fontWeight: '700', color: '#ac1d1dff' },
   subtitle: { fontSize: 14, color: '#666', marginTop: 4 },
 
   emptyState: {
@@ -290,7 +309,7 @@ const styles = StyleSheet.create({
   },
 
   subjectCard: {
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#fecaca',
     borderRadius: 12,
     padding: 14,
     marginBottom: 20,
@@ -327,10 +346,10 @@ const styles = StyleSheet.create({
   removeText: { marginLeft: 6, color: '#b91c1c' },
 
   addComponentBtn: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
-  addComponentText: { marginLeft: 6, color: '#1e3a8a' },
+  addComponentText: { marginLeft: 6, color: '#ac1d1dff' },
 
   submitBtn: {
-    backgroundColor: '#1e3a8a',
+    backgroundColor: '#ac1d1dff',
     paddingVertical: 16,
     borderRadius: 14,
     alignItems: 'center',

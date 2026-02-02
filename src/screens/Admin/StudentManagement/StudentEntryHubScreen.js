@@ -155,27 +155,27 @@ const styles = StyleSheet.create({
   },
 
   primaryCard: {
-    backgroundColor: '#a5150b',
+    backgroundColor: '#9c1006',
     padding: 16,
     borderRadius: 12,
     marginBottom: 14,
   },
 
   secondaryCard: {
-    backgroundColor: '#ac1d1d',
+    backgroundColor: '#9c1006',
     padding: 16,
     borderRadius: 12,
     marginBottom: 24,
   },
 
   primaryText: {
-    color: '#fff',
+    color: '#ffffff',
     fontSize: 18,
     fontWeight: '600',
   },
 
   subText: {
-    color: '#e5e7eb',
+    color: '#ffffff',
     marginTop: 6,
     fontSize: 14,
   },
@@ -183,12 +183,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1e3a8a',
+    color: '#000000',
     marginBottom: 12,
   },
 
   batchCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#fecaca',
     padding: 14,
     borderRadius: 10,
     marginBottom: 10,
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   batchDate: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: '#030303',
   },
 
   statusBadge: {

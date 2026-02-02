@@ -33,7 +33,7 @@ export default function ViewFeesTab() {
     try {
       setLoading(true);
       const res = await api.get(
-        `/api/admin/student/student-fee?board=${board}&className=${cls}&section=${section}&academicYear=${academicYear}`
+        `/api/admin/students/fee/?board=${board}&className=${cls}&section=${section}&academicYear=${academicYear}`
       );
       setStudents(Array.isArray(res.data?.data) ? res.data.data : []);
     } catch (err) {
@@ -73,7 +73,7 @@ export default function ViewFeesTab() {
   const openModal = async (student) => {
     try {
       const res = await api.get(
-        `/api/admin/student/student-fee/${student.studentId}`
+        `/api/admin/students/fee/${student.studentId}`
       );
 
       setSelectedStudent(student);
@@ -101,23 +101,21 @@ export default function ViewFeesTab() {
     setPaymentHistory([]);
   };
 
-const saveChanges = async ({ totalFee, installments }) => {
+const saveChanges = async ({ installments, payment }) => {
   try {
-    await api.put(
-      `/api/admin/student/student-fee/${selectedStudent.studentId}/override`,
-      {
-        totalFee: Number(totalFee),
-        installments: installments.map((i) => ({
-          order: i.order,
-          amount: Number(i.amount || 0),
-          paid: Number(i.paid || 0),
-          dueDate: i.dueDate,
-          paymentMode: i.paymentMode || "CASH",
-          remarks: i.remarks || "",
-        })),
-      }
-    );
+    if (payment && payment.amount > 0) {
+      await api.post(
+        `/api/admin/students/fee/${selectedStudent.studentId}/payment`,
+        {
+          amount: Number(payment.amount),
+          paymentMode: payment.mode,
+          remarks: payment.remarks,
+          paidOn: payment.date,
+        }
+      );
+    }
 
+    
     closeModal();
     fetchStudents();
   } catch (err) {

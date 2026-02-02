@@ -20,7 +20,7 @@ export default function BoardSelectionScreen({ navigation, route }) {
                     onPress={() => handleSelectBoard('CBSE')}
                 >
                     <View style={styles.iconContainer}>
-                        <Ionicons name="school" size={32} color="#1e3a8a" />
+                        <Ionicons name="school" size={32} color="#ac1d1dff" />
                     </View>
                     <Text style={styles.cardText}>CBSE</Text>
                     <Ionicons name="chevron-forward" size={24} color="#ccc" />
@@ -31,7 +31,7 @@ export default function BoardSelectionScreen({ navigation, route }) {
                     onPress={() => handleSelectBoard('STATE')}
                 >
                     <View style={styles.iconContainer}>
-                        <Ionicons name="business" size={32} color="#1e3a8a" />
+                        <Ionicons name="business" size={32} color="#ac1d1dff" />
                     </View>
                     <Text style={styles.cardText}>STATE</Text>
                     <Ionicons name="chevron-forward" size={24} color="#ccc" />
@@ -54,14 +54,14 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#1e3a8a',
+        color: '#ac1d1dff',
         marginBottom: 30,
         textAlign: 'center',
     },
     card: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#fff',
+        backgroundColor: '#fecaca',
         padding: 20,
         borderRadius: 12,
         marginBottom: 16,

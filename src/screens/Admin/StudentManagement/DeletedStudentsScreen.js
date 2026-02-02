@@ -11,7 +11,6 @@ import {
   Platform,
   StatusBar,
 } from 'react-native';
-import { BASE_URL } from '@env';
 import { api } from '../../../api/api';
 
 export default function DeletedStudentsScreen({ navigation }) {
@@ -21,7 +20,7 @@ export default function DeletedStudentsScreen({ navigation }) {
   const fetchDeletedStudents = async () => {
     setLoading(true);
     try {
-      const res = await api.get(`${BASE_URL}/api/admin/students/students-deleted`);
+      const res = await api.get(`/api/admin/students/students-deleted`);
       setStudents(res.data || []);
     } catch (err) {
       console.error('❌ Failed to fetch deleted students:', err);
@@ -33,7 +32,7 @@ export default function DeletedStudentsScreen({ navigation }) {
 
   const restoreStudent = async (userId) => {
     try {
-      await api.patch(`${BASE_URL}/api/admin/students/restore/${userId}`);
+      await api.patch(`/api/admin/students/restore/${userId}`);
       Alert.alert('Restored', 'Student restored successfully.');
       fetchDeletedStudents();
     } catch (err) {
@@ -52,7 +51,7 @@ export default function DeletedStudentsScreen({ navigation }) {
           style: 'destructive',
           onPress: async () => {
             try {
-              await api.delete(`${BASE_URL}/api/admin/students/${userId}`);
+              await api.delete(`/api/admin/students/${userId}`);
               Alert.alert('Deleted', 'Student permanently deleted.');
               fetchDeletedStudents();
             } catch (err) {
@@ -71,9 +70,9 @@ export default function DeletedStudentsScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.heading}>🗂️ Soft Deleted Students</Text>
+      <Text style={styles.heading}>Soft Deleted Students</Text>
       {loading ? (
-        <ActivityIndicator size="large" color="#1e3a8a" />
+        <ActivityIndicator size="large" color="#030303" />
       ) : students.length === 0 ? (
         <Text style={styles.noData}>No soft deleted students found.</Text>
       ) : (
@@ -92,10 +91,10 @@ export default function DeletedStudentsScreen({ navigation }) {
 
               <View style={styles.actions}>
                 <TouchableOpacity onPress={() => restoreStudent(item.userId)}>
-                  <Text style={styles.restoreBtn}>♻️ Restore</Text>
+                  <Text style={styles.restoreBtn}>Restore</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => permanentlyDeleteStudent(item.userId)}>
-                  <Text style={styles.deleteBtn}>🗑️ Delete</Text>
+                  <Text style={styles.deleteBtn}>Delete</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -115,7 +114,7 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#991b1b',
+    color: '#000000',
     padding: 16,
   },
   list: {
@@ -123,7 +122,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   card: {
-    backgroundColor: '#faebebff',
+    backgroundColor: '#fecaca',
     padding: 16,
     borderRadius: 10,
     marginBottom: 12,
@@ -131,7 +130,7 @@ const styles = StyleSheet.create({
   name: {
     fontWeight: 'bold',
     fontSize: 16,
-    color: '#991b1b',
+    color: '#050505',
   },
   details: {
     fontSize: 14,

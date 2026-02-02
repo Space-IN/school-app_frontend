@@ -16,7 +16,7 @@ import {
 
 export default function FacultyPerformanceScreen({ navigation }) {
   const grades = Array.from({ length: 10 }, (_, i) => `Grade ${i + 1}`);
-  const sections = ['A', 'B', 'C', 'D'];
+  const sections = ['A', 'B', 'C'];
 
   const [selectedGrade, setSelectedGrade] = useState('');
   const [showSectionModal, setShowSectionModal] = useState(false);
