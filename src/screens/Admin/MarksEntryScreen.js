@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
     View,
     Text,
@@ -16,6 +16,7 @@ import {
     KeyboardAvoidingView,
     StatusBar
 } from 'react-native';
+import { Picker } from '@react-native-picker/picker'; // Correct Import
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
@@ -42,8 +43,12 @@ export default function MarksEntryScreen({ navigation, route }) {
 
     // Exam & Subject State
     const [examType, setExamType] = useState('');
-    const [examName, setExamName] = useState(''); // Custom name for the exam
+    const [examName, setExamName] = useState('');
     const [subjectName, setSubjectName] = useState('');
+
+    // DB Templates
+    const [examTemplates, setExamTemplates] = useState([]);
+    const [selectedTemplate, setSelectedTemplate] = useState(null);
 
     // UI State for Modals
     const [mode, setMode] = useState('manual');
@@ -54,16 +59,143 @@ export default function MarksEntryScreen({ navigation, route }) {
 
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [allSubjectsMap, setAllSubjectsMap] = useState({}); // Mapping ID -> Name
 
-    // Initial dummy data
+    // Valid Fallback Faculty ID (fetched from DB)
+    const [defaultFacultyId, setDefaultFacultyId] = useState(null);
+
+    // Animation Effect
     useEffect(() => {
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     }, [gradeGroup]);
 
+    // Fetch a valid Faculty ID for fallback purposes
     useEffect(() => {
-        // Reset exam type when subject changes to avoid invalid combinations
+        const fetchDefaultFaculty = async () => {
+            try {
+                const res = await api.get('/api/admin/faculty/all');
+                if (res.data?.success && res.data.data?.length > 0) {
+                    setDefaultFacultyId(res.data.data[0].userId);
+                    console.log("Fallback Faculty ID set:", res.data.data[0].userId);
+                }
+            } catch (e) {
+                console.log("Failed to fetch fallback faculty:", e.message);
+            }
+        };
+        fetchDefaultFaculty();
+    }, []);
+
+    // Dependent Fields Reset
+    // Dependent Fields Reset
+    useEffect(() => {
+        // When Template changes, reset Subject
+        setSubjectName('');
+    }, [selectedTemplate]);
+
+    // When Class/Section changes, reset Template and Students (optional but cleaner)
+    useEffect(() => {
+        setSelectedTemplate(null);
+        setSubjectName('');
         setExamType('');
-    }, [subjectName]);
+    }, [selectedClass, selectedSection]);
+
+    // Fetch all subjects to build a map (Fix for backend populate issue)
+    useEffect(() => {
+        const fetchAllSubjects = async () => {
+            try {
+                const res = await api.get('/api/admin/subject');
+                if (res.data?.success) {
+                    const map = {};
+                    res.data.data.forEach(sub => {
+                        map[sub._id] = sub; // Store full object or just name
+                    });
+                    console.log(`Loaded ${Object.keys(map).length} subjects for mapping.`);
+                    setAllSubjectsMap(map);
+                }
+            } catch (e) {
+                console.error("Failed to load subject map:", e);
+            }
+        };
+        fetchAllSubjects();
+    }, []);
+
+    // Fetch Exam Templates when Class/Board changes
+    useEffect(() => {
+        if (selectedClass) {
+            fetchExamTemplates();
+        }
+    }, [selectedClass, board]);
+
+    // Auto-select Faculty when Subject changes
+    useEffect(() => {
+        if (!subjectName || !subjectAssignments.length) {
+            if (!subjectName) setSelectedFaculty("");
+            return;
+        }
+
+        // Find assignment by Name
+        const assignment = subjectAssignments.find(a => {
+            if (typeof a.subject === 'object' && a.subjectName) return a.subjectName === subjectName;
+            if (a.subjectName === subjectName) return true;
+            return false;
+        });
+
+        if (assignment) {
+            const assignFacId = assignment.facultyId || ((typeof assignment.faculty === 'object') ? assignment.faculty.userId : assignment.faculty);
+            const resolved = facultyIdMap[assignFacId] || assignFacId;
+            if (resolved) {
+                setSelectedFaculty(resolved);
+            } else if (defaultFacultyId) {
+                setSelectedFaculty(defaultFacultyId);
+            }
+        } else if (defaultFacultyId) {
+            setSelectedFaculty(defaultFacultyId);
+        }
+    }, [subjectName, subjectAssignments, facultyIdMap, defaultFacultyId]); // Re-run if map loads later
+
+    const fetchExamTemplates = async () => {
+        try {
+            // Calculate Academic Year "2025-26" format
+            const date = new Date();
+            const month = date.getMonth(); // 0 = Jan
+            const currentYear = date.getFullYear(); // 2026
+            let startYear, endYear;
+
+            if (month < 3) {
+                startYear = currentYear - 1;
+                endYear = currentYear;
+            } else {
+                startYear = currentYear;
+                endYear = currentYear + 1;
+            }
+            const academicYear = `${startYear}-${endYear.toString().slice(-2)}`;
+
+            console.log("Fetching ALL Templates for Year/Board to filter locally:", { academicYear, board });
+
+            // Fetch broad list (Grade + Board) - Removing academicYear restriction to fix mismatches
+            const params = {};
+            if (board) params.board = board;
+            if (selectedClass) params.grade = selectedClass;
+
+            console.log("Fetching templates with params:", params);
+
+            // Note: even with backend cache cleared, we might get empty results if board mismatch exists.
+            const res = await api.get('/api/admin/assessment/assessment-template', { params });
+
+            console.log("Exam Template API Response:", res.data);
+
+            if (res.data?.success) {
+                const all = res.data.data || [];
+                console.log(`Fetched ${all.length} templates. showing all.`);
+                setExamTemplates(all);
+            } else {
+                setExamTemplates([]);
+            }
+        } catch (err) {
+            console.error("Failed to fetch templates:", err.response?.data || err.message);
+            Alert.alert("Error", `Could not fetch exam templates. ${err.response?.data?.error || err.message}`);
+        }
+    };
 
     const grades1To10 = Array.from({ length: 10 }, (_, i) => (i + 1).toString());
     const grades11To12 = ['11', '12'];
@@ -104,35 +236,40 @@ export default function MarksEntryScreen({ navigation, route }) {
         'Hindi'
     ];
 
-    const getFilteredExamTypes = useMemo(() => {
-        if (gradeGroup === '1-10') return examTypes1To10;
+    // Helper to get subjects specifically available in the SELECTED TEMPLATE
+    // Note: If backend population is disabled, s.subject might be just an ID string.
+    const getTemplateSubjects = () => {
+        if (!selectedTemplate || !selectedTemplate.subjects) return [];
+        return selectedTemplate.subjects.map(s => {
+            if (typeof s.subject === 'string') {
+                // Resolve ID using our client-side map
+                const mapped = allSubjectsMap[s.subject];
+                if (mapped) return mapped;
 
-        if (!subjectName) return [];
+                // Fallback if not found in map
+                return { name: 'Subject ' + s.subject.substr(-4), _id: s.subject };
+            }
+            return s.subject; // Returns array of Subject objects { name, code, _id }
+        });
+    };
 
-        const sub = subjectName.toLowerCase();
+    // Helper to find template components for current subject
+    const getTemplateComponents = () => {
+        if (!selectedTemplate || !subjectName) return [];
 
-        // Language subjects and Computer Science: Show only Mid-term and Preparatory
-        if (['english', 'kannada', 'hindi', 'computer science'].includes(sub)) {
-            return examTypes11To12.filter(e => e.id === 'midterm_prep');
-        }
+        // Robust match: Handle populated object OR raw ID (using map)
+        const sub = selectedTemplate.subjects.find(s => {
+            let sName;
+            if (typeof s.subject === 'object' && s.subject.name) {
+                sName = s.subject.name;
+            } else if (typeof s.subject === 'string') {
+                sName = allSubjectsMap[s.subject]?.name || ('Subject ' + s.subject.substr(-4));
+            }
+            return sName === subjectName;
+        });
 
-        // Mathematics: Show Mid-term, Preparatory, JEE, and KCET. Hide NEET.
-        if (sub === 'mathematics') {
-            return examTypes11To12.filter(e => e.id !== 'neet');
-        }
-
-        // Physics and Chemistry: Show All
-        if (['physics', 'chemistry'].includes(sub)) {
-            return examTypes11To12;
-        }
-
-        // Biology: Show Mid-term, Preparatory, NEET, and KCET. Hide JEE.
-        if (sub === 'biology') {
-            return examTypes11To12.filter(e => e.id !== 'jee');
-        }
-
-        return examTypes11To12;
-    }, [gradeGroup, subjectName]);
+        return sub ? sub.components : [];
+    };
 
 
 
@@ -147,19 +284,37 @@ export default function MarksEntryScreen({ navigation, route }) {
             // define columns based on exam type
             let columns = ['Student ID', 'Name', 'Roll No'];
 
-            if (gradeGroup === '1-10') {
-                if (examType === 'formative') {
-                    columns.push('Marks (20)');
+            // Logic: If using Assessment Template, columns depend on the SELECTED SUBJECT components
+            if (selectedTemplate) {
+                if (!subjectName) {
+                    Alert.alert('Select Subject', 'Please select a subject to generate the correct template.');
+                    return;
+                }
+                const comps = getTemplateComponents(); // [{name: 'Theory', maxMarks: 80}, ...]
+
+                if (comps.length > 0) {
+                    comps.forEach(c => {
+                        columns.push(`${c.name} (${c.maxMarks})`);
+                    });
                 } else {
-                    columns.push('Written (80)', 'Internal (20)');
+                    columns.push('Marks'); // Fallback
                 }
             } else {
-                if (examType === 'midterm_prep') {
-                    columns.push('Theory', 'Practical');
-                } else if (examType === 'neet') {
-                    columns.push('Biology (360)', 'Chemistry (180)', 'Physics (180)');
-                } else if (['jee', 'kcet'].includes(examType)) {
-                    columns.push('Physics', 'Chemistry', 'Mathematics');
+                // FALLBACK for old hardcoded types (if any)
+                if (gradeGroup === '1-10') {
+                    if (examType === 'formative') {
+                        columns.push('Marks (20)');
+                    } else {
+                        columns.push('Written (80)', 'Internal (20)');
+                    }
+                } else {
+                    if (examType === 'midterm_prep') {
+                        columns.push('Theory', 'Practical');
+                    } else if (examType === 'neet') {
+                        columns.push('Biology (360)', 'Chemistry (180)', 'Physics (180)');
+                    } else if (['jee', 'kcet'].includes(examType)) {
+                        columns.push('Physics', 'Chemistry', 'Mathematics');
+                    }
                 }
             }
 
@@ -232,35 +387,60 @@ export default function MarksEntryScreen({ navigation, route }) {
             // Parse Data into marksData state
             const newMarksData = { ...marksData };
 
+            const templateComponents = getTemplateComponents();
+
             data.forEach(row => {
-                const studentId = row['Student ID'] || row['student_id']; // Handle dynamic keys if needed
+                const studentId = row['Student ID'] || row['student_id'];
                 if (!studentId) return;
 
                 const entry = {};
 
-                if (gradeGroup === '1-10') {
-                    if (examType === 'formative') {
-                        entry.marks = row['Marks (20)'];
+                // New Dynamic Logic
+                if (selectedTemplate && templateComponents.length > 0) {
+                    templateComponents.forEach(comp => {
+                        // Look for "Name (Max)" or just "Name"
+                        const colNameWithMax = `${comp.name} (${comp.maxMarks})`;
+                        let val = row[colNameWithMax];
+                        if (val === undefined) val = row[comp.name];
+
+                        if (val !== undefined) {
+                            entry[comp.name] = val; // Store by component name
+                        }
+                    });
+
+                    // Merge carefully to avoid overwriting existing data for other subjects if running multiple times?
+                    // For now, we replace for this student.
+                    if (newMarksData[studentId]) {
+                        newMarksData[studentId] = { ...newMarksData[studentId], ...entry };
                     } else {
-                        entry.written = row['Written (80)'];
-                        entry.internal = row['Internal (20)'];
-                    }
-                } else {
-                    if (examType === 'midterm_prep') {
-                        entry.theory = row['Theory'];
-                        entry.practical = row['Practical'];
-                    } else if (examType === 'neet') {
-                        entry.bio = row['Biology (360)'];
-                        entry.chem = row['Chemistry (180)'];
-                        entry.phy = row['Physics (180)'];
-                    } else if (['jee', 'kcet'].includes(examType)) {
-                        entry.phy = row['Physics'];
-                        entry.chem = row['Chemistry'];
-                        entry.math = row['Mathematics'];
+                        newMarksData[studentId] = entry;
                     }
                 }
-
-                newMarksData[studentId] = entry;
+                // Fallback Logic
+                else {
+                    if (gradeGroup === '1-10') {
+                        if (examType === 'formative') {
+                            entry.marks = row['Marks (20)'];
+                        } else {
+                            entry.written = row['Written (80)'];
+                            entry.internal = row['Internal (20)'];
+                        }
+                    } else {
+                        if (examType === 'midterm_prep') {
+                            entry.theory = row['Theory'];
+                            entry.practical = row['Practical'];
+                        } else if (examType === 'neet') {
+                            entry.bio = row['Biology (360)'];
+                            entry.chem = row['Chemistry (180)'];
+                            entry.phy = row['Physics (180)'];
+                        } else if (['jee', 'kcet'].includes(examType)) {
+                            entry.phy = row['Physics'];
+                            entry.chem = row['Chemistry'];
+                            entry.math = row['Mathematics'];
+                        }
+                    }
+                    newMarksData[studentId] = entry;
+                }
             });
 
             setMarksData(newMarksData);
@@ -293,7 +473,13 @@ export default function MarksEntryScreen({ navigation, route }) {
     const [marksData, setMarksData] = useState({}); // { studentId: { subject: { theory: val, practical: val } } } or similar
     const [loadingStudents, setLoadingStudents] = useState(false);
     const [subjectAssignments, setSubjectAssignments] = useState([]); // Array of { subject: { name }, faculty: { _id } }
-    const [facultyMap, setFacultyMap] = useState({}); // Map: userId (e.g. 'faculty0016') -> Mongo _id (e.g. '6878902b...')
+
+    // State
+    const [facultyMap, setFacultyMap] = useState({}); // userId -> _id
+    const [reverseFacultyMap, setReverseFacultyMap] = useState({}); // _id -> userId
+    const [facultyIdMap, setFacultyIdMap] = useState({}); // facultyId -> userId
+    const [facultyList, setFacultyList] = useState([]); // List of { userId, name } for Dropdown
+    const [selectedFaculty, setSelectedFaculty] = useState(""); // Currently selected marker
 
     useEffect(() => {
         fetchFaculty();
@@ -331,17 +517,40 @@ export default function MarksEntryScreen({ navigation, route }) {
             Alert.alert("Warning", "Could not load any faculty data. Submissions may fail.");
         }
 
-        const map = {};
+        if (allFaculty.length > 0) {
+            console.log("Sample Faculty Keys:", Object.keys(allFaculty[0]));
+        }
+
+        const fMap = {};
+        const rMap = {};
+        const idMap = {}; // facultyId -> userId
+
         allFaculty.forEach(f => {
-            const uId = f.userId;
-            const mId = f._id;
+            const uId = f.userId; // e.g. "shanker"
+            const mId = f._id;    // e.g. "6938..."
+            const fId = f.facultyId; // e.g. "fshanker869"
+
             if (uId && mId) {
-                map[uId] = mId;
+                fMap[uId] = mId;
+                rMap[mId] = uId;
+            }
+
+            // Map facultyId to userId
+            if (fId && uId) {
+                idMap[fId] = uId;
+            }
+            // Also map userId to itself, just in case
+            if (uId) {
+                idMap[uId] = uId;
             }
         });
 
-        console.log(`Faculty Map Populated: ${Object.keys(map).length} mapping entries.`);
-        setFacultyMap(map);
+        console.log(`Faculty Maps Populated: ${Object.keys(fMap).length} entries.`);
+        setFacultyMap(fMap);
+        setReverseFacultyMap(rMap);
+        setFacultyIdMap(idMap);
+        // Clean list for dropdown
+        setFacultyList(allFaculty.map(f => ({ userId: f.userId, name: f.name })));
     };
 
     // Fetch Students & Subjects when Class/Section changes
@@ -359,8 +568,9 @@ export default function MarksEntryScreen({ navigation, route }) {
         try {
             const className = selectedClass.trim();
             const sectionName = selectedSection.trim();
-            // endpoint: /api/admin/subject/subjects/class/:classAssigned/section/:section
-            const res = await api.get(`${BASE_URL}/api/admin/subject/subjects/class/${encodeURIComponent(className)}/section/${encodeURIComponent(sectionName)}`);
+            // endpoint: /api/admin/subject/class/:classAssigned/section/:section/board/:board
+            // Fixed URL structure to match backend route
+            const res = await api.get(`${BASE_URL}/api/admin/subject/class/${encodeURIComponent(className)}/section/${encodeURIComponent(sectionName)}/board/${encodeURIComponent(board || 'CBSE')}`);
 
             console.log('Subject Assignments API Response:', JSON.stringify(res.data, null, 2)); // Debug log
 
@@ -369,6 +579,13 @@ export default function MarksEntryScreen({ navigation, route }) {
             if (res.data?.subjects) data = res.data.subjects;
             else if (res.data?.data) data = res.data.data;
             else if (Array.isArray(res.data)) data = res.data;
+
+            console.log(`Assignments Parsed: ${data.length} items found.`);
+            data.forEach(d => {
+                const sId = d.subjectMasterId ? ((typeof d.subjectMasterId === 'object') ? d.subjectMasterId._id : d.subjectMasterId) : d.subject;
+                const fId = d.facultyId || ((typeof d.faculty === 'object') ? d.faculty._id : d.faculty);
+                console.log(`Assignment: Subject [${sId}] -> Faculty [${fId}]`);
+            });
 
             setSubjectAssignments(data);
         } catch (err) {
@@ -410,44 +627,64 @@ export default function MarksEntryScreen({ navigation, route }) {
     };
 
     // Helper to find faculty ID for a subject name
-    const getFacultyForSubject = (subjName) => {
-        if (!subjName || !subjectAssignments.length) return null;
-        const lowerName = subjName.toLowerCase();
+    // Helper to find faculty ID for a subject ID
+    // Returns: String UserID (e.g. "faculty0010")
+    // If subjectId provided is a string name (legacy calls), we return null or handle gracefully? 
+    // The calling function MUST pass the subject ID now.
+    const getFacultyForSubject = (subjectId) => {
+        if (!subjectId || !subjectAssignments.length) return null;
 
-        const assignment = subjectAssignments.find(a =>
-            a.subjectName && a.subjectName.toLowerCase() === lowerName
-        );
+        // Find assignment by Subject ID (Robust)
+        const assignment = subjectAssignments.find(a => {
+            // Handle if 'a.subject' or 'a.subjectMasterId' is populated Object or simple ID string
+            const aSubId = a.subjectMasterId
+                ? ((typeof a.subjectMasterId === 'object') ? a.subjectMasterId._id : a.subjectMasterId)
+                : ((typeof a.subject === 'object') ? a.subject._id : a.subject);
+            return aSubId === subjectId;
+        });
 
         if (!assignment) {
-            console.log(`DEBUG: No assignment found for subject '${subjName}' in loaded assignments.`);
+            // Fallback: This might happen if 'subjectAssignments' state not fully loaded 
+            // or if we passed a Name instead of ID.
+            // console.log(`Debug: No assignment found for subject ID ${subjectId}`);
             return null;
         }
 
-        // 1. Try direct ObjectId from backend (if populated)
-        if (assignment.facultyObjectId) return assignment.facultyObjectId;
+        // Return the string Faculty ID (userId)
+        // Case 1: Directly available (if API returns it at top level)
+        if (assignment.facultyId) return assignment.facultyId;
 
-        // 2. Try mapping string ID (facultyId) to ObjectId
-        if (assignment.facultyId) {
-            const mappedId = facultyMap[assignment.facultyId];
-            if (mappedId) return mappedId;
+        // Case 2: We have Faculty Object (if populated)
+        if (assignment.faculty && assignment.faculty.userId) return assignment.faculty.userId;
 
-            console.log(`DEBUG: Found assignment for '${subjName}' with facultyId '${assignment.facultyId}', but not found in Faculty Map.`);
-            console.log('Available keys in Map:', Object.keys(facultyMap).slice(0, 5), '...');
+        // Case 3: We have Faculty ObjectId -> Use Reverse Map
+        const fObjectId = (typeof assignment.faculty === 'object') ? assignment.faculty._id : assignment.faculty;
+        if (fObjectId && reverseFacultyMap[fObjectId]) {
+            return reverseFacultyMap[fObjectId];
         }
 
-        return null; // Return null if logic fails - caller filters this out
+        console.warn("Found assignment but could not resolve Faculty UserID");
+        return null;
     };
 
-    // Helper to update marks state
-    const updateMark = (studentId, field, value) => {
-        setMarksData(prev => ({
-            ...prev,
-            [studentId]: {
-                ...prev[studentId],
-                [field]: value
-            }
-        }));
-    };
+    // Helper to update marks state - Nested by Subject
+    const updateMark = useCallback((studentId, subjectNm, component, value) => {
+        setMarksData(prev => {
+            const studentMarks = prev[studentId] || {};
+            const subjectMarks = studentMarks[subjectNm] || {};
+
+            return {
+                ...prev,
+                [studentId]: {
+                    ...studentMarks,
+                    [subjectNm]: {
+                        ...subjectMarks,
+                        [component]: value
+                    }
+                }
+            };
+        });
+    }, []);
 
     const renderManualEntry = () => {
         if (!selectedClass || !selectedSection) {
@@ -477,30 +714,19 @@ export default function MarksEntryScreen({ navigation, route }) {
             );
         }
 
+        const templateComponents = selectedTemplate ? getTemplateComponents() : [];
+
         return (
             <View style={{ marginTop: 10 }}>
-                {students.map((student, index) => (
-                    <View key={student.id} style={styles.studentCard}>
-                        <View style={styles.studentHeader}>
-                            <LinearGradient
-                                colors={['#6366f1', '#4f46e5']}
-                                style={styles.avatarCircle}
-                            >
-                                <Text style={styles.avatarText}>{student.name.charAt(0)}</Text>
-                            </LinearGradient>
-                            <View style={{ flex: 1 }}>
-                                <Text style={styles.studentName}>{student.name}</Text>
-                                <Text style={styles.rollNo}>Roll No: {student.rollNo}</Text>
-                            </View>
-                            {/* Status Badge Placeholder - Could be 'Pending' or 'Done' */}
-                            <View style={styles.statusBadge}>
-                                <Text style={styles.statusText}>Pending</Text>
-                            </View>
-                        </View>
-
-                        <View style={styles.divider} />
-                        {renderExamInputs(student.id)}
-                    </View>
+                {students.map((student) => (
+                    <StudentRow
+                        key={student.id}
+                        student={student}
+                        subjectName={subjectName}
+                        components={templateComponents}
+                        currentMarks={marksData[student.id]?.[subjectName] || {}}
+                        onMarkChange={updateMark}
+                    />
                 ))}
 
                 <View style={{ height: 120 }} />
@@ -508,200 +734,78 @@ export default function MarksEntryScreen({ navigation, route }) {
         );
     };
 
-    const renderExamInputs = (studentId) => {
-        const currentMarks = marksData[studentId] || {};
-
-        if (gradeGroup === '1-10') {
-            if (examType === 'formative') {
-                return (
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Marks (Max 20)</Text>
-                        <TextInput
-                            style={styles.textInput}
-                            placeholder="0"
-                            keyboardType="numeric"
-                            maxLength={2}
-                            placeholderTextColor="#94a3b8"
-                            value={currentMarks.marks}
-                            onChangeText={v => updateMark(studentId, 'marks', v)}
-                        />
-                    </View>
-                );
-            }
-            return (
-                <View style={styles.rowInputs}>
-                    <View style={{ flex: 1, marginRight: 15 }}>
-                        <Text style={styles.inputLabel}>Written (80)</Text>
-                        <TextInput
-                            style={styles.textInput}
-                            placeholder="0"
-                            keyboardType="numeric"
-                            maxLength={2}
-                            placeholderTextColor="#94a3b8"
-                            value={currentMarks.written}
-                            onChangeText={v => updateMark(studentId, 'written', v)}
-                        />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                        <Text style={styles.inputLabel}>Internal (20)</Text>
-                        <TextInput
-                            style={styles.textInput}
-                            placeholder="0"
-                            keyboardType="numeric"
-                            maxLength={2}
-                            placeholderTextColor="#94a3b8"
-                            value={currentMarks.internal}
-                            onChangeText={v => updateMark(studentId, 'internal', v)}
-                        />
-                    </View>
-                </View>
-            );
-        } else {
-            // 11-12
-            if (examType === 'midterm_prep') {
-                return (
-                    <View style={styles.rowInputs}>
-                        <View style={{ flex: 1, marginRight: 15 }}>
-                            <Text style={styles.inputLabel}>Theory (70/100)</Text>
-                            <TextInput
-                                style={styles.textInput}
-                                placeholder="Marks"
-                                keyboardType="numeric"
-                                maxLength={3}
-                                placeholderTextColor="#94a3b8"
-                                value={currentMarks.theory}
-                                onChangeText={v => updateMark(studentId, 'theory', v)}
-                            />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <Text style={styles.inputLabel}>Practical (30)</Text>
-                            <TextInput
-                                style={styles.textInput}
-                                placeholder="Marks"
-                                keyboardType="numeric"
-                                maxLength={2}
-                                placeholderTextColor="#94a3b8"
-                                value={currentMarks.practical}
-                                onChangeText={v => updateMark(studentId, 'practical', v)}
-                            />
-                        </View>
-                    </View>
-                );
-            }
-            if (examType === 'neet') {
-                return (
-                    <View style={styles.rowInputs}>
-                        <View style={{ flex: 1, marginRight: 10 }}>
-                            <Text style={styles.inputLabel}>Bio (360)</Text>
-                            <TextInput
-                                style={styles.textInput}
-                                placeholder="0"
-                                keyboardType="numeric"
-                                placeholderTextColor="#94a3b8"
-                                value={currentMarks.bio}
-                                onChangeText={v => updateMark(studentId, 'bio', v)}
-                            />
-                        </View>
-                        <View style={{ flex: 1, marginRight: 10 }}>
-                            <Text style={styles.inputLabel}>Chem (180)</Text>
-                            <TextInput
-                                style={styles.textInput}
-                                placeholder="0"
-                                keyboardType="numeric"
-                                placeholderTextColor="#94a3b8"
-                                value={currentMarks.chem}
-                                onChangeText={v => updateMark(studentId, 'chem', v)}
-                            />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <Text style={styles.inputLabel}>Phy (180)</Text>
-                            <TextInput
-                                style={styles.textInput}
-                                placeholder="0"
-                                keyboardType="numeric"
-                                placeholderTextColor="#94a3b8"
-                                value={currentMarks.phy}
-                                onChangeText={v => updateMark(studentId, 'phy', v)}
-                            />
-                        </View>
-                    </View>
-                );
-            }
-            if (examType === 'jee' || examType === 'kcet') {
-                const max = examType === 'jee' ? 100 : 60;
-                return (
-                    <View style={styles.rowInputs}>
-                        <View style={{ flex: 1, marginRight: 10 }}>
-                            <Text style={styles.inputLabel}>Phy ({max})</Text>
-                            <TextInput
-                                style={styles.textInput}
-                                placeholder="0"
-                                keyboardType="numeric"
-                                placeholderTextColor="#94a3b8"
-                                value={currentMarks.phy}
-                                onChangeText={v => updateMark(studentId, 'phy', v)}
-                            />
-                        </View>
-                        <View style={{ flex: 1, marginRight: 10 }}>
-                            <Text style={styles.inputLabel}>Chem ({max})</Text>
-                            <TextInput
-                                style={styles.textInput}
-                                placeholder="0"
-                                keyboardType="numeric"
-                                placeholderTextColor="#94a3b8"
-                                value={currentMarks.chem}
-                                onChangeText={v => updateMark(studentId, 'chem', v)}
-                            />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <Text style={styles.inputLabel}>Math ({max})</Text>
-                            <TextInput
-                                style={styles.textInput}
-                                placeholder="0"
-                                keyboardType="numeric"
-                                placeholderTextColor="#94a3b8"
-                                value={currentMarks.math}
-                                onChangeText={v => updateMark(studentId, 'math', v)}
-                            />
-                        </View>
-                    </View>
-                );
-            }
-            return <Text style={styles.helperText}>Please select an exam type above to enable mark entry.</Text>;
-        }
-    };
-
     const handleSubmit = () => {
         if (!selectedClass || !selectedSection) {
             Alert.alert("Missing Details", "Please select a Class and Section first.");
             return;
         }
-        if (!examType) {
-            Alert.alert("Missing Details", "Please select an Examination Type.");
+        if (!selectedTemplate) {
+            Alert.alert("Missing Details", "Please select an Examination Type (Template).");
+            return;
+        }
+
+        if (!examName || examName.trim() === '') {
+            Alert.alert("Missing Details", "Examination Name is required.");
             return;
         }
 
         // Pre-validate Teachers - Check if we have assignments for required subjects
-        let requiredSubjects = [];
-        if (gradeGroup === '1-10') {
-            requiredSubjects.push(subjectName);
-        } else {
-            if (examType === 'midterm_prep') requiredSubjects.push(subjectName);
-            else if (examType === 'neet') requiredSubjects.push('Biology', 'Chemistry', 'Physics');
-            else if (['jee', 'kcet'].includes(examType)) requiredSubjects.push('Physics', 'Chemistry', 'Mathematics');
+        // We only need teacher for the CURRENT subject being graded
+
+        // Resolve Subject ID from Template
+        const templateSub = selectedTemplate?.subjects?.find(s => {
+            const sId = (typeof s.subject === 'object') ? s.subject._id : s.subject;
+            const sName = allSubjectsMap[sId]?.name || (typeof s.subject === 'object' ? s.subject.name : '');
+            return sName === subjectName;
+        });
+
+        const currentSubjectId = (templateSub && templateSub.subject && typeof templateSub.subject === 'object')
+            ? templateSub.subject._id
+            : templateSub?.subject;
+
+        if (!currentSubjectId) {
+            if (!subjectName) {
+                // Allow creation of Empty Assessment (Schematic only)
+                Alert.alert(
+                    "Create Empty Assessment?",
+                    "You have not selected a subject. This will create the Assessment details but NO teacher/student marks will be saved.\n\nProceed?",
+                    [
+                        { text: "Cancel", style: "cancel" },
+                        { text: "Create Empty", onPress: () => submitFinalPayload(null, null) }
+                    ]
+                );
+                return;
+            } else {
+                Alert.alert("Error", "Could not resolve Subject ID. Please try again.");
+                return;
+            }
         }
 
-        // Clean up
-        requiredSubjects = [...new Set(requiredSubjects)].filter(s => s && s.trim());
-
-        const missingTeachers = requiredSubjects.filter(sub => !getFacultyForSubject(sub));
-
-        if (missingTeachers.length > 0) {
+        // Priority 1: User Manually Selected Faculty in Dropdown
+        if (selectedFaculty) {
             Alert.alert(
-                "Submission Blocked",
-                `The following subjects have no assigned teacher:\n${missingTeachers.join(', ')}\n\nYou MUST assign a teacher to these subjects in 'Subject Management' before you can submit marks. The system requires a valid teacher reference.`,
+                "Confirm Submission",
+                `Submit scores for:\nClass: ${selectedClass}-${selectedSection}\nExam: ${examName}\nSubject: ${subjectName}\nMarked By: ${selectedFaculty}?`,
                 [
-                    { text: "OK", style: "cancel" }
+                    { text: "Cancel", style: "cancel" },
+                    { text: "Submit", onPress: () => submitFinalPayload(currentSubjectId, selectedFaculty) }
+                ]
+            );
+            return;
+        }
+
+        const assignedFaculty = getFacultyForSubject(currentSubjectId);
+
+        if (!assignedFaculty) {
+            Alert.alert(
+                "Teacher Assignment Warning",
+                `The subject '${subjectName}' (ID: ${currentSubjectId}) has no assigned teacher detected in the loaded list.\n\nThis might be due to a missing assignment record or API filter mismatch.\n\nDo you want to proceed effectively using 'admin' as the marker?`,
+                [
+                    { text: "Cancel", style: "cancel" },
+                    {
+                        text: "Proceed Anyway",
+                        onPress: () => submitFinalPayload(currentSubjectId, defaultFacultyId || "admin") // Robust Fallback
+                    }
                 ]
             );
             return;
@@ -710,129 +814,207 @@ export default function MarksEntryScreen({ navigation, route }) {
         // If no issues, proceed directly to confirmation
         Alert.alert(
             "Confirm Submission",
-            `Submit scores for Class ${selectedClass} - Section ${selectedSection}?`,
+            `Submit scores for:\nClass: ${selectedClass}-${selectedSection}\nExam: ${examName}\nSubject: ${subjectName}?`,
             [
                 { text: "Cancel", style: "cancel" },
-                { text: "Submit", onPress: submitFinalPayload }
+                { text: "Submit", onPress: () => submitFinalPayload(currentSubjectId, assignedFaculty) } // Pass resolved IDs
             ]
         );
     };
 
-    const submitFinalPayload = async () => {
+    // Helper to find faculty ObjectId for a subject ID
+    const getFacultyObjectIdForSubject = (subjectId) => {
+        if (!subjectId || !subjectAssignments.length) return null;
+
+        // Find assignment by Subject ID
+        const assignment = subjectAssignments.find(a => {
+            // Check subjectMasterId if populated or ID string
+            const aSubId = a.subjectMasterId
+                ? ((typeof a.subjectMasterId === 'object') ? a.subjectMasterId._id : a.subjectMasterId)
+                : (typeof a.subject === 'object') ? a.subject._id : a.subject;
+
+            return aSubId === subjectId;
+        });
+
+        if (!assignment) return null;
+
+        // Resolve Faculty ObjectId
+        // Priority 1: Direct ObjectId if populated (assignment.faculty._id)
+        if (assignment.faculty && assignment.faculty._id) return assignment.faculty._id;
+
+        // Priority 2: Use Reverse Map if we have a string ID (facultyId="faculty0010")
+        // Note: Field name might be 'facultyId' or 'faculty' based on schema
+        const fIdString = assignment.facultyId || assignment.faculty;
+
+        if (fIdString && typeof fIdString === 'string') {
+            // Look for ObjectId in the map
+            const resolved = reverseFacultyMap[fIdString];
+            if (resolved) return resolved;
+
+            // If not in map, maybe it IS an ObjectId? Return it to try.
+            return fIdString;
+        }
+
+        return null;
+    };
+
+    const submitFinalPayload = async (resolvedSubjectId, resolvedFacultyId) => {
         setLoading(true);
         try {
-            const date = new Date().toISOString();
-            console.log("Submitting Payload... (Step 1: Init)");
+            console.log("Constructing Controller-Spec Payload...");
 
-            // Transform marksData into records
-            const records = students.map(st => {
-                if (!st._id) {
-                    console.warn("Found student with missing _id:", JSON.stringify(st));
-                    return null;
+            const records = [];
+
+            // 1. Processing Records (If Subject Selected)
+            if (resolvedSubjectId) {
+                // Get Template Details for Subject (Need Code)
+                const templateSub = selectedTemplate.subjects.find(s => {
+                    const sId = (typeof s.subject === 'object') ? s.subject._id : s.subject;
+                    return sId === resolvedSubjectId;
+                });
+
+                if (!templateSub) throw new Error("Template mismatch for subject.");
+
+                // Subject Code is crucial for Backend Mapping
+                let subjectCode;
+                if (templateSub.subject && templateSub.subject.code) {
+                    subjectCode = templateSub.subject.code;
+                } else {
+                    // Fallback: Use Map
+                    subjectCode = allSubjectsMap[resolvedSubjectId]?.code;
                 }
-                const m = marksData[st.id] || {};
-                const subjectsList = [];
 
-                const addSub = (name, ob, max) => {
-                    const teacherId = getFacultyForSubject(name);
+                if (!subjectCode) {
+                    Alert.alert("Error", "Subject Code missing in template and map. Cannot submit.");
+                    setLoading(false);
+                    return;
+                }
 
-                    // CRITICAL FIX: Do NOT add subject if teacherId is null.
-                    if (!teacherId) {
-                        console.warn(`Skipping subject ${name} due to missing teacher identity.`);
+                // 2. Data Validation Loop (Check for non-numeric input)
+                const validationErrors = [];
+                students.forEach(st => {
+                    const studentMarks = marksData[st.id]?.[subjectName] || {};
+                    templateSub.components.forEach(comp => {
+                        const rawVal = studentMarks[comp.name];
+                        if (rawVal !== undefined && rawVal !== null && String(rawVal).trim() !== '') {
+                            const strVal = String(rawVal).trim();
+                            if (isNaN(Number(strVal))) {
+                                validationErrors.push(`${st.name}: '${rawVal}' in ${comp.name}`);
+                            }
+                        }
+                    });
+                });
+
+                if (validationErrors.length > 0) {
+                    Alert.alert(
+                        "Data Validation Error",
+                        "The following entries are not valid numbers:\n" +
+                        validationErrors.slice(0, 5).join('\n') +
+                        (validationErrors.length > 5 ? "\n...and more" : "") +
+                        "\n\nPlease correct them before submitting."
+                    );
+                    setLoading(false);
+                    return;
+                }
+
+                // 3. Iterate Students & Construct Payload
+                students.forEach(st => {
+                    // Determine Marks
+                    const studentMarks = marksData[st.id]?.[subjectName] || {};
+
+                    // Map Components
+                    const components = [];
+                    // Resolve the correct user ID for submission (Handle facultyId vs userId mismatch)
+                    const finalMarkedBy = facultyIdMap[resolvedFacultyId] || resolvedFacultyId;
+
+                    templateSub.components.forEach(comp => {
+                        const compName = comp.name;
+                        // Logic to allow NULL marks (Empty box = null)
+                        const rawVal = studentMarks[compName];
+                        let val = null;
+                        if (rawVal !== undefined && rawVal !== null && rawVal !== '') {
+                            val = Number(rawVal);
+                            if (isNaN(val)) val = null;
+                        }
+
+                        components.push({
+                            name: compName,
+                            marksObtained: val, // Controller expects camelCase
+                            markedBy: finalMarkedBy // Controller expects UserID string
+                        });
+                    });
+
+                    // Filter: If student has NO VALID MARKS (all are null), skip submission.
+                    // Prevents creating empty/fail records for absent/unmarked students.
+                    const hasValidMarks = components.some(c => c.marksObtained !== null);
+
+                    if (!hasValidMarks) {
+                        // console.log(`Skipping student ${st.name} (No marks entered)`);
                         return;
                     }
 
-                    subjectsList.push({
-                        subject: name,
-                        marked_by: teacherId, // For Mongoose Schema (snake_case)
-                        markedBy: teacherId,  // For Controller Validation (camelCase)
-                        max_marks: max,
-                        marks_obtained: Number(ob) || 0
+                    // Add Record
+                    records.push({
+                        studentId: st.id, // Controller expects UserID string (st.id is mapped userId)
+                        subjects: [{
+                            subjectCode: subjectCode, // Controller expects Code string
+                            components: components
+                        }]
                     });
-                };
-
-                if (gradeGroup === '1-10') {
-                    if (examType === 'formative') {
-                        if (subjectName) addSub(subjectName, m.marks, 20);
-                    } else {
-                        if (subjectName) {
-                            const total = (Number(m.written) || 0) + (Number(m.internal) || 0);
-                            addSub(subjectName, total, 100);
-                        }
-                    }
-                } else {
-                    // 11-12 logic
-                    if (examType === 'midterm_prep') {
-                        if (subjectName) {
-                            const total = (Number(m.theory) || 0) + (Number(m.practical) || 0);
-                            addSub(subjectName, total, 100);
-                        }
-                    } else if (examType === 'neet') {
-                        addSub('Biology', m.bio, 360);
-                        addSub('Chemistry', m.chem, 180);
-                        addSub('Physics', m.phy, 180);
-                    } else if (['jee', 'kcet'].includes(examType)) {
-                        const max = examType === 'jee' ? 100 : 60;
-                        addSub('Physics', m.phy, max);
-                        addSub('Chemistry', m.chem, max);
-                        addSub('Mathematics', m.math, max);
-                    } else {
-                        // Standard subjects
-                        if (subjectName) addSub(subjectName, m.theory, 100);
-                    }
-                }
-
-                // Filter out subjects with NO valid teacher. 
-                // The frontend blocked submission if ALL were missing, but if one student has a glitch, we must exclude it to save the rest.
-                const validSubjects = subjectsList.filter(s => s.marked_by);
-
-                if (validSubjects.length === 0) return null; // Skip student if no valid subjects
-
-                // Calculate total assessment marks for this student
-                const totalObtained = validSubjects.reduce((acc, sub) => acc + (Number(sub.marks_obtained) || 0), 0);
-                const totalMax = validSubjects.reduce((acc, sub) => acc + (Number(sub.max_marks) || 0), 0);
-
-                return {
-                    student: st._id, // For Schema storage (ObjectId)
-                    studentId: st.id, // For Controller validation (String 'userId')
-                    subjects: validSubjects,
-                    assessment_max_marks: totalMax,
-                    assessment_marks_obtained: totalObtained
-                };
-            }).filter(r => r !== null && r.student); // Remove null records
+                });
+            }
 
             const payload = {
-                grade: selectedClass,
+                grade: Number(selectedClass),
                 section: selectedSection,
-                test_name: examName || examType, // Use custom name if provided, else ID
-                test_type: "Exam",
-                date: date,
-                year: new Date().getFullYear(), // Send integer year
-                board: board || 'CBSE', // Add board parameter, default to 'CBSE' if undefined
+                board: board,
+                date: new Date().toISOString(),
+                year: new Date().getFullYear(),
+                assessment_name: examName,
+                assessment_template: selectedTemplate._id,
                 records: records
             };
 
-            console.log("FINAL PAYLOAD:", JSON.stringify(payload, null, 2));
+            console.log('FINAL CONTROLLER PAYLOAD:', JSON.stringify(payload, null, 2));
 
-            const res = await api.post(`${BASE_URL}/api/admin/students/submit`, payload);
+            const res = await api.post('/api/admin/assessment', payload);
 
-            if (res.data.success) {
+            if (res.data?.success) {
                 Alert.alert("Success", "Marks submitted successfully!");
-                setMarksData({}); // Clear form
-                setExamName('');
+                // Clear inputs?
             } else {
-                Alert.alert("Error", res.data.message || "Failed to submit marks.");
+                // Check for specific backend messages
+                if (res.data?.message?.includes('missing references')) {
+                    const details = [
+                        res.data.missingStudents?.length ? `Students: ${res.data.missingStudents.join(', ')}` : '',
+                        res.data.missingFaculties?.length ? `Faculty: ${res.data.missingFaculties.join(', ')}` : '',
+                        res.data.missingSubjects?.length ? `Subjects: ${res.data.missingSubjects.join(', ')}` : ''
+                    ].filter(Boolean).join('\n');
+
+                    Alert.alert("Submission Failed", `Missing References:\n${details}`);
+                } else {
+                    Alert.alert("Submission Failed", res.data?.message || "Unknown error");
+                }
             }
         } catch (err) {
-            console.error("Submission Error Details:", JSON.stringify(err.response?.data || err.message, null, 2));
-            const msg = err.response?.data?.message || err.message;
-            Alert.alert("Submission Failed", `${msg}`);
+            console.error("Submission Error Details:", err.response?.data);
+
+            const resData = err.response?.data;
+            if (resData && resData.message?.includes('missing references')) {
+                const details = [
+                    resData.missingStudents?.length ? `Students: ${resData.missingStudents.join(', ')}` : '',
+                    resData.missingFaculties?.length ? `Faculty: ${resData.missingFaculties.join(', ')}` : '',
+                    resData.missingSubjects?.length ? `Subjects: ${resData.missingSubjects.join(', ')}` : ''
+                ].filter(Boolean).join('\n');
+
+                Alert.alert("Submission Failed", `Missing References:\n${details}`);
+            } else {
+                Alert.alert("Submission Error", resData?.message || err.message);
+            }
         } finally {
             setLoading(false);
         }
     };
-
-
 
     const handleViewEditMarks = async () => {
         if (!selectedClass || !selectedSection || !subjectName || !examType) {
@@ -852,8 +1034,8 @@ export default function MarksEntryScreen({ navigation, route }) {
                 params: {
                     grade: className,
                     section: sectionName,
-                    subject: subjectName,
-                    test_name: examType,
+                    subject: subjectName, // "Subject Name" from database
+                    assessment_template: selectedTemplate?._id, // Filter by template ID
                     year: year
                 }
             });
@@ -956,21 +1138,34 @@ export default function MarksEntryScreen({ navigation, route }) {
         }
     };
 
-    const renderDropdown = (label, value, placeholder, onPress) => (
+    const renderDropdown = (label, value, placeholder, onPress, onClear) => (
         <View style={{ flex: 1, marginBottom: 15 }}>
             <Text style={styles.label}>{label}</Text>
             <TouchableOpacity style={styles.dropdown} onPress={onPress} activeOpacity={0.7}>
                 <Text style={[styles.dropdownText, !value && styles.placeholderText]}>
                     {value || placeholder}
                 </Text>
-                <Ionicons name="chevron-down" size={18} color="#6366f1" />
+                {value && onClear ? (
+                    <TouchableOpacity onPress={(e) => {
+                        // e.stopPropagation() doesn't work well on Touchables on Android sometimes, 
+                        // but here nested touchable usually works.
+                        // But we might need to handle the parent onPress carefully.
+                        // React Native Event Bubbling: Child onPress fires first. 
+                        // If we don't manage it, Parent might fire too?
+                        // Actually RN handles disjoint touchables well if layout allows.
+                        if (onClear) onClear();
+                    }} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                        <Ionicons name="close-circle" size={20} color="#ef4444" />
+                    </TouchableOpacity>
+                ) : (
+                    <Ionicons name="chevron-down" size={18} color="#6366f1" />
+                )}
             </TouchableOpacity>
         </View>
     );
 
     return (
         <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
-            {/* No custom header, relying on navigation stack or system bar. Padding top for status bar */}
             <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
 
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
@@ -1008,46 +1203,23 @@ export default function MarksEntryScreen({ navigation, route }) {
                         </View>
 
                         {/* Unified Subject Dropdown for All Grades */}
-                        {/* We use the fetched subjectAssignments to populate this. If empty, we show empty or allow manual if needed (but manual risks mismatch) */}
                         <View style={{ marginBottom: 15 }}>
-                            <Text style={styles.label}>Subject Name</Text>
+                            <Text style={styles.label}>Examination Type (Template)</Text>
                             <TouchableOpacity
                                 style={styles.dropdown}
-                                onPress={() => setShowSubjectModal(true)}
+                                onPress={() => setShowExamModal(true)}
                                 activeOpacity={0.7}
                             >
-                                <Text style={[styles.dropdownText, !subjectName && styles.placeholderText]}>
-                                    {subjectName || 'Select Subject'}
-                                </Text>
-                                <Ionicons name="chevron-down" size={18} color="#6366f1" />
-                            </TouchableOpacity>
-                        </View>
-
-                        <View style={{ marginBottom: 15 }}>
-                            <Text style={styles.label}>Examination Type</Text>
-                            <TouchableOpacity
-                                style={[styles.dropdown, (gradeGroup === '11-12' && !subjectName) && styles.disabledDropdown]}
-                                onPress={() => {
-                                    if (gradeGroup === '11-12' && !subjectName) {
-                                        Alert.alert('Select Subject', 'Please select a subject first to see applicable exams.');
-                                        return;
-                                    }
-                                    setShowExamModal(true);
-                                }}
-                                activeOpacity={0.7}
-                            >
-                                <Text style={[styles.dropdownText, !examType && styles.placeholderText]}>
-                                    {examType ?
-                                        (gradeGroup === '1-10' ? examTypes1To10 : examTypes11To12).find(e => e.id === examType)?.label
-                                        : 'Select Examination'}
+                                <Text style={[styles.dropdownText, !selectedTemplate && styles.placeholderText]}>
+                                    {selectedTemplate ? selectedTemplate.assessmentName : 'Select Examination Type'}
                                 </Text>
                                 <Ionicons name="chevron-down" size={20} color="#6366f1" />
                             </TouchableOpacity>
                         </View>
 
-                        {/* Custom Examination Name */}
-                        <View style={{ marginBottom: 0 }}>
-                            <Text style={styles.label}>Examination Name (Optional)</Text>
+                        {/* Examination Name (Mandatory) */}
+                        <View style={{ marginBottom: 15 }}>
+                            <Text style={styles.label}>Examination Name <Text style={{ color: 'red' }}>*</Text></Text>
                             <TextInput
                                 style={styles.simpleInput}
                                 placeholder="e.g. Unit Test 1"
@@ -1056,12 +1228,61 @@ export default function MarksEntryScreen({ navigation, route }) {
                                 placeholderTextColor="#94a3b8"
                             />
                         </View>
+
+                        {/* 2. Subject - Dependent on Template (DROPDOWN) */}
+                        <View style={{ marginBottom: 15 }}>
+                            {renderDropdown(
+                                "Subject",
+                                subjectName || null,
+                                selectedTemplate ? 'Select Subject' : 'Select Exam Type first',
+                                () => {
+                                    if (!selectedTemplate) {
+                                        Alert.alert("Steps Order", "Please select an Examination Type first.");
+                                        return;
+                                    }
+                                    setShowSubjectModal(true);
+                                },
+                                // Clear Handler
+                                () => setSubjectName(null)
+                            )}
+                        </View>
+
+
+                        {/* Marked By Faculty Dropdown */}
+                        <View style={{ marginBottom: 15 }}>
+                            <Text style={styles.label}>Marked By (Faculty)</Text>
+                            <View style={{
+                                borderWidth: 1,
+                                borderColor: '#e2e8f0',
+                                borderRadius: 12,
+                                backgroundColor: '#fff',
+                                overflow: 'hidden' // Ensure picker stays inside border
+                            }}>
+                                <Picker
+                                    selectedValue={selectedFaculty}
+                                    onValueChange={(itemValue) => setSelectedFaculty(itemValue)}
+                                    style={{ height: 50, width: '100%' }}
+                                >
+                                    <Picker.Item label="Select Faculty" value="" color="#9ca3af" />
+                                    {facultyList.map((fac, idx) => (
+                                        <Picker.Item
+                                            key={idx.toString()}
+                                            label={`${fac.name} (${fac.userId})`}
+                                            value={fac.userId}
+                                            color="#000"
+                                        />
+                                    ))}
+                                </Picker>
+                            </View>
+                        </View>
+
+
                     </View>
 
                     {/* View / Edit Button */}
                     <TouchableOpacity
                         style={[styles.viewEditButton, { marginBottom: 20 }]}
-                        onPress={handleViewEditMarks}
+                        onPress={() => navigation.navigate('MarksViewEditScreen', { board: board })}
                         activeOpacity={0.7}
                     >
                         <Ionicons name="eye-outline" size={20} color="#4f46e5" style={{ marginRight: 8 }} />
@@ -1198,24 +1419,32 @@ export default function MarksEntryScreen({ navigation, route }) {
             <Modal visible={showExamModal} transparent animationType="fade" onRequestClose={() => setShowExamModal(false)}>
                 <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowExamModal(false)}>
                     <View style={styles.modalContainer}>
-                        <Text style={styles.modalHeader}>Select Examination</Text>
+                        <View style={styles.modalHeaderContainer}>
+                            <Text style={styles.modalHeader}>Select Examination Type</Text>
+                            <TouchableOpacity onPress={() => setShowExamModal(false)}>
+                                <Ionicons name="close" size={24} color="#000" />
+                            </TouchableOpacity>
+                        </View>
                         <View style={{ maxHeight: 400 }}>
                             <FlatList
-                                data={getFilteredExamTypes}
-                                keyExtractor={item => item.id}
+                                data={examTemplates}
+                                keyExtractor={item => item._id}
                                 ListEmptyComponent={
-                                    <Text style={{ textAlign: 'center', padding: 20, color: '#64748b' }}>No exams available for this selection.</Text>
+                                    <Text style={{ textAlign: 'center', padding: 20, color: '#64748b' }}>No exam templates found for this Class/Board.</Text>
                                 }
                                 renderItem={({ item }) => (
                                     <TouchableOpacity
                                         style={styles.optionItem}
                                         onPress={() => {
-                                            setExamType(item.id);
+                                            setExamType(item._id); // Keep for compatibility if needed
+                                            setSelectedTemplate(item);
+                                            setExamName(item.assessmentName); // Default the name
+                                            setSubjectName(''); // Reset subject
                                             setShowExamModal(false);
                                         }}
                                     >
-                                        <Text style={[styles.optionText, examType === item.id && styles.optionTextSelected]}>{item.label}</Text>
-                                        {examType === item.id && <Ionicons name="checkmark-circle" size={24} color="#4f46e5" />}
+                                        <Text style={[styles.optionText, selectedTemplate?._id === item._id && styles.optionTextSelected]}>{item.assessmentName}</Text>
+                                        {selectedTemplate?._id === item._id && <Ionicons name="checkmark-circle" size={24} color="#4f46e5" />}
                                     </TouchableOpacity>
                                 )}
                             />
@@ -1224,37 +1453,110 @@ export default function MarksEntryScreen({ navigation, route }) {
                 </TouchableOpacity>
             </Modal>
 
+
             {/* Subject Modal */}
             <Modal visible={showSubjectModal} transparent animationType="fade" onRequestClose={() => setShowSubjectModal(false)}>
                 <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowSubjectModal(false)}>
                     <View style={styles.modalContainer}>
-                        <Text style={styles.modalHeader}>Select Subject</Text>
+                        <View style={styles.modalHeaderContainer}>
+                            <Text style={styles.modalHeader}>Select Subject</Text>
+                            <TouchableOpacity onPress={() => setShowSubjectModal(false)}>
+                                <Ionicons name="close" size={24} color="#000" />
+                            </TouchableOpacity>
+                        </View>
                         <View style={{ maxHeight: 400 }}>
                             <FlatList
-                                data={subjectAssignments.length > 0
-                                    ? subjectAssignments.map(a => a.subjectName)
-                                    : (gradeGroup === '1-10' ? subjects1To10 : subjects11To12)}
-                                keyExtractor={(item, index) => `${item}-${index}`}
-                                renderItem={({ item }) => (
-                                    <TouchableOpacity
-                                        style={styles.optionItem}
-                                        onPress={() => {
-                                            setSubjectName(item);
-                                            setShowSubjectModal(false);
-                                        }}
-                                    >
-                                        <Text style={[styles.optionText, subjectName === item && styles.optionTextSelected]}>{item}</Text>
-                                        {subjectName === item && <Ionicons name="checkmark-circle" size={24} color="#4f46e5" />}
-                                    </TouchableOpacity>
-                                )}
+                                data={getTemplateSubjects()}
+                                keyExtractor={(item, index) => item._id || index.toString()}
+                                ListEmptyComponent={
+                                    <Text style={{ textAlign: 'center', padding: 20, color: 'red' }}>
+                                        No subjects found in this template.
+                                        {selectedTemplate?.subjects?.length > 0 ? " (Mapping Error)" : " (Empty Template)"}
+                                    </Text>
+                                }
+                                renderItem={({ item }) => {
+                                    const displayName = item.name || "Unknown Subject";
+                                    return (
+                                        <TouchableOpacity
+                                            style={styles.optionItem}
+                                            onPress={() => {
+                                                setSubjectName(displayName);
+                                                setShowSubjectModal(false);
+                                            }}
+                                        >
+                                            <Text style={[styles.optionText, subjectName === displayName && styles.optionTextSelected]}>
+                                                {displayName}
+                                            </Text>
+                                            {subjectName === displayName && <Ionicons name="checkmark-circle" size={24} color="#4f46e5" />}
+                                        </TouchableOpacity>
+                                    );
+                                }}
                             />
                         </View>
                     </View>
                 </TouchableOpacity>
             </Modal>
+
         </SafeAreaView>
     );
 }
+
+// Memoized Row Component to prevent re-rendering ALL rows when ONE input changes
+const StudentRow = React.memo(({ student, components, currentMarks, onMarkChange, subjectName }) => {
+    return (
+        <View style={styles.studentCard}>
+            <View style={styles.studentHeader}>
+                <LinearGradient
+                    colors={['#6366f1', '#4f46e5']}
+                    style={styles.avatarCircle}
+                >
+                    <Text style={styles.avatarText}>{student.name.charAt(0)}</Text>
+                </LinearGradient>
+                <View style={{ flex: 1 }}>
+                    <Text style={styles.studentName}>{student.name}</Text>
+                    <Text style={styles.rollNo}>Roll No: {student.rollNo}</Text>
+                </View>
+                <View style={styles.statusBadge}>
+                    <Text style={styles.statusText}>Pending</Text>
+                </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            {components.length === 0 ? (
+                <Text style={styles.helperText}>Subject not found in this Exam Template.</Text>
+            ) : (
+                <View style={styles.rowInputs}>
+                    {components.map((comp, index) => (
+                        <View key={index} style={{ flex: 1, marginRight: 10 }}>
+                            <Text style={styles.inputLabel}>{comp.name} ({comp.maxMarks})</Text>
+                            <TextInput
+                                style={styles.textInput}
+                                placeholder="0"
+                                keyboardType="numeric"
+                                maxLength={3}
+                                placeholderTextColor="#94a3b8"
+                                value={currentMarks[comp.name] || ''}
+                                onChangeText={v => onMarkChange(student.id, subjectName, comp.name, v)}
+                            />
+                        </View>
+                    ))}
+                </View>
+            )}
+        </View>
+    );
+}, (prev, next) => {
+    // Custom Comparison for Performance
+    // Only re-render if marks for this SPECIFIC student have changed (reference check ok if immutable update)
+    // Or if components structure changed
+    return (
+        prev.currentMarks === next.currentMarks &&
+        prev.components === next.components &&
+        prev.student.id === next.student.id &&
+        prev.subjectName === next.subjectName
+    );
+});
+
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f8fafc' },

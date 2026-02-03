@@ -29,21 +29,21 @@ const PRO_COLORS = {
     textPrimary: '#1A202C',
     textSecondary: '#718096',
     textTertiary: '#A0AEC0',
-    
+
     primaryGradient: ['#ac1d1d', '#8b1515'],
     successGradient: ['#059669', '#10b981'],
     warningGradient: ['#dc2626', '#ef4444'],
     infoGradient: ['#ac1d1d', '#c92a2a'],
-    
+
     accent: '#ac1d1d',
     accentLight: '#fecaca',
     accentDark: '#7f1d1d',
-    
+
     success: '#059669',
     successLight: '#D1FAE5',
     error: '#dc2626',
     errorLight: '#FEE2E2',
-    
+
     border: '#E2E8F0',
     cardShadow: 'rgba(172, 29, 29, 0.1)',
 };
@@ -102,7 +102,7 @@ export default function AdminInsightsScreen({ navigation }) {
             setStats({
                 totalStudents: students.status === 'fulfilled' ? students.value.data.count : 0,
                 totalFaculty: faculty.status === 'fulfilled' ? faculty.value.data.length : 0,
-                upcomingEvents: events.status === 'fulfilled' ? (events.value.data || []).filter(e => new Date(e.date) >= new Date()).sort((a,b) => new Date(a.date) - new Date(b.date)) : [],
+                upcomingEvents: events.status === 'fulfilled' ? (events.value.data || []).filter(e => new Date(e.date) >= new Date()).sort((a, b) => new Date(a.date) - new Date(b.date)) : [],
                 recentActivities: announcements.status === 'fulfilled' ? (announcements.value.data || []).map(a => ({ id: a._id, text: a.title, time: new Date(a.date).toLocaleDateString() })) : [],
                 overallAttendance: attendance.status === 'fulfilled' ? attendance.value.data.percentage : null
             });
@@ -341,7 +341,7 @@ export default function AdminInsightsScreen({ navigation }) {
 
                 <View style={{ height: 40 }} />
             </ScrollView>
-            
+
             <Modal visible={showGradeModal} transparent={true} animationType="fade" onRequestClose={() => setShowGradeModal(false)}>
                 <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowGradeModal(false)}>
                     <View style={styles.modalContent}>
@@ -473,7 +473,7 @@ const styles = StyleSheet.create({
     emptyState: { alignItems: 'center', justifyContent: 'center', paddingVertical: 40, backgroundColor: PRO_COLORS.backgroundLight, borderRadius: 16, borderWidth: 1, borderColor: PRO_COLORS.border, },
     emptyIconBg: { width: 64, height: 64, borderRadius: 32, backgroundColor: PRO_COLORS.background, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
     emptyText: { fontSize: 14, color: PRO_COLORS.textTertiary, fontWeight: '500' },
-    
+
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center', padding: 20, },
     modalContent: { backgroundColor: '#fff', borderRadius: 24, padding: 24, width: '100%', maxWidth: 400, maxHeight: '70%', elevation: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.2, shadowRadius: 16, },
     modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: PRO_COLORS.border, },

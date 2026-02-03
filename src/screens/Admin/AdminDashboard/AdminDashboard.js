@@ -9,12 +9,12 @@ import {
   Platform,
   StatusBar,
   ScrollView,
-  SafeAreaView,
   Animated,
   Dimensions,
   Easing,
   ImageBackground
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../../context/authContext';

@@ -44,6 +44,7 @@ import MarksEntryScreen from "../../screens/Admin/MarksEntryScreen"
 import ExamTemplatesHomeScreen from "../../screens/Admin/Exams/ExamTemplatesHomeScreen";
 import CreateExamTemplateScreen from "../../screens/Admin/Exams/CreateExamTemplateScreen";
 import CreateExamTemplateSubjectsScreen from "../../screens/Admin/Exams/CreateExamTemplateSubjectsScreen";
+import MarksViewEditScreen from "../../screens/Admin/MarksViewEditScreen";
 
 
 import { StatusBar } from "react-native";
@@ -97,13 +98,14 @@ export default function AdminNavigator() {
             <Stack.Screen name="BoardSelectionScreen" component={BoardSelectionScreen} options={{ title: 'Select Board' }} />
             <Stack.Screen name="AdminFeesScreen" component={AdminFeesScreen} />
             <Stack.Screen name="MarksEntryScreen" component={MarksEntryScreen} />
+            <Stack.Screen name="MarksViewEditScreen" component={MarksViewEditScreen} options={{ headerShown: false }} />
             <Stack.Screen name="StudentEntryHubScreen" component={StudentEntryHubScreen} />
             <Stack.Screen name="BulkStudentUploadScreen" component={BulkStudentUploadScreen} />
             <Stack.Screen name="BatchDetailsScreen" component={BatchDetailsScreen} />
             <Stack.Screen name="ExamTemplatesHomeScreen" component={ExamTemplatesHomeScreen} />
             <Stack.Screen name="CreateExamTemplateScreen" component={CreateExamTemplateScreen} />
             <Stack.Screen name="CreateExamTemplateSubjectsScreen" component={CreateExamTemplateSubjectsScreen} />
-        
+
         </Stack.Navigator>
 
     )
