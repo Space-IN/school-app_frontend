@@ -3,54 +3,85 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   StyleSheet,
   Alert,
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
- 
-import { BASE_URL } from '@env';
-import {api} from '../../../api/api'
+import { api } from '../../../api/api';
 
 export default function EditFacultyScreen({ route, navigation }) {
   const { faculty } = route.params;
 
+  // Editable fields
   const [name, setName] = useState(faculty.name || '');
   const [email, setEmail] = useState(faculty.email || '');
-  const [gender, setGender] = useState(faculty.gender || 'Male');
-  const [dob, setDob] = useState(new Date(faculty.dateOfBirth || new Date()));
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [address, setAddress] = useState(faculty.address || '');
   const [phone, setPhone] = useState(faculty.phone || '');
-  const [password, setPassword] = useState(faculty.password || '');
-  const [showPassword, setShowPassword] = useState(false);
+  const [address, setAddress] = useState(faculty.address || '');
+  const [gender, setGender] = useState(faculty.gender || 'Male');
+
+  const initialDob = faculty.dateOfBirth
+    ? new Date(faculty.dateOfBirth)
+    : new Date();
+
+  const [dob, setDob] = useState(initialDob);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const handleDateChange = (event, selectedDate) => {
     setShowDatePicker(false);
-    if (selectedDate) setDob(selectedDate);
+    if (selectedDate) {
+      setDob(selectedDate);
+    }
   };
 
   const handleUpdate = async () => {
     const updated = {
       name: name.trim(),
       email: email.trim(),
+      phone: phone.trim(),
+      address: address.trim(),
       gender,
       dateOfBirth: dob.toISOString().substring(0, 10),
-      address: address.trim(),
-      phone: phone.trim(),
-      password: password.trim(),
     };
 
     try {
-      await api.put(`${BASE_URL}/api/admin/faculty/${faculty.userId}`, updated);
-      Alert.alert('✅ Success', 'Faculty updated successfully');
+      await api.put(
+        `/api/admin/faculty/${faculty.userId}`,
+        updated
+      );
+      Alert.alert(' Success', 'Faculty updated successfully');
       navigation.goBack();
     } catch (err) {
-      console.error('❌ Error updating faculty:', err.response?.data || err.message);
+      console.error(
+        ' Error updating faculty:',
+        err.response?.data || err.message
+      );
       Alert.alert('Error', 'Failed to update faculty.');
     }
+  };
+
+  const renderGenderButton = (value) => {
+    const selected = gender === value;
+    return (
+      <TouchableOpacity
+        key={value}
+        style={[
+          styles.genderBtn,
+          selected && styles.genderBtnActive,
+        ]}
+        onPress={() => setGender(value)}
+      >
+        <Text
+          style={[
+            styles.genderText,
+            selected && styles.genderTextActive,
+          ]}
+        >
+          {value}
+        </Text>
+      </TouchableOpacity>
+    );
   };
 
   return (
@@ -94,6 +125,7 @@ export default function EditFacultyScreen({ route, navigation }) {
       >
         <Text>{dob.toISOString().substring(0, 10)}</Text>
       </TouchableOpacity>
+
       {showDatePicker && (
         <DateTimePicker
           value={dob}
@@ -106,37 +138,15 @@ export default function EditFacultyScreen({ route, navigation }) {
 
       <Text style={styles.label}>Gender</Text>
       <View style={styles.genderWrapper}>
-        <Button
-          title="Male"
-          color={gender === 'Male' ? '#1e3a8a' : '#ccc'}
-          onPress={() => setGender('Male')}
-        />
-        <Button
-          title="Female"
-          color={gender === 'Female' ? '#1e3a8a' : '#ccc'}
-          onPress={() => setGender('Female')}
-        />
-        <Button
-          title="Other"
-          color={gender === 'Other' ? '#1e3a8a' : '#ccc'}
-          onPress={() => setGender('Other')}
-        />
+        {['Male', 'Female', 'Other'].map(renderGenderButton)}
       </View>
 
-      <TextInput
-        value={password}
-        onChangeText={setPassword}
-        placeholder="Password"
-        secureTextEntry={!showPassword}
-        style={styles.input}
-      />
-      <TouchableOpacity onPress={() => setShowPassword((prev) => !prev)}>
-        <Text style={styles.togglePassword}>
-          {showPassword ? '🙈 Hide Password' : '👁️ Show Password'}
-        </Text>
+      <TouchableOpacity
+        style={styles.saveBtn}
+        onPress={handleUpdate}
+      >
+        <Text style={styles.saveText}>Save Changes</Text>
       </TouchableOpacity>
-
-      <Button title="Save Changes" color="#1e3a8a" onPress={handleUpdate} />
     </ScrollView>
   );
 }
@@ -144,7 +154,7 @@ export default function EditFacultyScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     padding: 35,
-    backgroundColor: '#ffffffff',
+    backgroundColor: '#fff',
     flexGrow: 1,
   },
   heading: {
@@ -158,31 +168,58 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderWidth: 1,
     marginBottom: 15,
-    borderRadius: 5,
+    borderRadius: 6,
     padding: 10,
     backgroundColor: '#fff',
   },
   dateInput: {
     borderColor: '#ccc',
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: 6,
     padding: 12,
     marginBottom: 15,
     backgroundColor: '#fff',
   },
   label: {
     fontWeight: 'bold',
-    marginBottom: 6,
+    marginBottom: 8,
     color: '#1e3a8a',
   },
   genderWrapper: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 15,
+    marginBottom: 20,
   },
-  togglePassword: {
-    color: '#1e3a8a',
-    marginBottom: 15,
-    textAlign: 'right',
+  genderBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    marginHorizontal: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    alignItems: 'center',
+    backgroundColor: '#f9f9f9',
+  },
+  genderBtnActive: {
+    backgroundColor: '#1e3a8a',
+    borderColor: '#1e3a8a',
+  },
+  genderText: {
+    color: '#333',
+    fontWeight: '600',
+  },
+  genderTextActive: {
+    color: '#fff',
+  },
+  saveBtn: {
+    backgroundColor: '#1e3a8a',
+    paddingVertical: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  saveText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });

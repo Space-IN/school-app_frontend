@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { LinearGradient } from "expo-linear-gradient"
-import { View, StyleSheet, Text, TouchableOpacity, Modal, FlatList, Animated, ActivityIndicator, Platform, StatusBar as RNStatusBar } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
+import { View, StyleSheet, Text, TouchableOpacity, Modal, FlatList, Animated, ActivityIndicator, Platform, StatusBar as RNStatusBar, ScrollView } from "react-native"
 import { useStudent } from "../../../context/studentContext"
 import { useNavigation } from "@react-navigation/native"
 import { Ionicons } from "@expo/vector-icons"
@@ -11,27 +10,52 @@ import { fetchAssessments, fetchAssessmentScore } from "../../../controllers/stu
 
 
 
-const TableRow = ({ subject, marks, max_marks, grade, status, isHeader, isTotal }) => {
-  const bgColor = isTotal ? status==="Fail" ? "#be3b3bff" : "#10b981" : "transparent"
+const TableRow = ({ subject, marks, max_marks, grade, status, components, isHeader, isTotal }) => {
+  const [open, setOpen] = useState(false)
+  const bgColor = (isTotal, isHeader) => {
+    if(isHeader) {
+      return "#d6d6d6"
+    } else if(isTotal) {
+      if(status==="Fail") {
+        return "#be3b3bff"
+      } else if(status==="Pass") {
+        return "#10b981"
+      } else {
+        return "transparent"
+      }
+    }
+  }
+  const bgColorVal = bgColor(isTotal, isHeader)
+  const borderRadius = isHeader ? { borderTopEndRadius: 15, borderTopStartRadius: 15  } : isTotal ? { borderBottomEndRadius: 15, borderBottomStartRadius: 15 } : {}
   const textStyle = [styles.tableText, isHeader && { fontWeight: "800" }, isTotal && { color: "#fff", fontWeight: "600" }]
 
   return (
-    <View style={[styles.tableRow, { backgroundColor: bgColor, borderBottomLeftRadius: 15, borderBottomRightRadius: 15 }]}>
-      <Text style={[textStyle, styles.subjectCol]}>
-        {isHeader ? "Subject" : subject || "Total"}
-      </Text>
-      <Text style={[textStyle, styles.centerCol]}>
-        {isHeader ? "Marks" : marks}
-      </Text>
-      <Text style={[textStyle, styles.centerCol]}>
-        {isHeader ? "Max" : max_marks}
-      </Text>
-      <Text style={[textStyle, styles.centerCol]}>
-        {isHeader ? "Grade" : grade}
-      </Text>
-      <Text style={[textStyle, styles.centerCol]}>
-        {isHeader ? "Status" : status}
-      </Text>
+    <View style={{ borderRadius: 15, }}>
+      <TouchableOpacity
+        disabled={isHeader || isTotal}
+        onPress={() => setOpen(!open)}
+        style={[styles.tableRow, { backgroundColor: bgColorVal, ...borderRadius }]}
+      >
+        <Text style={[textStyle, styles.subjectCol,]}>
+          {isHeader ? "Subject" : subject || "Total"}
+        </Text>
+        <Text style={[textStyle, styles.centerCol]}>{isHeader ? "Marks" : marks}</Text>
+        <Text style={[textStyle, styles.centerCol]}>{isHeader ? "Max" : max_marks}</Text>
+        <Text style={[textStyle, styles.centerCol]}>{isHeader ? "Grade" : grade}</Text>
+        <Text style={[textStyle, styles.centerCol]}>{isHeader ? "Status" : status}</Text>
+      </TouchableOpacity>
+
+      {open && components?.map((comp, idx) => (
+        <View key={idx} style={styles.componentRow}>
+          <Text style={styles.componentName}>{comp.name}</Text>
+          <Text style={styles.componentText}>{comp.marks_obtained}/{comp.max_marks}</Text>
+          <Text style={styles.componentText}>{comp.status}</Text>
+          <Text style={[styles.componentText, { fontWeight: "700", }]}>
+            Assessed:{"\n"}
+            {comp.marked_by?.name || "Unavailable"}
+          </Text>
+        </View>
+      ))}
     </View>
   )
 }
@@ -53,12 +77,22 @@ export default function AssessmentScreen() {
 
   const slideAnim = useRef(new Animated.Value(0)).current
 
-  const handleSelection = async (studentId, grade, section, exam, year) => {
+  const loadAssessments = async () => {
+      try {
+          const response = await fetchAssessments(currentYear, studentData?.board, studentData?._id)
+          if(response) setExams(response.exams)
+      } catch(err) {
+          setErr(err.message || "an error occured while fetching assessment.")
+      }
+  }
+
+  const handleSelection = async (studentId, exam, assessmentId, year) => {
     setLoading(true)
     setSelectedExam(exam)
     setModalVisible(false)
+
     try {
-      const response = await fetchAssessmentScore(studentId, grade, section, exam.assessment_name, year)
+      const response = await fetchAssessmentScore(studentId, assessmentId, year)
       if(response) setMarksData(response)
     } catch(err) {
       setErr(err.message || "an error occured while fetching assessment score.")
@@ -86,19 +120,11 @@ export default function AssessmentScreen() {
 
 
   useEffect(() => {
-      const loadAssessments = async () => {
-          try {
-              const response = await fetchAssessments(studentData?.className, studentData?.section, currentYear)
-              if(response) setExams(response.exams)
-          } catch(err) {
-              setErr(err.message || "an error occured while fetching assessment.")
-          }
-      }
-      loadAssessments()
+    loadAssessments()
   }, [])
 
   return (
-    <View style={styles.safeArea}>
+    <ScrollView style={styles.safeArea}>
       <LinearGradient
         colors={['#d72b2b', '#8b1313']}
         start={{ x: 0, y: 0 }}
@@ -153,7 +179,12 @@ export default function AssessmentScreen() {
               <Animated.View style={[styles.marksContainer, slideInStyle]}>
                 <TableRow isHeader />
                 {marksData.subjects.map((subj, i) => (
-                  <TableRow key={i} {...subj} />
+                  <TableRow
+                    key={i}
+                    subject={subj.subject.name}
+                    marks={subj.marks} max_marks={subj.max_marks} grade={subj.grade} status={subj.status}
+                    components={subj.components}
+                  />
                 ))}
                 <TableRow
                   subject="Total"
@@ -190,7 +221,7 @@ export default function AssessmentScreen() {
               renderItem={({ item, index }) => (
                 <TouchableOpacity
                   style={styles.option}
-                  onPress={() => handleSelection(studentData?.userId, studentData?.className, studentData?.section, item, currentYear)}
+                  onPress={() => handleSelection(studentData?._id, item, item?._id, currentYear)}
                   key={index}
                 >
                   <Text style={styles.examDateText}>{new Date(item.date).toISOString().split('T')[0]}</Text>
@@ -207,7 +238,7 @@ export default function AssessmentScreen() {
           </View>
         </TouchableOpacity>
       </Modal>
-    </View>
+    </ScrollView>
   )
 }
 
@@ -263,20 +294,23 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 4,
+    marginBottom: 10,
   },
   dropdownTrigger: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#e8e9eb",
     borderRadius: 15,
     paddingVertical: 14,
     paddingHorizontal: 15,
     width: "100%",
+    overflow: "hidden"
   },
   dropdownTextContainer: {
-    display: "flex",
+    flex: 1,
     flexDirection: "column",
+    width: "50%"
   },
   dropdownTextPrimary: {
     fontSize: 18,
@@ -315,6 +349,7 @@ const styles = StyleSheet.create({
   },
   subjectCol: {
     flex: 1.4,
+    fontWeight: "700"
   },
   centerCol: {
     flex: 0.8,
@@ -376,5 +411,19 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     alignSelf: "center",
     color: "#d12828ff"
-  }
+  },
+  componentRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    backgroundColor: "#b4b4b4",
+    borderBottomWidth: 1,
+  },
+  componentName: {
+    marginRight: 20, fontWeight: "700",
+  },
+  componentText: {
+    marginRight: 10, textAlign: "center", fontSize: 13,
+  },
 })

@@ -1,4 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
+import StudentHeader from '../../components/student/header';
 
 import AdminTabNavigator from '../../screens/Admin/AdminTabNavigator';
 import AdminPosterManager from '../../screens/Admin/AdminDashboard/AdminPosterManager';
@@ -59,14 +60,16 @@ const Stack = createNativeStackNavigator()
 export default function AdminNavigator() {
     return (
         <Stack.Navigator
-            initialRouteName="AdminDashboard"
-            screenOptions={{
-                headerShown: true,
-                headerBackTitleVisible: false,
-                headerStyle: { backgroundColor: '#9c1006' },
-                headerTintColor: '#fff',
-                headerTitleStyle: { fontWeight: 'bold' },
-            }}
+        initialRouteName="AdminDashboard"
+        screenOptions={({ navigation, route, back }) => ({
+            headerShown: true,
+            header: () => (
+            <StudentHeader
+            navigation={navigation}
+            back={!!back}
+            />
+        ),
+        })}
         >
             <Stack.Screen name="AdminDashboard" component={AdminTabNavigator} options={{ headerShown: false }} />
             <Stack.Screen name="AddStudentScreen" component={AddStudentScreen} />

@@ -1,13 +1,13 @@
 import axios from "axios"
 import { KEYCLOAK_SERVER_URL, BASE_URL } from "@env"
 import { keycloakConfig } from "../config/keycloak"
-import { api } from "../api/api"
+
 
 
 
 export async function loginUser(username, password) {
   try {
-    const response = await api.post(
+    const response = await axios.post(
       `${KEYCLOAK_SERVER_URL}/realms/vishwachetana-vidyaniketana/protocol/openid-connect/token`,
       new URLSearchParams({
         client_id: keycloakConfig.clientId,
@@ -30,10 +30,9 @@ export async function loginUser(username, password) {
 }
 
 
-
 export async function logoutUser(refreshToken) {
     try {
-        const response = await api.post(
+        const response = await axios.post(
             `${KEYCLOAK_SERVER_URL}/realms/vishwachetana-vidyaniketana/protocol/openid-connect/logout`,
             new URLSearchParams({
                 client_id: keycloakConfig.clientId,
@@ -60,7 +59,7 @@ export async function refreshUser(refreshToken) {
         params.append("client_id", keycloakConfig.clientId)
         params.append("refresh_token", refreshToken)
 
-        const response = await api.post(
+        const response = await axios.post(
             `${KEYCLOAK_SERVER_URL}/realms/${keycloakConfig.realm}/protocol/openid-connect/token`,
             params,
             { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
@@ -76,7 +75,7 @@ export async function refreshUser(refreshToken) {
 
 export async function getMaskedPhone(userId) {
     try {
-        const response = await api.get(`/api/auth/otp/meta/${userId}`)
+        const response = await axios.get(`${BASE_URL}/api/auth/otp/meta/${userId}`)
         return response.data
     } catch(err) {
         console.error("could not get masked phone number: ", err?.response?.data || err.message)
@@ -87,7 +86,7 @@ export async function getMaskedPhone(userId) {
 
 export async function sendOtp(userId) {
     try {
-        const response = await api.post(`/api/auth/otp/send`, { userId })
+        const response = await axios.post(`${BASE_URL}/api/auth/otp/send`, { userId })
         return response.data
     } catch(err) {
         console.error("could not send otp request: ", err?.response?.data || err.message)
@@ -98,7 +97,7 @@ export async function sendOtp(userId) {
 
 export async function verifyOtp(userId, otp) {
     try {
-        const response = await api.post("/api/auth/otp/verify", { userId, otp })
+        const response = await axios.post(`${BASE_URL}/api/auth/otp/verify`, { userId, otp })
         return response.data
     } catch(err) {
         console.error("could not send otp verify request: ", err?.response?.data || err.message)

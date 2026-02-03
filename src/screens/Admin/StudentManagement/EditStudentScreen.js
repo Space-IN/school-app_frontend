@@ -1,19 +1,22 @@
- 
-// screens/admin/EditStudentScreen.js
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, Button, StyleSheet, Alert, ScrollView, Dimensions
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Alert,
+  ScrollView,
+  Dimensions,
 } from 'react-native';
-import axios from 'axios';
-import { BASE_URL } from '@env';
-import {api} from '../../../api/api'
+
+import { api } from '../../../api/api';
 
 export default function EditStudentScreen({ route, navigation }) {
-  const { student, onGoBack } = route.params;
+  const { student } = route.params;
 
   const [form, setForm] = useState({
     name: student.name || '',
-    userId: student.userId || '',
     className: student.className || '',
     section: student.section || '',
     rollNo: student.rollNo || '',
@@ -23,8 +26,6 @@ export default function EditStudentScreen({ route, navigation }) {
     gender: student.gender || '',
     address: student.address || '',
     admissionDate: student.admissionDate || '',
-    bloodGroup: student.bloodGroup || '',
-    profileImage: student.profileImage || '',
     fatherName: student.fatherName || '',
     fatherOccupation: student.fatherOccupation || '',
     fatherContact: student.fatherContact || '',
@@ -35,77 +36,85 @@ export default function EditStudentScreen({ route, navigation }) {
   });
 
   const handleChange = (field, value) => {
-    setForm({ ...form, [field]: value });
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleUpdate = async () => {
-    const cleanedUserId = form.userId?.trim().toLowerCase();
-    const url = `${BASE_URL}/api/admin/students/${encodeURIComponent(cleanedUserId)}`;
+    if (!student?._id) {
+      Alert.alert('Error', 'Invalid student record');
+      return;
+    }
 
     const payload = {
       name: form.name.trim(),
-      userId: form.userId.trim().toLowerCase(),
       className: form.className.trim(),
       section: form.section.trim().toUpperCase(),
       rollNo: form.rollNo.trim(),
       admissionNumber: form.admissionNumber.trim(),
       studentEmail: form.studentEmail.trim().toLowerCase(),
-      dob: form.dob?.trim() || '',
-      gender: form.gender?.trim() || '',
-      address: form.address?.trim() || '',
-      admissionDate: form.admissionDate?.trim() || '',
-      bloodGroup: form.bloodGroup?.trim() || '',
-      profileImage: form.profileImage?.trim() || '',
-      fatherName: form.fatherName?.trim() || '',
-      fatherOccupation: form.fatherOccupation?.trim() || '',
-      fatherContact: form.fatherContact?.trim() || '',
-      motherName: form.motherName?.trim() || '',
-      motherOccupation: form.motherOccupation?.trim() || '',
-      motherContact: form.motherContact?.trim() || '',
-      parentEmail: form.parentEmail?.trim() || '',
+      dob: form.dob || null,
+      gender: form.gender || null,
+      address: form.address || null,
+      admissionDate: form.admissionDate || null,
+      fatherName: form.fatherName || null,
+      fatherOccupation: form.fatherOccupation || null,
+      fatherContact: form.fatherContact || null,
+      motherName: form.motherName || null,
+      motherOccupation: form.motherOccupation || null,
+      motherContact: form.motherContact || null,
+      parentEmail: form.parentEmail
+        ? form.parentEmail.trim().toLowerCase()
+        : null,
     };
 
+    const cleanPayload = Object.fromEntries(
+      Object.entries(payload).filter(
+        ([_, value]) => value !== null && value !== ''
+      )
+    );
+
     try {
-      const response = await api.put(url, payload);
+      await api.put(
+        `/api/admin/students/${student._id}`,
+        cleanPayload
+      );
       Alert.alert('✅ Updated', 'Student data updated successfully');
-      // Call the callback to refresh data in parent screen
-      if (onGoBack) {
-        onGoBack();
-      }
       navigation.goBack();
     } catch (err) {
-      console.error('❌ Error updating student:', err);
-      Alert.alert('Error', err.response?.data?.message || 'Could not update student');
+      console.error('❌ Error updating student:', err.response?.data || err);
+      Alert.alert(
+        'Error',
+        err.response?.data?.message || 'Could not update student'
+      );
     }
   };
+
+  const fields = [
+    ['name', 'Full Name'],
+    ['className', 'Class (e.g. 6)'],
+    ['section', 'Section (e.g. A)'],
+    ['rollNo', 'Roll Number'],
+    ['admissionNumber', 'Admission Number'],
+    ['studentEmail', 'Student Email'],
+    ['dob', 'Date of Birth (YYYY-MM-DD)'],
+    ['gender', 'Gender'],
+    ['address', 'Address'],
+    ['admissionDate', 'Admission Date (YYYY-MM-DD)'],
+    ['fatherName', 'Father Name'],
+    ['fatherOccupation', 'Father Occupation'],
+    ['fatherContact', 'Father Contact'],
+    ['motherName', 'Mother Name'],
+    ['motherOccupation', 'Mother Occupation'],
+    ['motherContact', 'Mother Contact'],
+    ['parentEmail', 'Parent Email'],
+  ];
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.form}>
         <Text style={styles.heading}>Edit Student</Text>
 
-        {[
-          ['name', 'Full Name'],
-          ['userId', 'User ID'],
-          ['rollNo', 'Roll Number'],
-          ['admissionNumber', 'Admission Number'],
-          ['studentEmail', 'Student Email'],
-          ['className', 'Class (e.g. 6)'],
-          ['section', 'Section (e.g. A)'],
-          ['dob', 'Date of Birth (YYYY-MM-DD)'],
-          ['gender', 'Gender'],
-          ['address', 'Address'],
-          ['admissionDate', 'Admission Date (YYYY-MM-DD)'],
-          ['bloodGroup', 'Blood Group (e.g. B+)'],
-          ['profileImage', 'Profile Image URL'],
-          ['fatherName', 'Father Name'],
-          ['fatherOccupation', 'Father Occupation'],
-          ['fatherContact', 'Father Contact'],
-          ['motherName', 'Mother Name'],
-          ['motherOccupation', 'Mother Occupation'],
-          ['motherContact', 'Mother Contact'],
-          ['parentEmail', 'Parent Email'],
-        ].map(([field, placeholder]) => (
+        {fields.map(([field, placeholder]) => (
           <TextInput
             key={field}
             placeholder={placeholder}
@@ -116,7 +125,11 @@ export default function EditStudentScreen({ route, navigation }) {
           />
         ))}
 
-        <Button title="Save Changes" onPress={handleUpdate} color="#1e3a8a" />
+        <Button
+          title="Save Changes"
+          onPress={handleUpdate}
+          color="#1e3a8a"
+        />
       </View>
     </ScrollView>
   );

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View,
   FlatList,
@@ -10,9 +10,6 @@ import {
   TextInput,
   StatusBar,
 } from 'react-native';
- 
-import { BASE_URL } from '@env';
-import * as SecureStore from 'expo-secure-store';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView, SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../../../context/authContext';
@@ -29,7 +26,8 @@ export default function FacultyMarkSession2Screen({ route }) {
     subjectMasterId, 
     facultyId, 
     subjectName, 
-    subjectId
+    subjectId,
+    board,
   } = route.params || {};
 
   const [students, setStudents] = useState([]);
@@ -71,7 +69,7 @@ export default function FacultyMarkSession2Screen({ route }) {
   const verifyFacultyAssignment = async () => {
     try {
       console.log(' [Session 2] Verifying faculty assignment...');
-      const currentFacultyId = decodedToken?.userId || facultyId;
+      const currentFacultyId = decodedToken?.preferred_username || facultyId;
       
       const response = await api.get(
         `/api/faculty/subject/subjects/faculty/${currentFacultyId}`
@@ -109,7 +107,8 @@ export default function FacultyMarkSession2Screen({ route }) {
     try {
       console.log(' [Session 2] Loading students...');
       const { data } = await api.get(
-        `/api/faculty/students/grade/${grade}/section/${section}`
+        `/api/faculty/students/grade/${grade}/section/${section}`,
+        { params: { board, } }
       );
       setStudents(data);
 
@@ -169,7 +168,7 @@ export default function FacultyMarkSession2Screen({ route }) {
       return;
     }
 
-    const currentFacultyId = decodedToken?.userId || facultyId;
+    const currentFacultyId = decodedToken?.preferred_username || facultyId;
     
     if (!currentFacultyId) {
       Alert.alert('Error', 'Faculty ID not found. Please login again.');
@@ -194,6 +193,7 @@ export default function FacultyMarkSession2Screen({ route }) {
       const payload = {
         grade: Number(grade),
         section: section,
+        board: board,
         date: date,
         sessionNumber: SESSION_NUMBER, // HARDCODED - Always 2
         markedBy: currentFacultyId,

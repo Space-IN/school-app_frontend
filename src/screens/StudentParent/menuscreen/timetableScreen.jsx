@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, RefreshControl, Platform, StatusBar, } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient'
 import * as Animatable from 'react-native-animatable'
 import { useNavigation } from '@react-navigation/native'
@@ -8,7 +9,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { useStudent } from '../../../context/studentContext'
 import { api } from '../../../api/api'
 
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+const DAYS = ["SUNDAY","MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"]
 
 const SUBJECT_COLORS = [
   ['#667eea', '#764ba2'],
@@ -33,6 +34,10 @@ export default function TimetableScreen() {
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState(null)
 
+  useEffect(() => {
+    console.log("schedule data: ", schedule)
+  })
+
 
   const fetchSchedule = async () => {
     try {
@@ -41,10 +46,11 @@ export default function TimetableScreen() {
 
       const grade = studentData?.className
       const section = studentData?.section
+      const board = studentData?.board
       if (!grade || !section) throw new Error('Class and section information not found')
       
       const response = await api.get(
-        `/api/student/schedule/class/${grade}/section/${section}`
+        `/api/student/schedule/class/${grade}/section/${section}/board/${board}`
       )
       setSchedule(response.data)
     } catch(err) {
@@ -105,7 +111,7 @@ export default function TimetableScreen() {
                   <Ionicons name="person" size={16} color="#ffffff" />
                 </View>
                 <Text style={styles.teacherName}>
-                  {facultyNames.length > 0 ? facultyNames.join(", ") : "Teacher TBD"}
+                  {period.facultyNames.length > 0 ? period.facultyNames.join(", ") : "Teacher TBD"}
                 </Text>
               </View>
             </View>
@@ -173,7 +179,7 @@ export default function TimetableScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <LinearGradient colors={['#d72b2b', '#8b1313']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.header}>
         <View style={styles.headerContent}>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
@@ -229,17 +235,14 @@ export default function TimetableScreen() {
       {totalPeriods > 0 && (
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Ionicons name="book-outline" size={20} color='#d72b2b' />
             <Text style={styles.statNumber}>{totalPeriods}</Text>
-            <Text style={styles.statLabel}>Periods</Text>
+            <Text style={styles.statLabel}>Sessions</Text>
           </View>
           <View style={styles.statCard}>
-            <Ionicons name="time-outline" size={20} color='#d72b2b' />
             <Text style={styles.statNumber}>{totalPeriods * 45}</Text>
             <Text style={styles.statLabel}>Minutes</Text>
           </View>
           <View style={styles.statCard}>
-            <Ionicons name="calendar-outline" size={20} color='#d72b2b' />
             <Text style={styles.statNumber}>{selectedDay.substring(0, 3)}</Text>
             <Text style={styles.statLabel}>Today</Text>
           </View>
@@ -277,7 +280,7 @@ export default function TimetableScreen() {
           </Animatable.View>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 const styles = StyleSheet.create({

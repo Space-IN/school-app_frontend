@@ -1,74 +1,48 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react'
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  SafeAreaView,
   StatusBar,
   ActivityIndicator,
   Alert,
   TouchableOpacity,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-
-import { useAuth } from "../../../context/authContext";
-import { useNavigation } from '@react-navigation/native';
-import { BASE_URL } from '@env';
-import { api } from '../../../api/api';
+} from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { Ionicons } from '@expo/vector-icons'
+import { useAuth } from "../../../context/authContext"
+import { api } from '../../../api/api'
 
 
 export default function FacultyProfileScreen() {
-  const { decodedToken, logout } = useAuth();
-  const [faculty, setFaculty] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const navigation = useNavigation();
+  const { decodedToken, logout } = useAuth()
+  const [faculty, setFaculty] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   const fetchFacultyDetails = async () => {
+    console.log("it ran...")
+    const facultyId = decodedToken?.preferred_username
+    if(!facultyId) {
+      Alert.alert('Error', 'Unable to fetch profile details. Please try again later.')
+      return
+    }
+
+    setLoading(true)
     try {
-      const facultyId = decodedToken?.preferred_username;
-
-      if (!facultyId) {
-        Alert.alert('Error', 'Faculty information not available');
-        return;
+      const response = await api.get(`/api/faculty/${facultyId}`)
+      console.log("response: ", response)
+      if(response.data) {
+        setFaculty(response.data)
       }
-
-      console.log('Fetching faculty details for:', facultyId);
-
-      // Try multiple possible endpoints
-      let response;
-      let data;
-      try {
-        response = await api.get(`/api/faculty/${facultyId}`);
-        console.log('Faculty API response:', response.data);
-      } catch (firstErr) {
-        console.log('First endpoint failed, trying alternative...');
-        // response = await api.get(`${BASE_URL}/api/admin/faculty/profile/${facultyId}`);
-      }
-
-      if (data) {
-        setFaculty(data);
-      } else {
-        throw new Error("No data received from faculty endpoints");
-      }
-
-    } catch (error) {
-      console.error(' Error fetching faculty details:', error);
-      console.error('Error details:', error.response?.data);
-
-      Alert.alert('Error', 'Failed to load faculty profile');
+    } catch(err) {
+      console.error("error fetching faculty data: ", err)
+      Alert.alert('Error', 'Unable to fetch profile details. Please try again later.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useEffect(() => {
-    if (decodedToken?.preferred_username) {
-      fetchFacultyDetails();
-    }
-  }, [decodedToken?.userId]);
-
-  // Logic for handling the logout confirmation
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
       { text: 'Cancel', style: 'cancel' },
@@ -76,11 +50,17 @@ export default function FacultyProfileScreen() {
         text: 'Logout',
         style: 'destructive',
         onPress: () => {
-          logout(); // Calls the global logout function
+          logout()
         },
       },
-    ]);
-  };
+    ])
+  }
+
+
+  useEffect(() => {
+    if(decodedToken?.preferred_username) fetchFacultyDetails()
+  }, [decodedToken?.userId])
+
 
   // Format date for display
   const formatDate = (dateString) => {
@@ -95,20 +75,7 @@ export default function FacultyProfileScreen() {
     } catch (error) {
       return 'Invalid Date';
     }
-  };
-
-  const handleGoToNotices = () => {
-    navigation.navigate('NoticeBoardScreen', {
-      userId: decodedToken?.userId,
-      role: 'faculty'
-    });
-  };
-
-  const handleGoToCalendar = () => {
-    navigation.navigate('AcademicCalendarScreen');
-  };
-
-  // --- Rendering Blocks ---
+  }
 
   if (loading) {
     return (
@@ -149,8 +116,6 @@ export default function FacultyProfileScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar backgroundColor="#9c1006" barStyle="light-content" />
-
-      {/* Standard Centered Header */}
 
       <ScrollView
         style={styles.container}
@@ -294,7 +259,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   profileCard: {
-    backgroundColor: '#faebebff',
+    backgroundColor: 'rgb(226, 225, 225)',
     borderRadius: 16,
     padding: 20,
     elevation: 4,
@@ -395,7 +360,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#d9534f', // Distinctive red color for destructive action
+    backgroundColor: '#f12a2aff', // Distinctive red color for destructive action
     paddingVertical: 15,
     borderRadius: 12,
     marginTop: 10,

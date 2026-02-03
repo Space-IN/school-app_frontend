@@ -22,32 +22,27 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
 
-// --- Corporate Brand Palette ---
 const PRO_COLORS = {
-    background: '#F1F5F9', // Slate-100
-    textPrimary: '#0F172A', // Slate-900
-    textSecondary: '#64748B', // Slate-500
-    cardBg: '#FFFFFF',
+    background: '#F5F7FA',
+    backgroundLight: '#FFFFFF',
+    textPrimary: '#1A202C',
+    textSecondary: '#64748B',
+    border: '#E2E8F0',
 
-    // Strict Brand Gradients (Alternating Theme)
-    corporateBlue: ['#1e3a8a', '#3b82f6'], // Navy to Blue-500
-    corporateTeal: ['#0f766e', '#14b8a6'], // Deep Teal to Teal-500
-
-    // Accents for Sub-menus
-    iconBlue: '#1e3a8a',
-    iconTeal: '#0f766e',
+    primaryGradient: ['#ac1d1d', '#8b1515'],
+    warningGradient: ['#ef4444', '#dc2626'],
+    
+    accent: '#ac1d1d',
+    accentLight: '#fecaca',
 };
 
-// --- Component: Professional Menu Tile ---
 const MenuTile = ({ title, icon, gradientColors, onPress, expanded, children, index }) => {
-    // Animation Values
     const heightAnim = useRef(new Animated.Value(0)).current;
     const rotateAnim = useRef(new Animated.Value(0)).current;
     const scaleAnim = useRef(new Animated.Value(1)).current;
     const slideAnim = useRef(new Animated.Value(50)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
 
-    // Entrance
     useEffect(() => {
         Animated.parallel([
             Animated.timing(fadeAnim, {
@@ -66,7 +61,6 @@ const MenuTile = ({ title, icon, gradientColors, onPress, expanded, children, in
         ]).start();
     }, []);
 
-    // Expansion
     useEffect(() => {
         Animated.parallel([
             Animated.timing(heightAnim, {
@@ -83,13 +77,8 @@ const MenuTile = ({ title, icon, gradientColors, onPress, expanded, children, in
         ]).start();
     }, [expanded]);
 
-    const onPressIn = () => {
-        Animated.spring(scaleAnim, { toValue: 0.98, useNativeDriver: true }).start();
-    };
-
-    const onPressOut = () => {
-        Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }).start();
-    };
+    const onPressIn = () => Animated.spring(scaleAnim, { toValue: 0.98, useNativeDriver: true }).start();
+    const onPressOut = () => Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }).start();
 
     const rotateInterpolate = rotateAnim.interpolate({
         inputRange: [0, 1],
@@ -102,33 +91,14 @@ const MenuTile = ({ title, icon, gradientColors, onPress, expanded, children, in
     });
 
     return (
-        <Animated.View style={[
-            styles.tileWrapper,
-            { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }
-        ]}>
-            <TouchableOpacity
-                activeOpacity={0.9} // More tactile feedback
-                onPress={onPress}
-                onPressIn={onPressIn}
-                onPressOut={onPressOut}
-            >
+        <Animated.View style={[styles.tileWrapper, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+            <TouchableOpacity activeOpacity={0.9} onPress={onPress} onPressIn={onPressIn} onPressOut={onPressOut}>
                 <Animated.View style={[styles.tileContainer, { transform: [{ scale: scaleAnim }] }]}>
-                    <LinearGradient
-                        colors={gradientColors}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }} // Diagonal gradient for premium look
-                        style={styles.tileGradient}
-                    >
-                        {/* Subtle Glass-like Overlay for Texture */}
+                    <LinearGradient colors={gradientColors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.tileGradient}>
                         <View style={styles.glassOverlay} />
-
                         <View style={styles.tileContent}>
-                            <View style={styles.iconContainer}>
-                                <Ionicons name={icon} size={26} color="#fff" />
-                            </View>
-                            <View style={styles.textContainer}>
-                                <Text style={styles.tileTitle}>{title}</Text>
-                            </View>
+                            <View style={styles.iconContainer}><Ionicons name={icon} size={26} color="#fff" /></View>
+                            <View style={styles.textContainer}><Text style={styles.tileTitle}>{title}</Text></View>
                             <Animated.View style={{ transform: [{ rotate: rotateInterpolate }] }}>
                                 <Ionicons name={expanded ? "remove-outline" : "add-outline"} size={22} color="rgba(255,255,255,0.9)" />
                             </Animated.View>
@@ -138,52 +108,29 @@ const MenuTile = ({ title, icon, gradientColors, onPress, expanded, children, in
             </TouchableOpacity>
 
             <Animated.View style={[styles.dropdownContainer, { maxHeight: maxHeight, opacity: heightAnim }]}>
-                <View style={styles.dropdownInner}>
-                    {children}
-                </View>
+                <View style={styles.dropdownInner}>{children}</View>
             </Animated.View>
         </Animated.View>
     );
 };
 
-// --- Component: Sub-Menu Item ---
 const SubMenuItem = ({ label, icon, onPress, color }) => (
     <TouchableOpacity style={styles.subMenuItem} onPress={onPress} activeOpacity={0.7}>
-        <View style={[styles.subIconBox, { backgroundColor: `${color}10` }]}>
+        <View style={[styles.subIconBox, { backgroundColor: `${color}20` }]}>
             <Ionicons name={icon} size={20} color={color} />
         </View>
         <Text style={styles.subMenuText}>{label}</Text>
-        <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+        <Ionicons name="chevron-forward" size={18} color={PRO_COLORS.textSecondary} />
     </TouchableOpacity>
 );
 
 export default function AdminWorkbenchScreen({ navigation }) {
-    const [userId, setUserId] = useState(null);
-    const [loading, setLoading] = useState(true);
     const { logout } = useAuth();
     const [expandedSection, setExpandedSection] = useState(null);
 
-    // Correct logic: Hide ONLY this screen's header, not the parent's
     useEffect(() => {
         navigation.setOptions({ headerShown: false });
     }, [navigation]);
-
-    useEffect(() => {
-        const loadUserData = async () => {
-            try {
-                const stored = await AsyncStorage.getItem('userData');
-                const parsed = stored ? JSON.parse(stored) : null;
-                if (parsed?.role === 'Admin' && parsed?.userId) {
-                    setUserId(parsed.userId);
-                }
-            } catch (err) {
-                console.error('Error loading userData:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        loadUserData();
-    }, []);
 
     const handleLogout = () => {
         Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -192,52 +139,41 @@ export default function AdminWorkbenchScreen({ navigation }) {
         ]);
     };
 
-    const toggleSection = (section) => {
-        setExpandedSection(expandedSection === section ? null : section);
-    };
+    const toggleSection = (section) => setExpandedSection(expandedSection === section ? null : section);
+    const nav = (screen, params) => navigation.navigate(screen, params);
 
-    const nav = (screen, params) => navigation.navigate(screen, params)
-
-    // ✅ Navigation handlers
-    const handleAddStudent = () => {
-       navigation.navigate('StudentEntryHubScreen');
-    };
-
-    const handleAddFaculty = () => navigation.navigate('AddFacultyScreen');
-    const handleViewStudents = () => {
-        navigation.navigate('BoardSelectionScreen', {
-            nextScreen: 'AllStudentsScreen',
-            title: 'View Students - Select Board',
-        });
-    };
-    const handleViewFaculty = () => navigation.navigate('AllFacultyScreen');
-    const handleClassSchedule = () => navigation.navigate('ClassScheduleScreen');
-    const handleAddSubjectMaster = () => navigation.navigate('AddSubjectMasterScreen');
-    const handleAssignSubject = () => navigation.navigate('AssignSubjectScreen');
-    const handleAddEvent = () => navigation.navigate('AddEventScreen');
-    const handleViewClassSchedule = () => navigation.navigate('ClassScheduleViewScreen');
-    const handleAddNotice = () => navigation.navigate('AddNoticeScreen');
-    const handleFacultyPerformance = () => navigation.navigate('FacultyPerformance');
-    const handleManageFees = () => navigation.navigate('AdminFeesScreen');
-
-    const handleExamTemplates = () => {
-      navigation.navigate('BoardSelectionScreen', {
-      nextScreen: 'ExamTemplatesHomeScreen',
-      title: 'Exam Templates - Select Board',
-     });
-    };
-
-    const renderSectionHeader = (title, icon, sectionKey) => (
-        <TouchableOpacity
-            style={styles.sectionHeader}
-            onPress={() => toggleSection(sectionKey)}
-        >
-            <View style={styles.sectionHeaderLeft}>
-                <Ionicons name={icon} size={24} color="#1e3a8a" />
-                <Text style={styles.sectionTitle}>{title}</Text>
-            </View>
-        </TouchableOpacity>
-        );
+    const sections = [
+        { key: 'addUsers', title: 'Add Users', icon: 'person-add', subItems: [
+            { label: 'Add Student', icon: 'person-add-outline', screen: 'StudentEntryHubScreen' },
+            { label: 'Add Faculty', icon: 'person-add-outline', screen: 'AddFacultyScreen' },
+        ]},
+        { key: 'viewUsers', title: 'View Users', icon: 'people', subItems: [
+            { label: 'View Students', icon: 'school-outline', screen: 'BoardSelectionScreen', params: { nextScreen: 'AllStudentsScreen', title: 'View Students' } },
+            { label: 'View Faculty', icon: 'people-outline', screen: 'AllFacultyScreen' },
+        ]},
+        { key: 'eventManagement', title: 'Event Management', icon: 'calendar', subItems: [
+            { label: 'Add Event', icon: 'calendar-outline', screen: 'AddEventScreen' },
+        ]},
+        { key: 'subjectManagement', title: 'Subject Management', icon: 'book', subItems: [
+            { label: 'Add Subject Master', icon: 'book-outline', screen: 'AddSubjectMasterScreen' },
+            { label: 'Assign Subject', icon: 'create-outline', screen: 'AssignSubjectScreen' },
+        ]},
+        { key: 'classSchedule', title: 'Class Schedule', icon: 'time', subItems: [
+            { label: 'Manage Schedule', icon: 'calendar-outline', screen: 'ClassScheduleScreen' },
+            { label: 'View Schedule', icon: 'eye-outline', screen: 'ClassScheduleViewScreen' },
+        ]},
+        { key: 'exams', title: 'Examination & Tests', icon: 'clipboard', subItems: [
+            { label: 'Exam Templates', icon: 'document-text-outline', screen: 'BoardSelectionScreen', params: { nextScreen: 'ExamTemplatesHomeScreen', title: 'Exam Templates' } },
+            { label: 'Marks Entry', icon: 'pencil-outline', screen: 'BoardSelectionScreen', params: { nextScreen: 'MarksEntryScreen', title: 'Marks Entry' } },
+            { label: 'Report Cards', icon: 'document-text-outline', screen: 'BoardSelectionScreen', params: { nextScreen: 'ReportCardLandingScreen', title: 'Report Cards' } },
+        ]},
+        { key: 'notices', title: 'Notices', icon: 'megaphone', subItems: [
+            { label: 'Add Notice', icon: 'megaphone-outline', screen: 'AddNoticeScreen' },
+        ]},
+        { key: 'fees', title: 'Fee Management', icon: 'card', subItems: [
+            { label: 'Manage Student Fees', icon: 'card-outline', screen: 'AdminFeesScreen' },
+        ]},
+    ];
 
     return (
         <View style={styles.container}>
@@ -249,129 +185,36 @@ export default function AdminWorkbenchScreen({ navigation }) {
                         <Text style={styles.headerTitle}>Workbench</Text>
                         <Text style={styles.headerSubtitle}>Manage & Control</Text>
                     </View>
-                    <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-                        <Ionicons name="log-out-outline" size={24} color="#1e3a8a" />
+                    <TouchableOpacity onPress={handleLogout}>
+                        <LinearGradient colors={PRO_COLORS.warningGradient} style={styles.logoutBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                            <Ionicons name="log-out-outline" size={20} color="#fff" />
+                            <Text style={styles.logoutBtnText}>Logout</Text>
+                        </LinearGradient>
                     </TouchableOpacity>
                 </View>
 
-                <ScrollView
-                    contentContainerStyle={styles.scrollContent}
-                    showsVerticalScrollIndicator={false}
-                >
-                    {/* 1. Add Users (Blue) */}
-                    <MenuTile
-                        index={0}
-                        title="Add Users"
-                        icon="person-add"
-                        gradientColors={PRO_COLORS.corporateBlue}
-                        expanded={expandedSection === 'addUsers'}
-                        onPress={() => toggleSection('addUsers')}
-                    >
-                        <SubMenuItem label="Add Student" icon="person-add-outline" color={PRO_COLORS.iconBlue} onPress={() => nav('BoardSelectionScreen', { nextScreen: 'AddStudentScreen', title: 'Add Student' })} />
-                        <SubMenuItem label="Add Faculty" icon="person-add-outline" color={PRO_COLORS.iconBlue} onPress={() => nav('AddFacultyScreen')} />
-                    </MenuTile>
-
-                    {/* 2. View Users (Teal - Alternate) */}
-                    <MenuTile
-                        index={1}
-                        title="View Users"
-                        icon="people"
-                        gradientColors={PRO_COLORS.corporateTeal}
-                        expanded={expandedSection === 'viewUsers'}
-                        onPress={() => toggleSection('viewUsers')}
-                    >
-                        <SubMenuItem label="View Students" icon="school-outline" color={PRO_COLORS.iconTeal} onPress={() => nav('BoardSelectionScreen', { nextScreen: 'AllStudentsScreen', title: 'View Students' })} />
-                        <SubMenuItem label="View Faculty" icon="people-outline" color={PRO_COLORS.iconTeal} onPress={() => nav('AllFacultyScreen')} />
-                    </MenuTile>
-
-                    {/* 3. Event Management (Blue) */}
-                    <MenuTile
-                        index={2}
-                        title="Event Management"
-                        icon="calendar"
-                        gradientColors={PRO_COLORS.corporateBlue}
-                        expanded={expandedSection === 'eventManagement'}
-                        onPress={() => toggleSection('eventManagement')}
-                    >
-                        <SubMenuItem label="Add Event" icon="calendar-outline" color={PRO_COLORS.iconBlue} onPress={() => nav('AddEventScreen')} />
-                    </MenuTile>
-
-                    {/* 4. Subject Management (Teal - Alternate) */}
-                    <MenuTile
-                        index={3}
-                        title="Subject Management"
-                        icon="book"
-                        gradientColors={PRO_COLORS.corporateTeal}
-                        expanded={expandedSection === 'subjectManagement'}
-                        onPress={() => toggleSection('subjectManagement')}
-                    >
-                        <SubMenuItem label="Add Subject Master" icon="book-outline" color={PRO_COLORS.iconTeal} onPress={() => nav('AddSubjectMasterScreen')} />
-                        <SubMenuItem label="Assign Subject" icon="create-outline" color={PRO_COLORS.iconTeal} onPress={() => nav('AssignSubjectScreen')} />
-                    </MenuTile>
-
-                    {/* 5. Class Schedule (Blue) */}
-                    <MenuTile
-                        index={4}
-                        title="Class Schedule"
-                        icon="time"
-                        gradientColors={PRO_COLORS.corporateBlue}
-                        expanded={expandedSection === 'classSchedule'}
-                        onPress={() => toggleSection('classSchedule')}
-                    >
-                        <SubMenuItem label="Manage Schedule" icon="calendar-outline" color={PRO_COLORS.iconBlue} onPress={() => nav('ClassScheduleScreen')} />
-                        <SubMenuItem label="View Schedule" icon="eye-outline" color={PRO_COLORS.iconBlue} onPress={() => nav('ClassScheduleViewScreen')} />
-                    </MenuTile>
-
-                    {/* 6. Examination and Tests (Teal - Alternate) */}
-                    <MenuTile
-                        index={5}
-                        title="Examination and Tests"
-                        icon="clipboard"
-                        gradientColors={PRO_COLORS.corporateTeal}
-                        expanded={expandedSection === 'exams'}
-                        onPress={() => toggleSection('exams')}
-                    >
-                        <SubMenuItem label="Exam Schedule" icon="calendar-number-outline" color={PRO_COLORS.iconTeal} onPress={() => Alert.alert('Coming Soon', 'Feature is under development')} />
-                        <SubMenuItem label="Marks Entry" icon="pencil-outline" color={PRO_COLORS.iconTeal} onPress={() => nav('BoardSelectionScreen', { nextScreen: 'MarksEntryScreen', title: 'Marks Entry' })} />
-                        <SubMenuItem label="Report Cards" icon="document-text-outline" color={PRO_COLORS.iconTeal} onPress={() => nav('BoardSelectionScreen', { nextScreen: 'ReportCardLandingScreen', title: 'Report Cards' })} />
-                    </MenuTile>
-
-                    {/* 7. Faculty Performance (Blue) */}
-                    <MenuTile
-                        index={6}
-                        title="Faculty Performance"
-                        icon="analytics"
-                        gradientColors={PRO_COLORS.corporateBlue}
-                        expanded={expandedSection === 'facultyPerformance'}
-                        onPress={() => toggleSection('facultyPerformance')}
-                    >
-                        <SubMenuItem label="View Performance" icon="analytics-outline" color={PRO_COLORS.iconBlue} onPress={() => nav('FacultyPerformance')} />
-                    </MenuTile>
-
-                    {/* 8. Notices (Teal - Alternate) */}
-                    <MenuTile
-                        index={7}
-                        title="Notices"
-                        icon="megaphone"
-                        gradientColors={PRO_COLORS.corporateTeal}
-                        expanded={expandedSection === 'notices'}
-                        onPress={() => toggleSection('notices')}
-                    >
-                        <SubMenuItem label="Add Notice" icon="megaphone-outline" color={PRO_COLORS.iconTeal} onPress={() => nav('AddNoticeScreen')} />
-                    </MenuTile>
-
-                    {/* 9. Notices (Teal - Alternate) */}
-                    <MenuTile
-                        index={7}
-                        title="Fee Management"
-                        icon="card"
-                        gradientColors={PRO_COLORS.corporateTeal}
-                        expanded={expandedSection === 'fees'}
-                        onPress={() => toggleSection('fees')}
-                    >
-                        <SubMenuItem label="Fee Management" icon="card-outline" color={PRO_COLORS.iconTeal} onPress={() => nav('AdminFeesScreen')} />
-                    </MenuTile>
-
+                <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                    {sections.map((section, index) => (
+                        <MenuTile
+                            key={section.key}
+                            index={index}
+                            title={section.title}
+                            icon={section.icon}
+                            gradientColors={PRO_COLORS.primaryGradient}
+                            expanded={expandedSection === section.key}
+                            onPress={() => toggleSection(section.key)}
+                        >
+                            {section.subItems.map(item => (
+                                <SubMenuItem 
+                                    key={item.label}
+                                    label={item.label} 
+                                    icon={item.icon} 
+                                    color={PRO_COLORS.textSecondary} 
+                                    onPress={() => nav(item.screen, item.params)} 
+                                />
+                            ))}
+                        </MenuTile>
+                    ))}
                     <View style={{ height: 40 }} />
                 </ScrollView>
             </SafeAreaView>
@@ -384,14 +227,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: PRO_COLORS.background,
     },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: PRO_COLORS.background,
-    },
-
-    /* Header */
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -415,33 +250,45 @@ const styles = StyleSheet.create({
         marginBottom: 2,
     },
     logoutBtn: {
-        padding: 10,
-        backgroundColor: '#FEF2F2',
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 16,
         borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#FEE2E2',
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+        shadowOffset: {width: 0, height: 2}
+    },
+    logoutBtnText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '700',
+        marginLeft: 8,
     },
 
-    /* Scroll Content */
     scrollContent: {
         paddingHorizontal: 20,
         paddingTop: 10,
         paddingBottom: 20,
     },
 
-    /* Tile Styles */
     tileWrapper: {
         marginBottom: 16,
         borderRadius: 16,
-        backgroundColor: '#fff',
+        backgroundColor: PRO_COLORS.backgroundLight,
         shadowColor: '#64748B',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 8,
         elevation: 3,
+        borderWidth: 1,
+        borderColor: PRO_COLORS.border,
     },
     tileContainer: {
-        borderRadius: 16,
+        borderTopLeftRadius: 15,
+        borderTopRightRadius: 15,
         overflow: 'hidden',
     },
     tileGradient: {
@@ -478,17 +325,15 @@ const styles = StyleSheet.create({
         letterSpacing: 0.3,
     },
 
-    /* Dropdown Styles */
     dropdownContainer: {
         overflow: 'hidden',
-        backgroundColor: '#ffffff',
-        borderBottomLeftRadius: 16,
-        borderBottomRightRadius: 16,
+        backgroundColor: PRO_COLORS.backgroundLight,
+        borderBottomLeftRadius: 15,
+        borderBottomRightRadius: 15,
     },
     dropdownInner: {
-        padding: 16,
+        padding: 12,
         paddingTop: 8,
-        backgroundColor: '#ffffff',
     },
     subMenuItem: {
         flexDirection: 'row',
@@ -496,10 +341,10 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         paddingHorizontal: 12,
         marginBottom: 6,
-        borderRadius: 12,
-        backgroundColor: '#F8FAFC',
+        borderRadius: 10,
+        backgroundColor: PRO_COLORS.background,
         borderWidth: 1,
-        borderColor: '#F1F5F9',
+        borderColor: PRO_COLORS.border,
     },
     subIconBox: {
         width: 32,

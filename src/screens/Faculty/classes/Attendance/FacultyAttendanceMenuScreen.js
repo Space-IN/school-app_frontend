@@ -18,7 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import {api} from '../../../../api/api';
 
 export default function FacultyAttendanceMenuScreen({ route }) {
-  const { grade, section, subjectMasterId, facultyId, subjectName, subjectId } = route.params || {};
+  const { grade, section, subjectMasterId, facultyId, subjectName, subjectId, board } = route.params || {};
   const [loading, setLoading] = useState(true);
   const [sessionStatus, setSessionStatus] = useState({
     session1: { marked: false, presentCount: 0, totalCount: 0 },
@@ -96,10 +96,10 @@ export default function FacultyAttendanceMenuScreen({ route }) {
       // Check both sessions
       const [session1Response, session2Response] = await Promise.all([
         api.get(
-          `/api/faculty/attendance/check?grade=${grade}&section=${section}&date=${date}&sessionNumber=1`
+          `/api/faculty/attendance/check?grade=${grade}&section=${section}&date=${date}&board=${board}&sessionNumber=1`
         ).catch(() => ({ data: { exists: false } })),
         api.get(
-          `/api/faculty/attendance/check?grade=${grade}&section=${section}&date=${date}&sessionNumber=2`
+          `/api/faculty/attendance/check?grade=${grade}&section=${section}&date=${date}&board=${board}&sessionNumber=2`
         ).catch(() => ({ data: { exists: false } })),
       ]);
 
@@ -146,6 +146,7 @@ const screenName = sessionNumber === 1
   navigation.navigate(screenName, {
     grade,
     section,
+    board,
     subjectMasterId,
     facultyId,
     subjectName,
@@ -157,6 +158,7 @@ const screenName = sessionNumber === 1
     navigation.navigate('FacultyEditAttendanceScreen', {
       grade: Number(grade),
       section,
+      board,
       subjectName,
       subjectId,
       facultyId: decodedToken?.preferred_username || facultyId,

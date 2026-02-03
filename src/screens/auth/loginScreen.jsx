@@ -50,10 +50,18 @@ export default function LoginScreen() {
           text1: "Login Successful."
         })
       } catch(err) {
+        const status = err.response?.status
+        const serverError = err.response?.data?.error_description
+
+        let message = "Something went wrong. Try again."
+        if(status===401) {
+          message = "Invalid User ID or Password."
+        }
+
         Toast.show({
           type: "error",
           text1: "Login Error",
-          text2: err.message || "Something went wrong. Try again."
+          text2: message,
         })
       }
     }

@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   content: { padding: 16, paddingBottom: 30 },
 
   header: { marginBottom: 24 },
-  title: { fontSize: 22, fontWeight: '700', color: '#1e3a8a' },
+  title: { fontSize: 22, fontWeight: '700', color: '#ac1d1dff' },
   subtitle: { fontSize: 14, color: '#666', marginTop: 4 },
 
   field: { marginBottom: 18 },
@@ -213,16 +213,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     borderWidth: 1,
-    borderColor: '#1e3a8a',
+    borderColor: '#ac1d1dff',
     borderRadius: 20,
     paddingVertical: 6,
     paddingHorizontal: 12,
   },
-  presetText: { fontSize: 14, color: '#1e3a8a', fontWeight: '500' },
+  presetText: { fontSize: 14, color: '#ac1d1dff', fontWeight: '500' },
 
   footer: { marginTop: 30 },
   nextButton: {
-    backgroundColor: '#1e3a8a',
+    backgroundColor: '#ac1d1dff',
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',

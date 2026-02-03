@@ -8,15 +8,12 @@ import {
   TouchableOpacity,
   Modal,
 } from "react-native";
-import axios from "axios";
-import { BASE_URL } from "@env";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
-import {api}  from '../../../../api/api';
-
+import { api } from "../../../../api/api";
 
 const ViewPerformanceTab = ({ route }) => {
-  const { grade, section, year, subjectName } = route.params || {};
+  const { grade, section, board, year, subjectName } = route.params || {};
 
   const [assessments, setAssessments] = useState([]);
   const [selectedTest, setSelectedTest] = useState(null);
@@ -25,14 +22,16 @@ const ViewPerformanceTab = ({ route }) => {
   const [error, setError] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
 
-  // Fetch available test names
+  // Fetch available assessments
   const fetchAssessments = async () => {
     try {
       setLoading(true);
-      const response = await api.get(
-        `/api/faculty/assessment/assessmentName?grade=${grade}&section=${section}&year=${year}`
-      );
+      const response = await api.get(`/api/student/assessment/`, {
+        params: { year, board, grade, section },
+      });
+
       console.log("📘 Assessments:", response.data);
+
       if (response.data.exams?.length) {
         setAssessments(response.data.exams);
       } else {
@@ -46,27 +45,45 @@ const ViewPerformanceTab = ({ route }) => {
     }
   };
 
-  // Fetch performance for selected test
-  const fetchAssessmentScores = async (test_name) => {
+  // Fetch performance for selected assessment
+  const fetchAssessmentScores = async (assessmentId) => {
     try {
       setLoading(true);
       setError("");
-      console.log("📡 Fetching:", `/api/faculty/assessment/faculty/assessmentScore`, {
-        grade,
-        section,
-        test_name,
-        year,
-        subjectName,
-      });
 
       const response = await api.get(
-        `/api/faculty/assessment/faculty/assessmentScore?grade=${grade}&section=${section}&test_name=${test_name}&year=${year}&subject=${subjectName}`
+        `/api/faculty/assessment/faculty/assessmentScore/${assessmentId}`
       );
 
-      console.log(" Response:", response.data);
+      console.log("📊 Raw score response:", response.data);
 
       if (response.data.success) {
-        setScores(response.data.data.scores);
+        const records = response.data.data.records || [];
+
+      const flattenedScores = records.flatMap((record) =>
+        (record.subjects || [])
+          // ✅ FILTER BY subjectName
+          .filter(
+            (subj) =>
+              !subjectName || subj.subject?.name === subjectName
+          )
+          .map((subj) => {
+            const firstComponent = subj.components?.[0] || {};
+
+            return {
+              student: record.student,
+              subjectName: subj.subject?.name,
+              marks_obtained: subj.marks_obtained,
+              max_marks: subj.max_marks,
+              grade_obtained: subj.grade_obtained,
+              status: subj.status,
+              marked_by: firstComponent.marked_by || null,
+            };
+          })
+      );
+
+
+        setScores(flattenedScores);
       } else {
         setScores([]);
         setError(response.data.message || "Failed to load scores.");
@@ -89,12 +106,14 @@ const ViewPerformanceTab = ({ route }) => {
   const handleSelectTest = (test) => {
     setSelectedTest(test);
     setModalVisible(false);
-    fetchAssessmentScores(test.test_name);
+    fetchAssessmentScores(test._id);
   };
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>
-      <Text style={styles.studentName}>🎓 {item.student.name} ({item.student.userId})</Text>
+      <Text style={styles.studentName}>
+        🎓 {item.student.name} ({item.student.userId})
+      </Text>
       <Text style={styles.subText}>Subject: {item.subjectName}</Text>
       <Text style={styles.subText}>
         Marks: {item.marks_obtained} / {item.max_marks}
@@ -108,7 +127,9 @@ const ViewPerformanceTab = ({ route }) => {
       >
         Status: {item.status}
       </Text>
-      <Text style={styles.subText}>Marked By: {item.marked_by?.name}</Text>
+      <Text style={styles.subText}>
+        Marked By: {item.marked_by?.name || "—"}
+      </Text>
     </View>
   );
 
@@ -119,7 +140,7 @@ const ViewPerformanceTab = ({ route }) => {
         onPress={() => setModalVisible(true)}
       >
         <Text style={styles.dropdownText}>
-          {selectedTest ? selectedTest.test_name : "Select Assessment"}
+          {selectedTest ? selectedTest.assessment_name : "Select Assessment"}
         </Text>
         <Ionicons name="caret-down" size={20} color="#000" />
       </TouchableOpacity>
@@ -138,7 +159,7 @@ const ViewPerformanceTab = ({ route }) => {
                   style={styles.modalItem}
                   onPress={() => handleSelectTest(item)}
                 >
-                  <Text style={styles.modalText}>{item.test_name}</Text>
+                  <Text style={styles.modalText}>{item.assessment_name}</Text>
                   <Text style={styles.modalSubText}>{item.test_type}</Text>
                   <Text style={styles.modalSubText}>
                     {new Date(item.date).toISOString().split("T")[0]}
@@ -166,7 +187,9 @@ const ViewPerformanceTab = ({ route }) => {
             selectedTest ? (
               <Text style={styles.errorText}>No scores found.</Text>
             ) : (
-              <Text style={styles.errorText}>Select an assessment to view results.</Text>
+              <Text style={styles.errorText}>
+                Select an assessment to view results.
+              </Text>
             )
           }
         />

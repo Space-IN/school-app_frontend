@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   View,
@@ -14,109 +13,102 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { BASE_URL } from '@env';
 import { api } from '../../../api/api';
+
+/**
+ * Safely convert YYYY-MM-DD → Date (Android-safe)
+ */
+const safeDate = (dateStr) => {
+  if (!dateStr) return new Date();
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d);
+};
 
 const AddFacultyScreen = () => {
   const [formData, setFormData] = useState({
-    userId: '',
     name: '',
     email: '',
     gender: '',
+    board: '',
     dateOfBirth: '',
     address: '',
     phone: '',
-    password: '',
     department: '',
     designation: '',
     joinDate: '',
   });
 
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showJoinDatePicker, setShowJoinDatePicker] = useState(false);
+  const [showDOBPicker, setShowDOBPicker] = useState(false);
+  const [showJoinPicker, setShowJoinPicker] = useState(false);
 
   const handleChange = (field, value) => {
-    setFormData({ ...formData, [field]: value });
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async () => {
-    const {
-      userId,
-      name,
-      email,
-      gender,
-      dateOfBirth,
-      address,
-      phone,
-      password,
-      designation,
-      department,
-      joinDate,
-    } = formData;
+    const { name, email, gender, board, phone, joinDate } = formData;
 
-    if (!userId || !name || !email || !gender || !dateOfBirth || !address || !phone || !password) {
-      return Alert.alert('Error', 'Please fill all the fields');
+    // Required fields check (schema-aligned)
+    if (!name || !email || !gender || !board || !phone || !joinDate) {
+      return Alert.alert('Error', 'Please fill all required fields');
     }
 
     try {
-      const payload = {
-        userId: userId.trim().toLowerCase(),
+      /** Build payload EXACTLY how Joi expects */
+      const facultyData = {
         name: name.trim(),
         email: email.trim().toLowerCase(),
         gender,
-        dateOfBirth,
-        address: address.trim(),
+        board,
         phone: phone.trim(),
-        password: password.trim(),
-        designation: designation.trim(),
-        department: department.trim(),
-        joinDate: joinDate.trim(),
+        joinDate: new Date(joinDate).toISOString(), // REQUIRED ISO
       };
 
-      const response = await api.post(`${BASE_URL}/api/admin/faculty/add`, payload);
+      // Optional fields (ONLY if present)
+      if (formData.dateOfBirth) {
+        facultyData.dateOfBirth = new Date(formData.dateOfBirth).toISOString();
+      }
+      if (formData.address) {
+        facultyData.address = formData.address.trim();
+      }
+      if (formData.department) {
+        facultyData.department = formData.department.trim();
+      }
+      if (formData.designation) {
+        facultyData.designation = formData.designation.trim();
+      }
+
+      const response = await api.post('/api/admin/faculty', { facultyData });
 
       Alert.alert('Success', response.data.message);
 
+      // Reset form
       setFormData({
-        userId: '',
         name: '',
         email: '',
         gender: '',
+        board: '',
         dateOfBirth: '',
         address: '',
         phone: '',
-        password: '',
         department: '',
         designation: '',
         joinDate: '',
       });
     } catch (err) {
-      console.error(err);
-      Alert.alert('Error', err.response?.data?.message || 'Something went wrong');
-    }
-  };
+      console.log('CREATE FACULTY ERROR:', err.response?.data);
 
-  const showDatepicker = () => {
-    setShowDatePicker(true);
-  };
+      const data = err.response?.data;
+      let message = 'Failed to create faculty';
 
-  const showJoinDatepicker = () => {
-    setShowJoinDatePicker(true);
-  };
+      if (data?.error) {
+        message = data.error;
+      } else if (data?.errors) {
+        const firstKey = Object.keys(data.errors)[0];
+        message = data.errors[firstKey];
+      }
 
-  const handleDateChange = (event, selectedDate) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      const formattedDate = selectedDate.toISOString().split('T')[0];
-      handleChange('dateOfBirth', formattedDate);
-    }
-  };
-
-  const handleJoinDateChange = (event, selectedDate) => {
-    setShowJoinDatePicker(false);
-    if (selectedDate) {
-      const formattedDate = selectedDate.toISOString().split('T')[0];
-      handleChange('joinDate', formattedDate);
+      Alert.alert('Error', message);
     }
   };
 
@@ -126,109 +118,121 @@ const AddFacultyScreen = () => {
         <Text style={styles.header}>Add Faculty</Text>
 
         <TextInput
-          placeholder="User ID"
-          value={formData.userId}
-          onChangeText={(text) => handleChange('userId', text)}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Name"
+          placeholder="Name *"
           value={formData.name}
-          onChangeText={(text) => handleChange('name', text)}
+          onChangeText={t => handleChange('name', t)}
           style={styles.input}
         />
+
         <TextInput
-          placeholder="Email"
+          placeholder="Email *"
           value={formData.email}
-          onChangeText={(text) => handleChange('email', text)}
+          onChangeText={t => handleChange('email', t)}
           style={styles.input}
           keyboardType="email-address"
         />
 
-        {/* Gender Dropdown */}
-        <Text style={styles.label}>Gender</Text>
+        <Text style={styles.label}>Gender *</Text>
         <View style={styles.pickerWrapper}>
           <Picker
             selectedValue={formData.gender}
-            onValueChange={(itemValue) => handleChange('gender', itemValue)}
-            style={styles.picker}
+            onValueChange={v => handleChange('gender', v)}
           >
             <Picker.Item label="Select Gender" value="" />
             <Picker.Item label="Male" value="Male" />
             <Picker.Item label="Female" value="Female" />
+            <Picker.Item label="Other" value="Other" />
           </Picker>
         </View>
 
-        {/* Date of Birth Picker */}
+        <Text style={styles.label}>Board *</Text>
+        <View style={styles.pickerWrapper}>
+          <Picker
+            selectedValue={formData.board}
+            onValueChange={v => handleChange('board', v)}
+          >
+            <Picker.Item label="Select Board" value="" />
+            <Picker.Item label="STATE" value="STATE" />
+            <Picker.Item label="CBSE" value="CBSE" />
+          </Picker>
+        </View>
+
         <Text style={styles.label}>Date of Birth</Text>
-        <Pressable onPress={showDatepicker} style={styles.dateInput}>
+        <Pressable
+          style={styles.dateInput}
+          onPress={() => setShowDOBPicker(true)}
+        >
           <Text style={{ color: formData.dateOfBirth ? '#000' : '#999' }}>
             {formData.dateOfBirth || 'Select Date of Birth'}
           </Text>
         </Pressable>
-        {showDatePicker && (
+
+        {showDOBPicker && (
           <DateTimePicker
-            value={formData.dateOfBirth ? new Date(formData.dateOfBirth) : new Date()}
+            value={safeDate(formData.dateOfBirth)}
             mode="date"
             display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={handleDateChange}
             maximumDate={new Date()}
+            onChange={(e, d) => {
+              setShowDOBPicker(false);
+              if (d) handleChange('dateOfBirth', d.toISOString().split('T')[0]);
+            }}
           />
         )}
 
         <TextInput
           placeholder="Address"
           value={formData.address}
-          onChangeText={(text) => handleChange('address', text)}
+          onChangeText={t => handleChange('address', t)}
           style={styles.input}
         />
+
         <TextInput
-          placeholder="Phone"
+          placeholder="Phone *"
           value={formData.phone}
-          onChangeText={(text) => handleChange('phone', text)}
+          onChangeText={t => handleChange('phone', t)}
           style={styles.input}
           keyboardType="phone-pad"
         />
-        <TextInput
-          placeholder="Password"
-          value={formData.password}
-          onChangeText={(text) => handleChange('password', text)}
-          style={styles.input}
-          secureTextEntry
-        />
+
         <TextInput
           placeholder="Designation"
           value={formData.designation}
-          onChangeText={(text) => handleChange('designation', text)}
+          onChangeText={t => handleChange('designation', t)}
           style={styles.input}
         />
 
         <TextInput
           placeholder="Department"
           value={formData.department}
-          onChangeText={(text) => handleChange('department', text)}
+          onChangeText={t => handleChange('department', t)}
           style={styles.input}
         />
 
-        {/* Join Date Picker */}
-        <Text style={styles.label}>Join Date</Text>
-        <Pressable onPress={showJoinDatepicker} style={styles.dateInput}>
+        <Text style={styles.label}>Join Date *</Text>
+        <Pressable
+          style={styles.dateInput}
+          onPress={() => setShowJoinPicker(true)}
+        >
           <Text style={{ color: formData.joinDate ? '#000' : '#999' }}>
             {formData.joinDate || 'Select Join Date'}
           </Text>
         </Pressable>
-        {showJoinDatePicker && (
+
+        {showJoinPicker && (
           <DateTimePicker
-            value={formData.joinDate ? new Date(formData.joinDate) : new Date()}
+            value={safeDate(formData.joinDate)}
             mode="date"
             display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={handleJoinDateChange}
-            maximumDate={new Date()}
+            onChange={(e, d) => {
+              setShowJoinPicker(false);
+              if (d) handleChange('joinDate', d.toISOString().split('T')[0]);
+            }}
           />
         )}
 
         <View style={styles.buttonWrapper}>
-          <Button title="Add Faculty" onPress={handleSubmit} color="#1e3a8a" />
+          <Button title="Add Faculty" onPress={handleSubmit} color="#ac1d1dff" />
         </View>
       </View>
     </ScrollView>
@@ -244,12 +248,12 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     paddingVertical: 30,
-    backgroundColor: '#ffffffff',
+    backgroundColor: '#ffffff',
   },
   formContainer: {
     width: width > 400 ? 350 : '90%',
     alignSelf: 'center',
-    backgroundColor: '#faebebff',
+    backgroundColor: '#fecaca',
     padding: 20,
     borderRadius: 10,
     elevation: 3,
@@ -257,7 +261,7 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 22,
     fontWeight: '600',
-    color: '#1e3a8a',
+    color: '#020202',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -267,13 +271,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 14,
-    fontSize: 15,
     backgroundColor: '#f9f9f9',
   },
   label: {
     fontSize: 15,
     marginBottom: 6,
-    color: '#333',
     fontWeight: '500',
   },
   pickerWrapper: {
@@ -282,10 +284,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 14,
     backgroundColor: '#f9f9f9',
-  },
-  picker: {
-    height: 50,
-    width: '100%',
   },
   dateInput: {
     borderWidth: 1,

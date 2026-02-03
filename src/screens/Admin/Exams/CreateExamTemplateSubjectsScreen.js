@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,25 +8,69 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../../../api/api';
 
+
+
+const getCurriculum = (board, grade) => {
+  const cls = Number(grade);
+
+  if (cls <= 10) {
+    return board === 'CBSE'
+      ? 'School CBSE'
+      : 'School STATE';
+  }
+
+  return board === 'CBSE'
+    ? 'PUC Science'
+    : 'PUC Commerce';
+};
+
+
+
 export default function CreateExamTemplateSubjectsScreen({ route, navigation }) {
   const { board, form: step1Data, mode = 'CREATE' } = route.params || {};
 
-  const [subjects, setSubjects] = useState([
-    {
-      subjectCode: 'MATH000',
-      subjectName: 'Mathematics',
-      components: [{ name: '', maxMarks: '', passMarks: '' }],
-    },
-    {
-      subjectCode: 'PHY000',
-      subjectName: 'Physics',
-      components: [{ name: '', maxMarks: '', passMarks: '' }],
-    },
-  ]);
+  const [subjects, setSubjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+
+
+  const fetchSubjects = async () => {
+    try {
+      const curriculum = getCurriculum(board, step1Data.grade);
+
+      const res = await api.get('/api/admin/subject', {
+        params: { curriculum },
+      });
+
+      if (res.data?.success && res.data.data.length > 0) {
+        const mapped = res.data.data.map(sub => ({
+          subjectCode: sub.code,
+          subjectName: sub.name,
+          components: [{ name: '', maxMarks: '', passMarks: '' }],
+        }));
+        setSubjects(mapped);
+      } else {
+        setSubjects([]);
+      }
+    } catch (err) {
+      console.error(' Failed to fetch subjects:', err);
+      setSubjects([]);
+      Alert.alert('Error', 'Unable to fetch subjects.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSubjects();
+  }, []);
+
+  
 
   const updateComponent = (sIndex, cIndex, key, value) => {
     const updated = [...subjects];
@@ -36,7 +80,11 @@ export default function CreateExamTemplateSubjectsScreen({ route, navigation }) 
 
   const addComponent = (sIndex) => {
     const updated = [...subjects];
-    updated[sIndex].components.push({ name: '', maxMarks: '', passMarks: '' });
+    updated[sIndex].components.push({
+      name: '',
+      maxMarks: '',
+      passMarks: '',
+    });
     setSubjects(updated);
   };
 
@@ -47,62 +95,86 @@ export default function CreateExamTemplateSubjectsScreen({ route, navigation }) 
     setSubjects(updated);
   };
 
+
   const handleSubmit = async () => {
-    for (const sub of subjects) {
-      for (const comp of sub.components) {
-        if (!comp.name || !comp.maxMarks) {
-          Alert.alert(
-            'Validation Error',
-            `Each component in ${sub.subjectName} must have name and max marks`
-          );
-          return;
-        }
+  if (subjects.length === 0) {
+    Alert.alert('No Subjects', 'Please add subject details.');
+    return;
+  }
+
+  const filledSubjects = subjects.filter(sub =>
+    sub.components.some(
+      c => c.name.trim() !== '' || c.maxMarks !== ''
+    )
+  );
+
+  if (filledSubjects.length === 0) {
+    Alert.alert(
+      'Validation Error',
+      'Please add subject details before submitting.'
+    );
+    return;
+  }
+
+  for (const sub of filledSubjects) {
+    for (const comp of sub.components) {
+      if (!comp.name || !comp.maxMarks) {
+        Alert.alert(
+          'Validation Error',
+          `Each filled component in ${sub.subjectName} must have name and max marks`
+        );
+        return;
       }
     }
+  }
 
-    const payload = {
-      academicYear: step1Data.academicYear,
-      grade: step1Data.grade,
-      board,
-      assessmentName: step1Data.assessmentName,
-      assessmentType: step1Data.assessmentType,
-      subjects: subjects.map(sub => ({
-        subjectCode: sub.subjectCode,
-        components: sub.components.map(c => ({
-          name: c.name.trim(),
-          maxMarks: Number(c.maxMarks),
-          ...(c.passMarks ? { passMarks: Number(c.passMarks) } : {}),
-        })),
+  const payload = {
+    academicYear: step1Data.academicYear,
+    grade: step1Data.grade,
+    board,
+    assessmentName: step1Data.assessmentName,
+    assessmentType: step1Data.assessmentType,
+    subjects: filledSubjects.map(sub => ({
+      subjectCode: sub.subjectCode,
+      components: sub.components.map(c => ({
+        name: c.name.trim(),
+        maxMarks: Number(c.maxMarks),
+        ...(c.passMarks ? { passMarks: Number(c.passMarks) } : {}),
       })),
-    };
-
-    console.log(' Payload:', JSON.stringify(payload, null, 2));
-    console.log('Base URL:', api.defaults.baseURL);
-
-    try {
-      const res = await api.post(
-        'api/admin/assessment/assessment-template',
-        payload
-      );
-
-      console.log('Response:', res.data);
-
-      if (res.data?.success) {
-        Alert.alert('Success', 'Assessment template created successfully.', [
-          { text: 'OK', onPress: () => navigation.popToTop() },
-        ]);
-      }
-    } catch (err) {
-      console.error(' Axios error full:', {
-        message: err.message,
-        code: err.code,
-        config: err.config,
-        response: err.response,
-      });
-
-      Alert.alert('Error', 'Request failed. Check logs.');
-    }
+    })),
   };
+
+  try {
+    const res = await api.post(
+      '/api/admin/assessment/assessment-template',
+      payload
+    );
+
+    if (res.data?.success) {
+      Alert.alert(
+        'Success',
+        'Assessment template created successfully.',
+        [{ text: 'OK', onPress: () => navigation.popToTop() }]
+      );
+    }
+  } catch (err) {
+    console.error('Create template failed:', err);
+    Alert.alert(
+      'Error',
+      err.response?.data?.message || 'Request failed'
+    );
+  }
+};
+
+
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.loader}>
+        <ActivityIndicator size="large" color="#1e3a8a" />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -114,6 +186,19 @@ export default function CreateExamTemplateSubjectsScreen({ route, navigation }) 
           </Text>
         </View>
 
+
+        {subjects.length === 0 && (
+          <View style={styles.emptyState}>
+            <Ionicons name="alert-circle-outline" size={42} color="#999" />
+            <Text style={styles.emptyTitle}>No Subjects Found</Text>
+            <Text style={styles.emptyText}>
+              No subjects are configured for this class and board.
+              Please add subjects in Subject Master.
+            </Text>
+          </View>
+        )}
+
+
         {subjects.map((subject, sIndex) => (
           <View key={subject.subjectCode} style={styles.subjectCard}>
             <Text style={styles.subjectTitle}>{subject.subjectName}</Text>
@@ -122,7 +207,7 @@ export default function CreateExamTemplateSubjectsScreen({ route, navigation }) 
               <View key={cIndex} style={styles.componentCard}>
                 <TextInput
                   style={styles.input}
-                  placeholder="Component Name"
+                  placeholder="Component Name (Theory / Practical)"
                   value={comp.name}
                   onChangeText={(val) =>
                     updateComponent(sIndex, cIndex, 'name', val)
@@ -172,27 +257,69 @@ export default function CreateExamTemplateSubjectsScreen({ route, navigation }) 
           </View>
         ))}
 
-        <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
-          <Text style={styles.submitText}>Create Template</Text>
+        <TouchableOpacity
+          style={[
+            styles.submitBtn,
+            subjects.length === 0 && { backgroundColor: '#ccc' },
+          ]}
+          disabled={subjects.length === 0}
+          onPress={handleSubmit}
+        >
+          <Text style={styles.submitText}>
+            {mode === 'EDIT' ? 'Update Template' : 'Create Template'}
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   content: { padding: 16, paddingBottom: 40 },
+
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
   header: { marginBottom: 20 },
-  title: { fontSize: 22, fontWeight: '700', color: '#1e3a8a' },
+  title: { fontSize: 22, fontWeight: '700', color: '#ac1d1dff' },
   subtitle: { fontSize: 14, color: '#666', marginTop: 4 },
+
+  emptyState: {
+    alignItems: 'center',
+    marginTop: 40,
+    paddingHorizontal: 20,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 12,
+    color: '#333',
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#777',
+    textAlign: 'center',
+    marginTop: 6,
+  },
+
   subjectCard: {
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#fecaca',
     borderRadius: 12,
     padding: 14,
     marginBottom: 20,
   },
-  subjectTitle: { fontSize: 17, fontWeight: '600', marginBottom: 10 },
+  subjectTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    marginBottom: 10,
+  },
+
   componentCard: {
     backgroundColor: '#fff',
     borderRadius: 10,
@@ -201,6 +328,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#eee',
   },
+
   input: {
     borderWidth: 1,
     borderColor: '#ddd',
@@ -210,14 +338,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#fafafa',
     marginBottom: 8,
   },
+
   row: { flexDirection: 'row', gap: 10 },
   half: { flex: 1 },
+
   removeBtn: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
   removeText: { marginLeft: 6, color: '#b91c1c' },
+
   addComponentBtn: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
-  addComponentText: { marginLeft: 6, color: '#1e3a8a' },
+  addComponentText: { marginLeft: 6, color: '#ac1d1dff' },
+
   submitBtn: {
-    backgroundColor: '#1e3a8a',
+    backgroundColor: '#ac1d1dff',
     paddingVertical: 16,
     borderRadius: 14,
     alignItems: 'center',
