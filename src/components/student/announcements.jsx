@@ -56,7 +56,7 @@ export default function StudentAnnouncements() {
           </View>
         ) : (
           announcements.map((item) => {
-            if(item.target==="students") {
+            if(item.target==="students" || item.target==="all") {
               return (
                 <View style={styles.card} key={item._id}>
                   <View style={styles.cardHeader}>
