@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -25,36 +25,23 @@ export default function ExamTemplatesHomeScreen({ route, navigation }) {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
   const academicYear = getCurrentAcademicYear();
 
-
   const fetchTemplates = async () => {
     try {
-      const res = await api.get(
-        '/api/admin/assessment/assessment-template',
-        {
-          params: {
-            academicYear,
-            board,
-          },
-        }
-      );
+      const res = await api.get('/api/admin/assessment/assessment-template', {
+        params: { academicYear, board },
+      });
 
-      if (res.data?.success) {
-        setTemplates(res.data.data || []);
-      } else {
-        setTemplates([]);
-      }
+      setTemplates(res.data?.success ? res.data.data || [] : []);
     } catch (err) {
-      console.error(' Failed to fetch exam templates:', err);
-      Alert.alert(
-        'Error',
-        'Unable to fetch exam templates. Please try again.'
-      );
+      console.error('Failed to fetch exam templates:', err);
+      Alert.alert('Error', 'Unable to fetch exam templates.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -70,12 +57,8 @@ export default function ExamTemplatesHomeScreen({ route, navigation }) {
     fetchTemplates();
   }, []);
 
-
   const handleCreateTemplate = () => {
-    navigation.navigate('CreateExamTemplateScreen', {
-      board,
-      academicYear,
-    });
+    navigation.navigate('CreateExamTemplateScreen', { board, academicYear });
   };
 
   const openTemplateModal = (template) => {
@@ -86,6 +69,43 @@ export default function ExamTemplatesHomeScreen({ route, navigation }) {
   const closeTemplateModal = () => {
     setModalVisible(false);
     setSelectedTemplate(null);
+  };
+
+  /* =======================
+     DELETE TEMPLATE (SAFE)
+  ======================= */
+  const handleDeleteTemplate = (templateId) => {
+    if (deletingId) return; // prevent double tap
+
+    Alert.alert(
+      'Delete Exam Template',
+      'Are you sure you want to delete this exam template? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setDeletingId(templateId);
+              await api.delete(
+                `/api/admin/assessment/assessment-template/${templateId}`
+              );
+              Alert.alert('Success', 'Exam template deleted successfully.');
+              fetchTemplates();
+            } catch (err) {
+              console.error('Failed to delete template:', err);
+              Alert.alert(
+                'Error',
+                err.response?.data?.message || 'Failed to delete exam template.'
+              );
+            } finally {
+              setDeletingId(null);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const renderEmptyState = () => (
@@ -101,7 +121,7 @@ export default function ExamTemplatesHomeScreen({ route, navigation }) {
   if (loading) {
     return (
       <SafeAreaView style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#1e3a8a" />
+        <ActivityIndicator size="large" color="#ac1d1dff" />
       </SafeAreaView>
     );
   }
@@ -128,21 +148,33 @@ export default function ExamTemplatesHomeScreen({ route, navigation }) {
         data={templates}
         keyExtractor={(item) => item._id}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         contentContainerStyle={
           templates.length === 0 && styles.flatListContainer
         }
         ListEmptyComponent={renderEmptyState}
         renderItem={({ item }) => (
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => openTemplateModal(item)}
-          >
-            <View style={styles.templateCard}>
+          <View style={styles.templateCard}>
+            {/* DELETE ICON */}
+            <TouchableOpacity
+              style={styles.deleteIcon}
+              onPress={() => handleDeleteTemplate(item._id)}
+              disabled={deletingId === item._id}
+              activeOpacity={0.7}
+            >
+              {deletingId === item._id ? (
+                <ActivityIndicator size="small" color="#dc2626" />
+              ) : (
+                <Ionicons name="trash-outline" size={18} color="#dc2626" />
+              )}
+            </TouchableOpacity>
+
+            {/* CARD CONTENT */}
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => openTemplateModal(item)}
+            >
               <Text style={styles.templateName}>
                 {item.assessmentName}
               </Text>
@@ -151,16 +183,12 @@ export default function ExamTemplatesHomeScreen({ route, navigation }) {
                 Class {item.grade} • {item.assessmentType}
               </Text>
 
-              <Text style={styles.templateMetaSmall}>
-                Max Marks: {item.maxMarks}
-              </Text>
-
               <View style={styles.viewHint}>
                 <Ionicons name="eye-outline" size={14} color="#555" />
                 <Text style={styles.viewText}>View / Edit</Text>
               </View>
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
         )}
       />
 
@@ -173,8 +201,6 @@ export default function ExamTemplatesHomeScreen({ route, navigation }) {
     </SafeAreaView>
   );
 }
-
-
 
 const styles = StyleSheet.create({
   container: {
@@ -244,6 +270,15 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
+    position: 'relative',
+  },
+
+  deleteIcon: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    padding: 4,
+    zIndex: 10,
   },
 
   templateName: {
@@ -256,12 +291,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#ac1d1dff',
     marginTop: 4,
-  },
-
-  templateMetaSmall: {
-    fontSize: 12,
-    color: '#ac1d1dff',
-    marginTop: 2,
   },
 
   viewHint: {

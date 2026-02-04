@@ -167,8 +167,8 @@ export default function AdminWorkbenchScreen({ navigation }) {
             { label: 'Marks Entry', icon: 'pencil-outline', screen: 'BoardSelectionScreen', params: { nextScreen: 'MarksEntryScreen', title: 'Marks Entry' } },
             { label: 'Report Cards', icon: 'document-text-outline', screen: 'BoardSelectionScreen', params: { nextScreen: 'ReportCardLandingScreen', title: 'Report Cards' } },
         ]},
-        { key: 'notices', title: 'Notices', icon: 'megaphone', subItems: [
-            { label: 'Add Notice', icon: 'megaphone-outline', screen: 'AddNoticeScreen' },
+        { key: 'notices', title: 'Announcement', icon: 'megaphone', subItems: [
+            { label: 'Add Announcement', icon: 'megaphone-outline', screen: 'AddNoticeScreen' },
         ]},
         { key: 'fees', title: 'Fee Management', icon: 'card', subItems: [
             { label: 'Manage Student Fees', icon: 'card-outline', screen: 'AdminFeesScreen' },

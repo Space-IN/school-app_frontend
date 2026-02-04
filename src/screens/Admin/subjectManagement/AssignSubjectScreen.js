@@ -22,13 +22,21 @@ const CustomPickerModal = ({ visible, options, onSelect, onClose, title }) => (
             <View style={styles.modalContent}>
                 <View style={styles.modalHeader}>
                     <Text style={styles.modalTitle}>{title}</Text>
-                    <TouchableOpacity onPress={onClose}><Ionicons name="close-circle" size={24} color={PRO_COLORS.textSecondary} /></TouchableOpacity>
+                    <TouchableOpacity onPress={onClose}>
+                        <Ionicons name="close-circle" size={24} color={PRO_COLORS.textSecondary} />
+                    </TouchableOpacity>
                 </View>
                 <FlatList
                     data={options}
                     keyExtractor={(item) => item.value}
                     renderItem={({ item }) => (
-                        <TouchableOpacity style={styles.modalItem} onPress={() => { onSelect(item.value); onClose(); }}>
+                        <TouchableOpacity
+                            style={styles.modalItem}
+                            onPress={() => {
+                                onSelect(item.value);
+                                onClose();
+                            }}
+                        >
                             <Text style={styles.modalItemText}>{item.label}</Text>
                         </TouchableOpacity>
                     )}
@@ -41,13 +49,16 @@ const CustomPickerModal = ({ visible, options, onSelect, onClose, title }) => (
 const AssignSubjectScreen = () => {
     const [subjectList, setSubjectList] = useState([]);
     const [facultyList, setFacultyList] = useState([]);
+
     const [subjectId, setSubjectId] = useState(null);
     const [facultyId, setFacultyId] = useState(null);
+
     const [selectedClass, setSelectedClass] = useState(null);
     const [selectedSection, setSelectedSection] = useState(null);
-    const [classSectionAssignments, setClassSectionAssignments] = useState([]);
+    const [selectedBoard, setSelectedBoard] = useState(null);
 
-    const [modalVisible, setModalVisible] = useState(null); // 'subject', 'faculty', 'class', 'section'
+    const [classSectionAssignments, setClassSectionAssignments] = useState([]);
+    const [modalVisible, setModalVisible] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -58,7 +69,7 @@ const AssignSubjectScreen = () => {
                 ]);
                 setSubjectList(subjectsRes.data?.data || []);
                 setFacultyList(facultyRes.data?.data || []);
-            } catch (err) {
+            } catch {
                 Alert.alert('Error', 'Failed to load initial data');
             }
         };
@@ -66,18 +77,35 @@ const AssignSubjectScreen = () => {
     }, []);
 
     const handleAddClassSection = () => {
-        if (!selectedClass || !selectedSection) {
-            Alert.alert('Validation Error', 'Please select both class and section');
+        if (!selectedClass || !selectedSection || !selectedBoard) {
+            Alert.alert('Validation Error', 'Please select class, section and board');
             return;
         }
-        const duplicate = classSectionAssignments.find(item => item.classAssigned === selectedClass && item.section === selectedSection);
+
+        const duplicate = classSectionAssignments.find(
+            item =>
+                item.classAssigned === selectedClass &&
+                item.section === selectedSection &&
+                item.board === selectedBoard
+        );
+
         if (duplicate) {
-            Alert.alert('Duplicate', 'This class-section is already added.');
+            Alert.alert('Duplicate', 'This class-section-board is already added.');
             return;
         }
-        setClassSectionAssignments(prev => [...prev, { classAssigned: selectedClass, section: selectedSection.toUpperCase() }]);
+
+        setClassSectionAssignments(prev => [
+            ...prev,
+            {
+                classAssigned: selectedClass,
+                section: selectedSection.toUpperCase(),
+                board: selectedBoard,
+            },
+        ]);
+
         setSelectedClass(null);
         setSelectedSection(null);
+        setSelectedBoard(null);
     };
 
     const handleRemoveClassSection = (index) => {
@@ -86,15 +114,17 @@ const AssignSubjectScreen = () => {
 
     const handleSubmit = async () => {
         if (!subjectId || !facultyId || classSectionAssignments.length === 0) {
-            Alert.alert('Validation Error', 'All fields are required including at least one class-section');
+            Alert.alert('Validation Error', 'All fields are required');
             return;
         }
+
         try {
             await api.post('/api/admin/subject/assign-subject', {
                 subjectMasterId: subjectId,
                 facultyId,
                 classSectionAssignments,
             });
+
             Alert.alert('✅ Success', 'Subject assigned successfully!');
             setSubjectId(null);
             setFacultyId(null);
@@ -104,50 +134,90 @@ const AssignSubjectScreen = () => {
         }
     };
 
-    const subjectOptions = subjectList.map(s => ({ label: `${s.name} (${s.code})`, value: s._id }));
-    const facultyOptions = facultyList.map(f => ({ label: `${f.name} (${f.userId})`, value: f.userId }));
-    const classOptions = Array.from({ length: 12 }, (_, i) => ({ label: `Class ${i + 1}`, value: String(i + 1) }));
-    const sectionOptions = ['A', 'B', 'C', 'D'].map(s => ({ label: `Section ${s}`, value: s }));
+    const subjectOptions = subjectList.map(s => ({
+        label: `${s.name} (${s.code})`,
+        value: s._id,
+    }));
 
-    const getLabel = (options, value) => options.find(opt => opt.value === value)?.label;
+    const facultyOptions = facultyList.map(f => ({
+        label: `${f.name} (${f.userId})`,
+        value: f.userId,
+    }));
+
+    const classOptions = Array.from({ length: 12 }, (_, i) => ({
+        label: `Class ${i + 1}`,
+        value: String(i + 1),
+    }));
+
+    const sectionOptions = ['A', 'B', 'C'].map(s => ({
+        label: `Section ${s}`,
+        value: s,
+    }));
+
+    const boardOptions = [
+        { label: 'CBSE', value: 'CBSE' },
+        { label: 'STATE', value: 'STATE' },
+    ];
+
+    const getLabel = (options, value) =>
+        options.find(opt => opt.value === value)?.label;
 
     return (
         <SafeAreaView style={styles.safeArea}>
             <ScrollView contentContainerStyle={styles.container}>
                 <View style={styles.card}>
                     <Text style={styles.heading}>Assign Subject to Faculty</Text>
-                    
+
                     <Text style={styles.label}>Subject</Text>
                     <TouchableOpacity style={styles.pickerButton} onPress={() => setModalVisible('subject')}>
-                        <Text style={styles.pickerButtonText}>{getLabel(subjectOptions, subjectId) || 'Select Subject'}</Text>
+                        <Text style={styles.pickerButtonText}>
+                            {getLabel(subjectOptions, subjectId) || 'Select Subject'}
+                        </Text>
                         <Ionicons name="chevron-down" size={20} color={PRO_COLORS.textSecondary} />
                     </TouchableOpacity>
 
                     <Text style={styles.label}>Faculty</Text>
                     <TouchableOpacity style={styles.pickerButton} onPress={() => setModalVisible('faculty')}>
-                        <Text style={styles.pickerButtonText}>{getLabel(facultyOptions, facultyId) || 'Select Faculty'}</Text>
+                        <Text style={styles.pickerButtonText}>
+                            {getLabel(facultyOptions, facultyId) || 'Select Faculty'}
+                        </Text>
                         <Ionicons name="chevron-down" size={20} color={PRO_COLORS.textSecondary} />
                     </TouchableOpacity>
                 </View>
 
                 <View style={styles.card}>
                     <Text style={styles.heading}>Assign to Classes</Text>
+
+                    <Text style={styles.label}>Board</Text>
+                    <TouchableOpacity style={styles.pickerButton} onPress={() => setModalVisible('board')}>
+                        <Text style={styles.pickerButtonText}>
+                            {getLabel(boardOptions, selectedBoard) || 'Select Board'}
+                        </Text>
+                        <Ionicons name="chevron-down" size={20} color={PRO_COLORS.textSecondary} />
+                    </TouchableOpacity>
+
                     <View style={styles.classSectionRow}>
                         <View style={{ flex: 1, marginRight: 8 }}>
                             <Text style={styles.label}>Class</Text>
                             <TouchableOpacity style={styles.pickerButton} onPress={() => setModalVisible('class')}>
-                                <Text style={styles.pickerButtonText}>{getLabel(classOptions, selectedClass) || 'Select Class'}</Text>
+                                <Text style={styles.pickerButtonText}>
+                                    {getLabel(classOptions, selectedClass) || 'Select Class'}
+                                </Text>
                                 <Ionicons name="chevron-down" size={20} color={PRO_COLORS.textSecondary} />
                             </TouchableOpacity>
                         </View>
+
                         <View style={{ flex: 1, marginLeft: 8 }}>
                             <Text style={styles.label}>Section</Text>
                             <TouchableOpacity style={styles.pickerButton} onPress={() => setModalVisible('section')}>
-                                <Text style={styles.pickerButtonText}>{getLabel(sectionOptions, selectedSection) || 'Select Section'}</Text>
+                                <Text style={styles.pickerButtonText}>
+                                    {getLabel(sectionOptions, selectedSection) || 'Select Section'}
+                                </Text>
                                 <Ionicons name="chevron-down" size={20} color={PRO_COLORS.textSecondary} />
                             </TouchableOpacity>
                         </View>
                     </View>
+
                     <TouchableOpacity onPress={handleAddClassSection}>
                         <LinearGradient colors={['#3b82f6', '#1e3a8a']} style={styles.button}>
                             <Ionicons name="add-circle-outline" size={20} color="#fff" />
@@ -161,7 +231,9 @@ const AssignSubjectScreen = () => {
                         <Text style={styles.heading}>Assigned Classes</Text>
                         {classSectionAssignments.map((item, index) => (
                             <View key={index} style={styles.pair}>
-                                <Text style={styles.pairText}>{`${item.classAssigned} - Section ${item.section}`}</Text>
+                                <Text style={styles.pairText}>
+                                    {`${item.board} | Class ${item.classAssigned} - Section ${item.section}`}
+                                </Text>
                                 <TouchableOpacity onPress={() => handleRemoveClassSection(index)}>
                                     <Ionicons name="close-circle" size={22} color={PRO_COLORS.accent} />
                                 </TouchableOpacity>
@@ -177,10 +249,11 @@ const AssignSubjectScreen = () => {
                     </LinearGradient>
                 </TouchableOpacity>
 
-                <CustomPickerModal visible={modalVisible === 'subject'} options={subjectOptions} onClose={() => setModalVisible(null)} onSelect={setSubjectId} title="Select Subject" />
-                <CustomPickerModal visible={modalVisible === 'faculty'} options={facultyOptions} onClose={() => setModalVisible(null)} onSelect={setFacultyId} title="Select Faculty" />
-                <CustomPickerModal visible={modalVisible === 'class'} options={classOptions} onClose={() => setModalVisible(null)} onSelect={setSelectedClass} title="Select Class" />
-                <CustomPickerModal visible={modalVisible === 'section'} options={sectionOptions} onClose={() => setModalVisible(null)} onSelect={setSelectedSection} title="Select Section" />
+                <CustomPickerModal visible={modalVisible === 'subject'} options={subjectOptions} onSelect={setSubjectId} onClose={() => setModalVisible(null)} title="Select Subject" />
+                <CustomPickerModal visible={modalVisible === 'faculty'} options={facultyOptions} onSelect={setFacultyId} onClose={() => setModalVisible(null)} title="Select Faculty" />
+                <CustomPickerModal visible={modalVisible === 'class'} options={classOptions} onSelect={setSelectedClass} onClose={() => setModalVisible(null)} title="Select Class" />
+                <CustomPickerModal visible={modalVisible === 'section'} options={sectionOptions} onSelect={setSelectedSection} onClose={() => setModalVisible(null)} title="Select Section" />
+                <CustomPickerModal visible={modalVisible === 'board'} options={boardOptions} onSelect={setSelectedBoard} onClose={() => setModalVisible(null)} title="Select Board" />
             </ScrollView>
         </SafeAreaView>
     );
@@ -209,7 +282,7 @@ const styles = StyleSheet.create({
         color: PRO_COLORS.textSecondary,
         fontSize: 14,
     },
-    classSectionRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
+    classSectionRow: { flexDirection: 'row', marginBottom: 12 },
     pickerButton: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -230,10 +303,6 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         paddingVertical: 14,
         paddingHorizontal: 24,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
     },
     buttonText: { color: '#fff', fontSize: 16, fontWeight: '700', marginLeft: 8 },
     submitButton: { marginTop: 16 },
@@ -248,14 +317,13 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: PRO_COLORS.accent,
     },
-    pairText: { fontSize: 16, fontWeight: '600', color: PRO_COLORS.accent },
-    
+    pairText: { fontSize: 15, fontWeight: '600', color: PRO_COLORS.accent },
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 20 },
     modalContent: { backgroundColor: PRO_COLORS.backgroundLight, borderRadius: 16, maxHeight: '80%', padding: 16 },
-    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: PRO_COLORS.border },
-    modalTitle: { fontSize: 18, fontWeight: '700', color: PRO_COLORS.textPrimary },
+    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 12 },
+    modalTitle: { fontSize: 18, fontWeight: '700' },
     modalItem: { paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: PRO_COLORS.border },
-    modalItemText: { fontSize: 16, color: PRO_COLORS.textPrimary },
+    modalItemText: { fontSize: 16 },
 });
 
 export default AssignSubjectScreen;
