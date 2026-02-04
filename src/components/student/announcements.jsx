@@ -35,27 +35,29 @@ export default function StudentAnnouncements() {
 
   return (
     <View style={styles.container}>
-        <View style={styles.header}>
-            <Foundation name="megaphone" size={21} color="white" />
-            <Text style={styles.heading}>ANNOUNCEMENTS</Text>
-        </View>
+      <View style={styles.header}>
+        <Foundation name="megaphone" size={21} color="white" />
+        <Text style={styles.heading}>ANNOUNCEMENTS</Text>
+      </View>
 
-        <View style={styles.announcementsContainer}>
-            {loading ? (
-            <View style={styles.loadingBox}>
-                <ActivityIndicator size="small" color="#9c1006" />
-                <Text style={styles.loadingText}>Loading announcements...</Text>
-            </View>
-            ) : err ? (
-            <View style={styles.errorCard}>
-                <Text style={styles.errorText}>{err}</Text>
-            </View>
-            ) : announcements.length === 0 ? (
-            <View style={styles.noDataCard}>
-                <Text style={styles.noData}>No new announcements</Text>
-            </View>
-            ) : (
-            announcements.map((item) => (
+      <View style={styles.announcementsContainer}>
+        {loading ? (
+          <View style={styles.loadingBox}>
+            <ActivityIndicator size="small" color="#9c1006" />
+            <Text style={styles.loadingText}>Loading announcements...</Text>
+          </View>
+        ) : err ? (
+          <View style={styles.errorCard}>
+            <Text style={styles.errorText}>{err}</Text>
+          </View>
+        ) : announcements.length === 0 ? (
+          <View style={styles.noDataCard}>
+            <Text style={styles.noData}>No new announcements</Text>
+          </View>
+        ) : (
+          announcements.map((item) => {
+            if(item.target==="students") {
+              return (
                 <View style={styles.card} key={item._id}>
                   <View style={styles.cardHeader}>
                     <FontAwesome5 name="calendar-day" size={12} color="#64748b" />
@@ -73,10 +75,12 @@ export default function StudentAnnouncements() {
                   <Text style={styles.title}>{item.title}</Text>
                   <Text style={styles.description}>{item.message}</Text>
                 </View>
-            ))
-            )}
-            <LinearGradient colors={["transparent", "#f8f8f8"]} style={styles.bottomFade} pointerEvents="none" />
-        </View>
+              )
+            }
+          })
+        )}
+        <LinearGradient colors={["transparent", "#f8f8f8"]} style={styles.bottomFade} pointerEvents="none" />
+      </View>
     </View>
   )
 }

@@ -14,23 +14,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { api } from '../../../api/api';
 
 
-
-const getCurriculum = (board, grade) => {
-  const cls = Number(grade);
-
-  if (cls <= 10) {
-    return board === 'CBSE'
-      ? 'School CBSE'
-      : 'School STATE';
-  }
-
-  return board === 'CBSE'
-    ? 'PUC Science'
-    : 'PUC Commerce';
-};
-
-
-
 export default function CreateExamTemplateSubjectsScreen({ route, navigation }) {
   const { board, form: step1Data, mode = 'CREATE' } = route.params || {};
 
@@ -38,27 +21,35 @@ export default function CreateExamTemplateSubjectsScreen({ route, navigation }) 
   const [loading, setLoading] = useState(true);
 
 
-
   const fetchSubjects = async () => {
     try {
-      const curriculum = getCurriculum(board, step1Data.grade);
+      const res = await api.get(`/api/admin/subject/assigned-subjects?classAssigned=${step1Data.grade}&board=${board}`);
 
-      const res = await api.get('/api/admin/subject', {
-        params: { curriculum },
-      });
+      if (res.data.length > 0) {
+        // Filter out duplicates based on subjectCode
+        const uniqueSubjects = [];
+        const seenCodes = new Set();
 
-      if (res.data?.success && res.data.data.length > 0) {
-        const mapped = res.data.data.map(sub => ({
-          subjectCode: sub.code,
-          subjectName: sub.name,
-          components: [{ name: '', maxMarks: '', passMarks: '' }],
-        }));
-        setSubjects(mapped);
+        for (const sub of res.data) {
+          const subjectCode = sub.subjectMasterId?.code;
+          const subjectName = sub.subjectMasterId?.name;
+
+          if (subjectCode && !seenCodes.has(subjectCode)) {
+            seenCodes.add(subjectCode);
+            uniqueSubjects.push({
+              subjectCode: subjectCode,
+              subjectName: subjectName,
+              components: [{ name: '', maxMarks: '', passMarks: '' }],
+            });
+          }
+        }
+
+        setSubjects(uniqueSubjects);
       } else {
         setSubjects([]);
       }
     } catch (err) {
-      console.error(' Failed to fetch subjects:', err);
+      console.error('Failed to fetch subjects:', err);
       setSubjects([]);
       Alert.alert('Error', 'Unable to fetch subjects.');
     } finally {
@@ -67,7 +58,7 @@ export default function CreateExamTemplateSubjectsScreen({ route, navigation }) 
   };
 
   useEffect(() => {
-    fetchSubjects();
+    fetchSubjects()
   }, []);
 
   
@@ -97,75 +88,74 @@ export default function CreateExamTemplateSubjectsScreen({ route, navigation }) 
 
 
   const handleSubmit = async () => {
-  if (subjects.length === 0) {
-    Alert.alert('No Subjects', 'Please add subject details.');
-    return;
-  }
+    if (subjects.length === 0) {
+      Alert.alert('No Subjects', 'Please add subject details.');
+      return;
+    }
 
-  const filledSubjects = subjects.filter(sub =>
-    sub.components.some(
-      c => c.name.trim() !== '' || c.maxMarks !== ''
-    )
-  );
-
-  if (filledSubjects.length === 0) {
-    Alert.alert(
-      'Validation Error',
-      'Please add subject details before submitting.'
+    const filledSubjects = subjects.filter(sub =>
+      sub.components.some(
+        c => c.name.trim() !== '' || c.maxMarks !== ''
+      )
     );
-    return;
-  }
 
-  for (const sub of filledSubjects) {
-    for (const comp of sub.components) {
-      if (!comp.name || !comp.maxMarks) {
-        Alert.alert(
-          'Validation Error',
-          `Each filled component in ${sub.subjectName} must have name and max marks`
-        );
-        return;
+    if (filledSubjects.length === 0) {
+      Alert.alert(
+        'Validation Error',
+        'Please add subject details before submitting.'
+      );
+      return;
+    }
+
+    for (const sub of filledSubjects) {
+      for (const comp of sub.components) {
+        if (!comp.name || !comp.maxMarks) {
+          Alert.alert(
+            'Validation Error',
+            `Each filled component in ${sub.subjectName} must have name and max marks`
+          );
+          return;
+        }
       }
     }
-  }
 
-  const payload = {
-    academicYear: step1Data.academicYear,
-    grade: step1Data.grade,
-    board,
-    assessmentName: step1Data.assessmentName,
-    assessmentType: step1Data.assessmentType,
-    subjects: filledSubjects.map(sub => ({
-      subjectCode: sub.subjectCode,
-      components: sub.components.map(c => ({
-        name: c.name.trim(),
-        maxMarks: Number(c.maxMarks),
-        ...(c.passMarks ? { passMarks: Number(c.passMarks) } : {}),
+    const payload = {
+      academicYear: step1Data.academicYear,
+      grade: step1Data.grade,
+      board,
+      assessmentName: step1Data.assessmentName,
+      assessmentType: step1Data.assessmentType,
+      subjects: filledSubjects.map(sub => ({
+        subjectCode: sub.subjectCode,
+        components: sub.components.map(c => ({
+          name: c.name.trim(),
+          maxMarks: Number(c.maxMarks),
+          ...(c.passMarks ? { passMarks: Number(c.passMarks) } : {}),
+        })),
       })),
-    })),
-  };
+    };
 
-  try {
-    const res = await api.post(
-      '/api/admin/assessment/assessment-template',
-      payload
-    );
+    try {
+      const res = await api.post(
+        '/api/admin/assessment/assessment-template',
+        payload
+      );
 
-    if (res.data?.success) {
+      if (res.data?.success) {
+        Alert.alert(
+          'Success',
+          'Assessment template created successfully.',
+          [{ text: 'OK', onPress: () => navigation.popToTop() }]
+        );
+      }
+    } catch (err) {
+      console.error('Create template failed:', err);
       Alert.alert(
-        'Success',
-        'Assessment template created successfully.',
-        [{ text: 'OK', onPress: () => navigation.popToTop() }]
+        'Error',
+        err.response?.data?.message || 'Request failed'
       );
     }
-  } catch (err) {
-    console.error('Create template failed:', err);
-    Alert.alert(
-      'Error',
-      err.response?.data?.message || 'Request failed'
-    );
-  }
-};
-
+  };
 
 
   if (loading) {
@@ -201,7 +191,9 @@ export default function CreateExamTemplateSubjectsScreen({ route, navigation }) 
 
         {subjects.map((subject, sIndex) => (
           <View key={subject.subjectCode} style={styles.subjectCard}>
-            <Text style={styles.subjectTitle}>{subject.subjectName}</Text>
+            <Text style={styles.subjectTitle}>
+              {subject.subjectName} ({subject.subjectCode})
+            </Text>
 
             {subject.components.map((comp, cIndex) => (
               <View key={cIndex} style={styles.componentCard}>
@@ -273,7 +265,6 @@ export default function CreateExamTemplateSubjectsScreen({ route, navigation }) 
     </SafeAreaView>
   );
 }
-
 
 
 const styles = StyleSheet.create({

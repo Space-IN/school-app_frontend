@@ -34,11 +34,6 @@ export default function TimetableScreen() {
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
-    console.log("schedule data: ", schedule)
-  })
-
-
   const fetchSchedule = async () => {
     try {
       setError(null);
@@ -61,12 +56,10 @@ export default function TimetableScreen() {
     }
   }
 
-
   const onRefresh = useCallback(() => {
     setRefreshing(true)
     fetchSchedule().finally(() => setRefreshing(false))
   }, [])
-
 
   const getColorForPeriod = (index) => {
     return SUBJECT_COLORS[index % SUBJECT_COLORS.length]

@@ -96,16 +96,6 @@ export default function FacultyStudentsScreen() {
     fetchStudents();
   };
 
-  const handleStudentPress = (student) => {
-    navigation.navigate('StudentProfileScreen', {
-      studentData: student,
-      grade,
-      section,
-      facultyId: user?.userId,
-      facultyName: user?.name
-    });
-  };
-
   const handleBackPress = () => {
     navigation.goBack();
   };
@@ -115,7 +105,7 @@ export default function FacultyStudentsScreen() {
   };
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => handleStudentPress(item)} style={styles.card}>
+    <TouchableOpacity style={styles.card}>
       <Text style={styles.studentName}>👤 {item.name}</Text>
       <Text style={styles.studentId}>🆔 ID: {item.userId}</Text>
       <Text style={styles.studentClass}>📚 Class: {grade} - {section}</Text>

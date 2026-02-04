@@ -109,7 +109,6 @@ export default function AttendanceScreen() {
           }
         )
         const data = response.data
-        console.log("response data: ", response.data[1])
         if (response.status === 200) {
           setAttendanceData(data)
         } else {

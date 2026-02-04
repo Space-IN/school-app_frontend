@@ -42,8 +42,7 @@ import LectureRecordingScreen from "../../screens/Faculty/classes/LectureRecordi
 import PastRecordingsScreen from "../../screens/Faculty/classes/PastRecordingsScreen";
 
 
-import FacultyChaptersScreen from "../../screens/Faculty/classes/FacultyChaptersScreen";
-import StudentProfileScreen from "../../screens/Faculty/classes/StudentProfileScreen"; 
+import FacultyChaptersScreen from "../../screens/Faculty/classes/FacultyChaptersScreen"; 
 
 
 
@@ -200,14 +199,6 @@ export default function FacultyNavigator() {
                 name="StudentSubjectMarksScreen" 
                 component={StudentSubjectMarksScreen} 
                 options={{ title: 'Student Marks' }}
-            />
-
-            
-
-              <Stack.Screen 
-                name="StudentProfileScreen" 
-                component={StudentProfileScreen} 
-                options={{ title: 'Student Profile' }}
             />
 
 
