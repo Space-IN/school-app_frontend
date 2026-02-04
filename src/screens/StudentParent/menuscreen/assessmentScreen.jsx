@@ -91,19 +91,24 @@ export default function AssessmentScreen() {
     setSelectedExam(exam)
     setModalVisible(false)
 
+    setMarksData(null)
+    setErr(null)
+    slideAnim.setValue(0)
     try {
       const response = await fetchAssessmentScore(studentId, assessmentId, year)
-      if(response) setMarksData(response)
+      if(response) {
+        setMarksData(response)
+        Animated.timing(slideAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }).start()
+      }
     } catch(err) {
       setErr(err.message || "an error occured while fetching assessment score.")
     } finally {
       setLoading(false)
     }
-    Animated.timing(slideAnim, {
-      toValue: 1,
-      duration: 600,
-      useNativeDriver: true,
-    }).start()
   }
 
   const slideInStyle = {
