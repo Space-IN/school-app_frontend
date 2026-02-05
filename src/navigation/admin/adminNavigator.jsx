@@ -40,11 +40,11 @@ import AddEventScreen from "../../screens/Admin/Eventmanagement/AddEventScreen"
 import AddNoticeScreen from "../../screens/Admin/NoticeManagement/AddNoticeScreen"
 import AddSubjectMasterScreen from "../../screens/Admin/subjectManagement/AddSubjectMasterScreen"
 import AssignSubjectScreen from "../../screens/Admin/subjectManagement/AssignSubjectScreen"
-import MarksEntryScreen from "../../screens/Admin/MarksEntryScreen"
+import MarksEntryScreen from "../../screens/Admin/marksEntryScreen"
 import ExamTemplatesHomeScreen from "../../screens/Admin/Exams/ExamTemplatesHomeScreen";
 import CreateExamTemplateScreen from "../../screens/Admin/Exams/CreateExamTemplateScreen";
 import CreateExamTemplateSubjectsScreen from "../../screens/Admin/Exams/CreateExamTemplateSubjectsScreen";
-import MarksViewEditScreen from "../../screens/Admin/MarksViewEditScreen";
+import MarksViewEditScreen from "../../screens/Admin/marksViewEditScreen2";
 
 
 import { StatusBar } from "react-native";
