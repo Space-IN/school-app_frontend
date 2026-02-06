@@ -62,14 +62,14 @@ export default function StudentAnnouncements() {
                   <View style={styles.cardHeader}>
                     <FontAwesome5 name="calendar-day" size={12} color="#64748b" />
                     <Text style={styles.date}>
-                    {new Date(item.date).toLocaleString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: true,
-                    })}
+                      {new Date(item.date).toLocaleString("en-IN", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                      })}
                     </Text>
                   </View>
                   <Text style={styles.title}>{item.title}</Text>

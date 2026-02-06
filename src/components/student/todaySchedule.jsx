@@ -55,6 +55,7 @@ export default function TodaySchedule({ classAssigned, section, board, studentLo
     </View>
   )
 
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -75,7 +76,7 @@ export default function TodaySchedule({ classAssigned, section, board, studentLo
         <FlatList
           data={todaySchedule.periods}
           renderItem={renderItem}
-          keyExtractor={(item) => item._id}
+          keyExtractor={(item) => item.periodNumber}
           contentContainerStyle={{ padding: 12 }}
           scrollEnabled={false}
         />
