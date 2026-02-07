@@ -44,7 +44,7 @@ import MarksEntryScreen from "../../screens/Admin/marksEntryScreen"
 import ExamTemplatesHomeScreen from "../../screens/Admin/Exams/ExamTemplatesHomeScreen";
 import CreateExamTemplateScreen from "../../screens/Admin/Exams/CreateExamTemplateScreen";
 import CreateExamTemplateSubjectsScreen from "../../screens/Admin/Exams/CreateExamTemplateSubjectsScreen";
-import MarksViewEditScreen from "../../screens/Admin/marksViewEditScreen2";
+import MarksViewEditScreen from "../../screens/Admin/marksViewEditScreen";
 
 
 import { StatusBar } from "react-native";
