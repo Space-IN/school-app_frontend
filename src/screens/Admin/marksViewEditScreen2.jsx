@@ -2,9 +2,9 @@ import { useEffect, useState } from "react"
 import { Ionicons } from "@expo/vector-icons"
 import { Picker } from "@react-native-picker/picker"
 import { LinearGradient } from "expo-linear-gradient"
-import { View, StyleSheet, TouchableOpacity, Text, ActivityIndicator, FlatList, Alert, ScrollView } from "react-native"
+import { View, StyleSheet, TouchableOpacity, Text, ActivityIndicator, FlatList, Alert, ScrollView, KeyboardAvoidingView, Platform } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { fetchAssessments, fetchAssessmentSubjects, fetchFaculties, } from "../../controllers/adminDataController"
+import { fetchAssessments, fetchAssessmentSubjects, fetchFaculties, fetchSubjectScore, } from "../../controllers/adminDataController"
 import StudentsMarksEntry from "../../components/admin/renderCompStudents"
 
 
@@ -69,6 +69,27 @@ export default function MarksViewEditScreen({ navigation, route, }) {
         }
     }
 
+    const [loadingScores, setLoadingScores] = useState(false)
+    const [scores, setScores] = useState(null)
+    const loadSubjectMarks = async () => {
+        setLoadingScores(true)
+        try {
+            const resScores = await fetchSubjectScore(selectedAssessment?._id, selectedSubject?.subject?.code)
+            if(resScores) setScores(resScores)
+        } catch(err) {
+            console.error("couldn't fetch subject scores: ", err)
+            setScores([])
+        } finally {
+            setLoadingScores(false)
+        }
+    }
+
+    const resetAfterSubmit = () => {
+        setSelectedAssessment(null)
+        setSelectedSubject(null)
+        setSelectedFaculties({})
+    }
+
 
     useEffect(() => {
         loadAssessment()
@@ -79,7 +100,11 @@ export default function MarksViewEditScreen({ navigation, route, }) {
     }, [selectedAssessment])
 
     useEffect(() => {
-        if(selectedSubject) loadFaculties()
+        setScores(null)
+        if(selectedSubject) {
+            loadFaculties()
+            loadSubjectMarks()
+        }
     }, [selectedSubject])
 
     return (
@@ -131,103 +156,110 @@ export default function MarksViewEditScreen({ navigation, route, }) {
             </View>
 
 
-            <ScrollView style={{ marginBottom: 20, }}>
-                {selectedClass && selectedSection && (
-                    <View style={styles.card}>
-                        <View style={styles.optionsPickerContainer}>
-                            <View>
-                                <Text style={styles.filterLabel}>Assessments</Text>
-                                <View style={styles.optionsPickerWrapper}>
-                                    <Picker
-                                        selectedValue={selectedAssessment?._id}
-                                        onValueChange={(id) => {
-                                            const foundAssessment = assessments.find(a => a._id===id)
-                                            setSelectedAssessment(foundAssessment || null)
-                                        }}
-                                        enabled={!loadingAssessments}
-                                        style={styles.optionsPicker}
-                                    >
-                                        <Picker.Item label="Select Assessment" value={null} color="#94a3b8" />
-                                        {assessments.map(a => <Picker.Item key={a._id} label={a.assessment_name} value={a._id} />)}
-                                    </Picker>
-                                    {loadingAssessments && (
-                                        <View style={styles.pickerLoadingOverlay}>
-                                            <ActivityIndicator size="small" color="#9c1006ff" />
-                                        </View>
-                                    )}
-                                </View>
-                            </View>
-
-                            {selectedAssessment && (
+            <KeyboardAvoidingView
+                style={{ flex: 1, }} behavior={Platform.OS==="ios" ? "padding" : undefined } keyboardVerticalOffset={Platform.OS==="ios" ? 80 : 0}
+            >
+                <ScrollView style={{ marginBottom: 20, }} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 120, }}>
+                    {selectedClass && selectedSection && (
+                        <View style={styles.card}>
+                            <View style={styles.optionsPickerContainer}>
                                 <View>
-                                    <Text style={styles.filterLabel}>Subjects</Text>
+                                    <Text style={styles.filterLabel}>Assessments</Text>
                                     <View style={styles.optionsPickerWrapper}>
                                         <Picker
-                                            selectedValue={selectedSubject?._id}
+                                            selectedValue={selectedAssessment?._id}
                                             onValueChange={(id) => {
-                                                const foundSubject = subjects.find(s => s._id===id)
-                                                setSelectedSubject(foundSubject || null)
+                                                const foundAssessment = assessments.find(a => a._id===id)
+                                                setSelectedAssessment(foundAssessment || null)
                                             }}
-                                            enabled={!loadingSubjects}
+                                            enabled={!loadingAssessments}
                                             style={styles.optionsPicker}
                                         >
-                                            <Picker.Item label="Select Subject" value={null} color="#94a3b8" />
-                                            {subjects.map(s => <Picker.Item key={s._id} label={`${s.subject.name} (${s.subject.code})`} value={s._id} />)}
+                                            <Picker.Item label="Select Assessment" value={null} color="#94a3b8" />
+                                            {assessments.map(a => <Picker.Item key={a._id} label={a.assessment_name} value={a._id} />)}
                                         </Picker>
-                                        {loadingSubjects && (
+                                        {loadingAssessments && (
                                             <View style={styles.pickerLoadingOverlay}>
                                                 <ActivityIndicator size="small" color="#9c1006ff" />
                                             </View>
                                         )}
                                     </View>
                                 </View>
-                            )}
 
-                            {selectedSubject && (
-                                <View>
-                                    <Text style={styles.filterLabel}>Marked By (Faculty) <Text style={{ color: 'red' }}>*</Text></Text>
-                                    <View style={[styles.card, { width: "100%", backgroundColor: "#f3f3f3", gap: 10, marginTop: 5, marginBottom: 0, }]}>
-                                        {selectedSubject?.components?.map((comp) => (
-                                            <View style={styles.optionsPickerContainer}>
-                                                <View>
-                                                    <Text style={styles.filterLabel}>{comp.name}</Text>
-                                                    <View style={styles.optionsPickerWrapper}>
-                                                        <Picker
-                                                            key={comp._id}
-                                                            selectedValue={selectedFaculties[comp.name] ?? null}
-                                                            onValueChange={(val) => {
-                                                                setSelectedFaculties(prev => ({
-                                                                    ...prev, [comp.name]: val
-                                                                }))
-                                                            }}
-                                                        >
-                                                            <Picker.Item label="Select" value={null} />
-                                                            {faculties.map(f => <Picker.Item key={f._id} label={f.facultyId} value={f.facultyId} />)}
-                                                        </Picker>
-                                                        {loadingFaculties && (
-                                                            <View style={styles.pickerLoadingOverlay}>
-                                                                <ActivityIndicator size="small" color="#9c1006ff" />
-                                                            </View>
-                                                        )}
+                                {selectedAssessment && (
+                                    <View>
+                                        <Text style={styles.filterLabel}>Subjects</Text>
+                                        <View style={styles.optionsPickerWrapper}>
+                                            <Picker
+                                                selectedValue={selectedSubject?._id}
+                                                onValueChange={(id) => {
+                                                    const foundSubject = subjects.find(s => s._id===id)
+                                                    setSelectedSubject(foundSubject || null)
+                                                }}
+                                                enabled={!loadingSubjects}
+                                                style={styles.optionsPicker}
+                                            >
+                                                <Picker.Item label="Select Subject" value={null} color="#94a3b8" />
+                                                {subjects.map(s => <Picker.Item key={s._id} label={`${s.subject.name} (${s.subject.code})`} value={s._id} />)}
+                                            </Picker>
+                                            {loadingSubjects && (
+                                                <View style={styles.pickerLoadingOverlay}>
+                                                    <ActivityIndicator size="small" color="#9c1006ff" />
+                                                </View>
+                                            )}
+                                        </View>
+                                    </View>
+                                )}
+
+                                {selectedSubject && (
+                                    <View>
+                                        <Text style={styles.filterLabel}>Marked By (Faculty) <Text style={{ color: 'red' }}>*</Text></Text>
+                                        <View style={[styles.card, { width: "100%", backgroundColor: "#f3f3f3", gap: 10, marginTop: 5, marginBottom: 0, }]}>
+                                            {selectedSubject?.components?.map((comp) => (
+                                                <View style={styles.optionsPickerContainer} key={comp._id}>
+                                                    <View>
+                                                        <Text style={styles.filterLabel}>{comp.name}</Text>
+                                                        <View style={styles.optionsPickerWrapper}>
+                                                            <Picker
+                                                                key={comp._id}
+                                                                selectedValue={selectedFaculties[comp.name] ?? null}
+                                                                onValueChange={(val) => {
+                                                                    setSelectedFaculties(prev => ({
+                                                                        ...prev, [comp.name]: val
+                                                                    }))
+                                                                }}
+                                                            >
+                                                                <Picker.Item label="Select" value={null} />
+                                                                {faculties.map(f => <Picker.Item key={f._id} label={f.facultyId} value={f.facultyId} />)}
+                                                            </Picker>
+                                                            {loadingFaculties && (
+                                                                <View style={styles.pickerLoadingOverlay}>
+                                                                    <ActivityIndicator size="small" color="#9c1006ff" />
+                                                                </View>
+                                                            )}
+                                                        </View>
                                                     </View>
                                                 </View>
-                                            </View>
-                                        ))}
+                                            ))}
+                                        </View>
                                     </View>
-                                </View>
-                            )}
+                                )}
+                            </View>
                         </View>
-                    </View>
-                )}
+                    )}
 
 
-                {selectedSubject && (
-                    <StudentsMarksEntry
-                        grade={selectedClass} section={selectedSection} board={board}
-                        components={selectedSubject?.components}
-                    />
-                )}
-            </ScrollView>
+                    {selectedSubject && (
+                        <StudentsMarksEntry
+                            grade={selectedClass} section={selectedSection} board={board}
+                            components={selectedSubject?.components}
+                            assessmentId={selectedAssessment?._id} subjectCode={selectedSubject?.subject?.code} selectedFaculties={selectedFaculties}
+                            scores={scores} loadingScores={loadingScores}
+                            onReset={resetAfterSubmit}
+                        />
+                    )}
+                </ScrollView>
+            </KeyboardAvoidingView>
         </View>
     )
 }
@@ -236,6 +268,7 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f8fafc', },
     mainHeader: {
         paddingHorizontal: 20, paddingVertical: 20, paddingBottom: 40, borderBottomLeftRadius: 30, borderBottomRightRadius: 30,
+        width: "100%"
     },
     headerTopRow: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5,
@@ -252,7 +285,7 @@ const styles = StyleSheet.create({
         marginBottom: 24, marginTop: 20,
         shadowColor: '#64748b', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.08, shadowRadius: 24, elevation: 4,
         borderWidth: 1, borderColor: '#f1f5f9', borderRadius: 24,
-        width: "95%",
+        width: "90%",
         alignSelf: "center",
     },
     optionsPickerContainer: { gap: 15, width: "100%" },
@@ -280,7 +313,7 @@ const styles = StyleSheet.create({
     toggleBtnText: { color: 'rgba(255,255,255,0.7)', fontWeight: '600', fontSize: 13 },
     toggleBtnTextActive: { color: '#4f46e5', fontWeight: '800', fontSize: 13 },
 
-    filterContainer: { paddingHorizontal: 20, marginTop: -30 },
+    filterContainer: { width: "90%", alignSelf: "center", marginTop: -30 },
     filterRow: { flexDirection: 'row', gap: 12 },
     filterItem: {
         flex: 1,

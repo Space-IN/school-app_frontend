@@ -584,10 +584,9 @@ export default function MarksEntryScreen({ route, navigation }) {
                     <TouchableOpacity
                         style={[styles.viewEditButton, { marginBottom: 20 }]}
                         onPress={() => navigation.navigate('MarksViewEditScreen', { board })}
-                        activeOpacity={0.7}
+                        activeOpacity={0.9}
                     >
-                        <Ionicons name="eye-outline" size={20} color="#ac1d1dff" style={{ marginRight: 8 }} />
-                        <Text style={styles.viewEditText}>View / Edit Marks</Text>
+                        <Text style={styles.viewEditText}>VIEW / EDIT MARKS</Text>
                     </TouchableOpacity>
 
                     {/* Student Marks Entry */}
@@ -873,16 +872,16 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#e0e7ff',
+        backgroundColor: '#ac1d1dff',
         paddingVertical: 12,
         borderRadius: 12,
         borderWidth: 1,
         borderColor: '#c7d2fe'
     },
     viewEditText: {
-        fontSize: 15,
-        fontWeight: '600',
-        color: '#ac1d1dff'
+        fontSize: 14,
+        fontWeight: '900',
+        color: '#ffffff'
     },
     sectionTitle: {
         fontSize: 18,

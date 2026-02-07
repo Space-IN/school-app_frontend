@@ -75,3 +75,17 @@ export const fetchStudents = async (grade, section, board) => {
         throw err.response?.data || { message: "Something went wrong while fetching students." }
     }
 }
+
+
+export const fetchSubjectScore = async (assessmentId, subjectCode) => {
+    try {
+        const res = await api.get(
+            `/api/admin/assessment/assessmentId/${assessmentId}/subjectCode/${subjectCode}`
+        )
+        const fetchScores = Array.isArray(res.data.data.scores) ? res.data.data.scores : []
+        return fetchScores
+    } catch(err) {
+        console.error("error fetching subject scores: ", err.response?.data)
+        throw err.response?.data || { message: "Something went wrong while fetching subject scores." }
+    }
+}
