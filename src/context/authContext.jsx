@@ -56,12 +56,13 @@ export const AuthProvider = ({ children }) => {
             if(stored) {
                 const parsed = JSON.parse(stored)
                 const decoded = decodeToken(parsed.access_token)
-                if(decoded) {
+                if(decoded?.exp*1000 > Date.now()) {
                     setAccessToken(parsed.access_token)
                     setDecodedToken(decoded)
                     setIsAuthenticated(true)
                 } else {
-                    await SecureStore.deleteItemAsync("auth")
+                    await refreshTokens()
+                    setIsAuthenticated(true)
                 }
             }
         } catch(err) {

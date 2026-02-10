@@ -165,7 +165,7 @@ export default function AdminWorkbenchScreen({ navigation }) {
         { key: 'exams', title: 'Examination & Tests', icon: 'clipboard', subItems: [
             { label: 'Exam Templates', icon: 'document-text-outline', screen: 'BoardSelectionScreen', params: { nextScreen: 'ExamTemplatesHomeScreen', title: 'Exam Templates' } },
             { label: 'Marks Entry', icon: 'pencil-outline', screen: 'BoardSelectionScreen', params: { nextScreen: 'MarksEntryScreen', title: 'Marks Entry' } },
-            { label: 'Report Cards', icon: 'document-text-outline', screen: 'BoardSelectionScreen', params: { nextScreen: 'ReportCardLandingScreen', title: 'Report Cards' } },
+            // { label: 'Report Cards', icon: 'document-text-outline', screen: 'BoardSelectionScreen', params: { nextScreen: 'ReportCardLandingScreen', title: 'Report Cards' } },
         ]},
         { key: 'notices', title: 'Announcement', icon: 'megaphone', subItems: [
             { label: 'Add Announcement', icon: 'megaphone-outline', screen: 'AddNoticeScreen' },

@@ -152,18 +152,18 @@ export default function FacultyClassDashboard({ route }) {
       screen: 'ClassScheduleScreen',
       requiredParams: ['grade', 'section']
     },
-    { 
-      title: 'Lecture Recording', 
-      icon: 'videocam', 
-      screen: 'LectureRecordingScreen',
-      requiredParams: ['grade', 'section', 'subjectId']
-    },
-    { 
-      title: 'Chapters', 
-      icon: 'book', 
-      screen: 'FacultyChaptersScreen',
-      requiredParams: ['grade', 'section', 'subjectId']
-    },
+    // { 
+    //   title: 'Lecture Recording', 
+    //   icon: 'videocam', 
+    //   screen: 'LectureRecordingScreen',
+    //   requiredParams: ['grade', 'section', 'subjectId']
+    // },
+    // { 
+    //   title: 'Chapters', 
+    //   icon: 'book', 
+    //   screen: 'FacultyChaptersScreen',
+    //   requiredParams: ['grade', 'section', 'subjectId']
+    // },
   ];
 
   const handleCardPress = (screen, requiredParams) => {
