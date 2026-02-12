@@ -108,7 +108,6 @@ export async function verifyOtp(userId, otp) {
 
 export async function resetPassword(newPassword, resetToken) {
     try {
-        console.log("resetToken in auth controller: ", resetToken)
         const response = await axios.post(
             `${BASE_URL}/api/auth/account/set-password`,
             { newPassword, },
