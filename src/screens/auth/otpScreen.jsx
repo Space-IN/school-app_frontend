@@ -5,7 +5,7 @@ import OtpTab from "../../components/auth/otp"
 
 
 
-export default function OptScreen({ route, navigation }) {
+export default function OtpScreen({ route, navigation }) {
     const { phone, userId, uiFlow } = route.params
     
 

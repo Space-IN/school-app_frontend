@@ -89,7 +89,7 @@ export default function OtpTab({ phoneNumber, userId, navigation, uiFlow }) {
                     {error ? <Text style={styles.error}>{error}</Text> : null}
 
                     <TouchableOpacity
-                        style={[styles.optButton, loading && { opacity: 0.5, },]}
+                        style={[styles.otpButton, loading && { opacity: 0.5, },]}
                         onPress={handleSendOtp}
                         disabled={loading}
                     >
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
         alignSelf: "center",
         textAlign: "center",
     },
-    optButton: {
+    otpButton: {
         padding: 10,
         borderRadius: 10,
         backgroundColor: '#9c1006',

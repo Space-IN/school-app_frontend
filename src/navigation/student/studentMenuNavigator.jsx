@@ -7,7 +7,7 @@ import AcademicCalendarScreen from '../../screens/StudentParent/menuscreen/acade
 import FeesScreen from '../../screens/StudentParent/menuscreen/feesScreen'
 import StudentHeader from '../../components/student/header'
 import SettingsScreen from '../../screens/StudentParent/menuscreen/settingsScreen'
-import OptScreen from '../../screens/auth/otpScreen'
+import OtpScreen from '../../screens/auth/otpScreen'
 import SetPasswordScreen from '../../screens/auth/setPasswordScreen'
 
 const Stack = createStackNavigator()
@@ -28,7 +28,7 @@ export default function StudentMenuNavigator() {
       <Stack.Screen name="academicCalendarScreen" component={AcademicCalendarScreen} />
       <Stack.Screen name="feesScreen" component={FeesScreen} options={{ headerShown: false }} />
       <Stack.Screen name="settingsScreen" component={SettingsScreen} />
-      <Stack.Screen name="otp" component={OptScreen} />
+      <Stack.Screen name="otp" component={OtpScreen} />
       <Stack.Screen name="setPassword" component={SetPasswordScreen} />
     </Stack.Navigator>
   )
